@@ -1,6 +1,6 @@
 # Onboarding
 
-This guide gets you from clone to your first merged change. For deployment, see the [README](../README.md#deployment).
+This guide gets you from clone to your first merged change. For deployment, see the [Deployment Guide](deployment.md).
 
 ## 1. The ideas behind the code
 
@@ -183,6 +183,6 @@ Worker unit tests use a fake database. To test against a real MongoDB, set `MONG
 
 | Question | Look in |
 | --- | --- |
-| How do I deploy, rotate a token, or troubleshoot sync? | README: Deployment, Updating, Troubleshooting |
+| How do I deploy, rotate a token, or troubleshoot sync? | [deployment.md](deployment.md) |
 | What is the rule for X? | `.claude/skills/` |
 | How does the wire protocol work? | `worker/src/mongo/*.ts` and their tests |

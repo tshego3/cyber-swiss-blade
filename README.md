@@ -9,7 +9,7 @@ An offline-first, installable personal developer toolkit. One shell, independent
 | AES Encryption | Files and text, AES-256-GCM + PBKDF2-SHA256 | Device only |
 | Base64 | Text and files, URL-safe, data URLs | Device only |
 
-New to the codebase? Start with [docs/onboarding.md](docs/onboarding.md).
+New to the codebase? Start with [docs/onboarding.md](docs/onboarding.md). Deploying? Follow [docs/deployment.md](docs/deployment.md).
 
 ## Architecture
 
@@ -76,77 +76,18 @@ The service worker registers only in production builds. To test offline behaviou
 
 ## Deployment
 
-Deploy in this order: database, then API, then site, then connect.
+Follow the step-by-step **[Deployment Guide](docs/deployment.md)**. It covers every screen in MongoDB Atlas, Cloudflare, and GitHub, and needs no prior cloud experience.
 
-### 1. MongoDB Atlas (free M0)
+| Step | Service (free tier) | Result |
+| --- | --- | --- |
+| 1 | MongoDB Atlas Free cluster | Database user, IP access list, and connection string |
+| 2 | Cloudflare Workers | `cyber-swiss-blade-api.<subdomain>.workers.dev`, with secrets `MONGODB_URI` and `API_TOKEN` |
+| 3 | GitHub Pages (public repo) | `https://<you>.github.io/cyber-swiss-blade/`, deployed by GitHub Actions on every push to `main` |
+| 4 | The app | **Settings → Sync**: enter the Worker URL and API token |
 
-1. Sign in at cloud.mongodb.com and create a project.
-2. Create a free **M0** cluster. Any provider and region works.
-3. Under **Database Access**, add a user:
-   - Password authentication. Use a long **ASCII** password.
-   - Built-in role **Read and write to any database**, or a custom role with `readWrite` on `cyber_swiss_blade`.
-4. Under **Network Access**, add `0.0.0.0/0`. Cloudflare Workers have no fixed egress IP; the database user password and TLS protect access.
-5. Click **Connect → Drivers** and copy the `mongodb+srv://` string. Put the password in place of `<password>`, URL-encoding any `@ : / ? #` characters.
-
-### 2. Cloudflare Worker (free plan)
-
-```sh
-cd worker
-npx wrangler@4.151.3 login                       # opens the browser once
-npx wrangler@4.151.3 secret put MONGODB_URI      # paste the connection string
-openssl rand -hex 32                              # generate the API token and copy it
-npx wrangler@4.151.3 secret put API_TOKEN        # paste the same token
-cd ..
-```
-
-1. Set `ALLOWED_ORIGINS` in `worker/wrangler.toml` to your Pages origin, for example `https://<you>.github.io`. Keep the localhost entries for development.
-2. Run `npm run worker:deploy`. On the first deploy, Wrangler asks you to pick a `workers.dev` subdomain.
-3. Note the URL it prints: `https://cyber-swiss-blade-api.<subdomain>.workers.dev`.
-4. Verify the Worker. It should return `{"ok":true,...}`:
-
-```sh
-curl -H "Authorization: Bearer <token>" https://cyber-swiss-blade-api.<subdomain>.workers.dev/status
-```
+The guide also covers [updating](docs/deployment.md#updating-later), [reading the Worker logs](docs/deployment.md#reading-the-logs), and [troubleshooting](docs/deployment.md#troubleshooting).
 
 Secrets live only in Cloudflare. Never commit them, and never put them in frontend code.
-
-### 3. GitHub Pages
-
-1. Create a **public** repository named `cyber-swiss-blade`. Pages on private repositories needs a paid plan.
-2. Push:
-   ```sh
-   git remote add origin https://github.com/<you>/cyber-swiss-blade.git
-   git push -u origin main
-   ```
-3. In the repository, open **Settings → Pages** and set **Source** to **GitHub Actions**.
-4. The workflow `.github/workflows/deploy.yml` runs lint, tests, the licence audit, and the build, then publishes `dist/`. Check the **Actions** tab for progress.
-5. Open `https://<you>.github.io/cyber-swiss-blade/` and install it from the browser address bar, or with **Add to Home Screen** on iOS.
-
-If you use a different repository name, change `BASE` in `vite.config.ts` and `id`, `start_url`, `scope`, and `shortcuts` in `public/manifest.webmanifest`.
-
-### 4. Connect the app
-
-Open **Settings → Sync**, enter the Worker URL and the API token, and select **Save and sync**. Both are stored only in this browser's IndexedDB. Repeat on each device.
-
-### Updating
-
-| Change | Action | Result |
-| --- | --- | --- |
-| App code | Push to `main` | Open apps show **A new version is ready**; select **Reload** |
-| Worker code | `npm run worker:deploy` | Live immediately; no app change needed |
-| Rotate the API token | `npx wrangler@4.151.3 secret put API_TOKEN` | Enter the new token in Settings on each device |
-| Change database | `npx wrangler@4.151.3 secret put MONGODB_URI` | Change the API URL in Settings too, or use **Disconnect** then reconnect, so devices re-upload |
-
-### Troubleshooting
-
-| Symptom | Cause and fix |
-| --- | --- |
-| "The API token was rejected." | The token in Settings does not match `API_TOKEN`. Re-enter it. |
-| CORS error, or `Origin not allowed.` | Add the exact origin (scheme + host, no path) to `ALLOWED_ORIGINS` and redeploy the Worker. |
-| "The sync server could not complete the request." | Run `npx wrangler@4.151.3 tail` in `worker/`. Usual causes: Network Access not open, wrong password, or a paused M0 cluster. |
-| Pages loads a blank page or 404 assets | `BASE` in `vite.config.ts` does not match the repository name. |
-| Old version still showing | The service worker serves the cached build until you select **Reload** on the update banner. |
-| App is not installable | It must be served over HTTPS (Pages) or from `localhost`. |
 
 ## Integration test
 
