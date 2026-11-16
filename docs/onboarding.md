@@ -1,109 +1,151 @@
-# Onboarding
+# Onboarding Guide
 
-This guide gets you from clone to your first merged change. For deployment, see the [Deployment Guide](deployment.md).
+This guide is for developers who start work on Cyber Swiss Blade. It shows you how to run the app, how the code works, and how to make your first change.
 
-## 1. The ideas behind the code
+To put the app online, use the [Deployment Guide](deployment.md).
 
-| Principle | In practice |
+**Bold text** is a button, a menu, or a key. `Code text` is text that you type, or a file name.
+
+---
+
+## Part 1: Rules of the project
+
+Read these rules before you change the code.
+
+| Rule | What it means |
 | --- | --- |
-| Native first | TypeScript, HTML, CSS, and browser APIs. No UI framework, no runtime npm packages. |
-| Modular | Each tool is a folder in `src/modules/`. The shell knows tools only through `src/modules/registry.ts`. |
-| Offline first | Every write lands in IndexedDB. The network is only for sync. |
-| MIT only, free only | A new package needs an MIT licence and a reason it cannot be built natively. Hosting stays on free tiers. |
-| Code explains itself | If a block needs a comment, simplify it instead. |
+| Use native code | Use TypeScript, HTML, CSS, and browser features. Do not add a UI framework. Do not add a runtime package. |
+| One tool, one folder | Each tool is a folder in `src/modules/`. The app finds tools only through `src/modules/registry.ts`. |
+| Save locally first | The app saves all data on the device first. It uses the network only to sync. |
+| MIT licence only | A new package must have the MIT licence. You must also show that you cannot write it yourself. |
+| Keep code simple | If code needs a comment to explain it, make the code simpler. |
 
-The detailed rules are project skills in `.claude/skills/`. Read them once:
+The full rules are in the folder `.claude/skills/`. Read the skill that matches your work:
 
-| Skill | Read it before you touch |
+| Skill | Read it before you change |
 | --- | --- |
-| `csb-engineering` | anything |
-| `csb-modules` | a module or the registry |
-| `csb-data-sync` | IndexedDB, sync, the Worker, the service worker, security |
-| `csb-design-system` | views, CSS, icons |
-| `csb-state-testing` | async views or tests |
+| `csb-engineering` | Any code |
+| `csb-modules` | A tool, or the tool list |
+| `csb-data-sync` | The database, sync, the Worker, the service worker, or security |
+| `csb-design-system` | Screens, CSS, or icons |
+| `csb-state-testing` | Screens that load data, or tests |
 
-## 2. First run (5 minutes)
+---
 
-You need Node.js 24 and npm 11. No Cloudflare or MongoDB account is needed to develop.
+## Part 2: Run the app on your computer
 
-```sh
-git clone https://github.com/<you>/cyber-swiss-blade.git
-cd cyber-swiss-blade
-npm ci
-npm run dev
-```
+You do not need a MongoDB or Cloudflare account for this part.
 
-Open `http://localhost:5173/cyber-swiss-blade/`, then check each module:
+### 2.1 Install the tools
 
-1. **Timesheet → New project**: create a project, then select **Start** on the timer.
-2. **Quotations**: add a client, create a quote, and edit a line. Totals update as you type.
-3. **AES Encryption → Text**: encrypt a sentence, then decrypt it.
-4. Press `⌘K` (or `Ctrl K`) to open the command palette.
+1. Make sure that Node.js 24 or higher is installed. Type `node -v` in Terminal ([how to open Terminal](deployment.md#11-open-terminal)) and press **Enter**.
+2. If Node.js is not installed, do step 1.2 of the [Deployment Guide](deployment.md#12-make-sure-that-nodejs-is-installed).
 
-The sidebar shows **Local only**. That is correct until you connect a sync server.
+### 2.2 Get the code and start the app
 
-## 3. Project tour
+1. Type these commands in Terminal. Press **Enter** after each line. Replace `yourname` with the GitHub username.
+   ```sh
+   git clone https://github.com/yourname/cyber-swiss-blade.git
+   cd cyber-swiss-blade
+   npm ci
+   npm run dev
+   ```
+   Example of the first line: `git clone https://github.com/jsmith/cyber-swiss-blade.git`
+   **Result:** Terminal shows the address `http://localhost:5173/cyber-swiss-blade/`.
+2. Open this address in your browser.
+   **Result:** The home page of the app opens.
 
-```
-src/
-  main.ts              App entry: builds the shell, routes, starts sync, registers the service worker
-  sw.ts                Service worker (precache + cache-first, no imports)
-  core/
-    types.ts           ToolModule, SyncState, ApiConfig
-    dom.ts             el(): typed element builder (the only way to create DOM)
-    ui.ts              UI kit: button, field, dialogs, toasts, states, dropzone
-    icons.ts           Hand-drawn SVG icon paths
-    db.ts              IndexedDB: records, outbox, meta
-    repository.ts      createRepository<T>(collection, shape)
-    shape.ts           Runtime validation that matches a TypeScript type
-    sync.ts            Sync engine (push outbox, pull changes, triggers)
-    api.ts             Worker client with timeouts and typed errors
-    shell.ts, home.ts, settings-view.ts, palette.ts, router.ts, theme.ts, pwa.ts
-  modules/
-    registry.ts        The list of tools
-    timesheet/ quotations/ aes/ base64/
-  styles/              tokens.css (colours, type, spacing), base.css, shell.css
-shared/                protocol.ts and bytes.ts, used by the app and the Worker
-worker/src/
-  index.ts             HTTP routes, CORS, Bearer auth
-  sync.ts              Request validation, last-write-wins upserts, pulls
-  mongo/               BSON, OP_MSG wire protocol, SCRAM-SHA-256, primary discovery
-```
+### 2.3 Try each tool
 
-## 4. How data moves
+1. Click **Timesheet**. Click **New project**. Make a project. Click **Start** on the timer.
+2. Click **Quotations**. Add a client on the **Clients** tab. Make a quote. Change a line.
+   **Result:** The total changes when you type.
+3. Click **AES Encryption**, then the **Text** tab. Encrypt a sentence. Then decrypt it.
+4. Press **Ctrl + K**. On macOS, press **Command + K**.
+   **Result:** The command palette opens.
 
-```
-view → repository.save()      IndexedDB: records + outbox (one transaction)
-     → onDataChange('local')  sync engine waits 2 s, then POST /sync
-                              Worker: validate → upsert if newer → pull since cursor
-     ← response               client applies newer records, clears the pushed outbox, stores the cursor
-     → onDataChange('remote') open views reload
-```
+> **NOTE:** The menu shows **Local only**. This is correct. The app does not sync until you connect a Worker.
 
-Views never call `fetch` or IndexedDB. They call their module's `data.ts`, which uses `core/`.
+### 2.4 Stop the app
 
-## 5. Daily workflow
+1. In Terminal, press **Ctrl + C**.
 
-```sh
-npm run dev                          # build features with hot reload
-npm test                             # fast, Node-based unit tests
-npm run lint && npm run build        # before every push
-npm run build && npm run preview     # check PWA, offline, and update behaviour
-```
+---
 
-Before you open a pull request:
+## Part 3: Find your way in the code
 
-- [ ] `npm run lint`, `npm test`, and `npm run build` pass.
-- [ ] New logic in a `data.ts` or `core/` file has tests beside it.
-- [ ] The UI is checked in light and dark themes and at 390px width.
-- [ ] No new dependency. If one is unavoidable, it is MIT, pinned, and `npm run licenses` passes.
-- [ ] No secrets, `innerHTML`, `any`, or `!` non-null assertions.
+| Path | What it contains |
+| --- | --- |
+| `src/main.ts` | The start of the app. It makes the layout, starts the router and sync, and registers the service worker. |
+| `src/sw.ts` | The service worker. It keeps the app files on the device, so the app works offline. |
+| `src/core/dom.ts` | `el()`, the only way to make HTML elements. |
+| `src/core/ui.ts` | Shared screen parts: buttons, fields, dialogs, messages, and empty, error, and loading states. |
+| `src/core/icons.ts` | The icons, as SVG paths. |
+| `src/core/db.ts` | The local database (IndexedDB). |
+| `src/core/repository.ts` | `createRepository()`. Each tool uses it to read and save its data. |
+| `src/core/shape.ts` | Checks that saved data has the correct type. |
+| `src/core/sync.ts` | The sync engine. It sends changes and gets changes. |
+| `src/core/api.ts` | Calls to the Worker. |
+| `src/modules/registry.ts` | The list of tools. |
+| `src/modules/<tool>/` | One tool: `timesheet`, `quotations`, `aes`, or `base64`. |
+| `src/styles/` | Colours, fonts, spacing, and the layout. |
+| `shared/` | Code that the app and the Worker both use. |
+| `worker/src/` | The Worker: routes, checks, sync, and the MongoDB connection. |
 
-## 6. Your first change: add a tool
+---
 
-This adds a UUID generator. It needs two new files and one changed line.
+## Part 4: How data moves
 
-`src/modules/uuid/module.ts`
+1. A screen calls `save()` on a repository.
+2. The repository saves the record on the device. It also adds the record to a send list (the outbox).
+3. After 2 seconds, the sync engine sends the outbox to the Worker.
+4. The Worker saves each record in MongoDB if it is newer.
+5. The Worker sends back records that changed on other devices.
+6. The app saves those records on the device.
+7. Open screens show the new data.
+
+> **NOTE:** Screens never call the network or the local database directly. They call the `data.ts` file of their tool.
+
+---
+
+## Part 5: Daily work
+
+### 5.1 Commands
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Starts the app. The page updates when you save a file. |
+| `npm test` | Runs the tests. |
+| `npm run lint` | Checks the code style. |
+| `npm run build` | Checks the types and makes the final files in `dist/`. |
+| `npm run preview` | Starts the final files with the service worker on port 4173. |
+
+### 5.2 Before you push
+
+Do all of these checks:
+
+- [ ] `npm run lint` shows no errors.
+- [ ] `npm test` shows no failed tests.
+- [ ] `npm run build` shows no errors.
+- [ ] New logic in a `data.ts` file or a `core/` file has a test file next to it.
+- [ ] You looked at the screen in the light theme and the dark theme.
+- [ ] You looked at the screen at phone width (390 pixels).
+- [ ] You added no package. If you must add one, it is MIT, and `npm run licenses` shows no error.
+- [ ] The code has no secrets, no `innerHTML`, no `any`, and no `!` after a value.
+
+---
+
+## Part 6: Your first change: add a tool
+
+This example adds a UUID tool. It makes random IDs. You make two files and change one line.
+
+### 6.1 Make the tool folder
+
+1. In the folder `src/modules/`, make a new folder with the name `uuid`.
+
+### 6.2 Make the tool description
+
+1. In the folder `src/modules/uuid/`, make the file `module.ts` with this text:
 
 ```typescript
 import type { ToolModule } from '../../core/types';
@@ -119,7 +161,9 @@ export const uuidModule: ToolModule = {
 };
 ```
 
-`src/modules/uuid/view.ts`
+### 6.3 Make the tool screen
+
+1. In the same folder, make the file `view.ts` with this text:
 
 ```typescript
 import '../tools.css';
@@ -143,46 +187,78 @@ export function mount(root: HTMLElement): Unmount {
 }
 ```
 
-`src/modules/registry.ts`: import `uuidModule` and add it to `MODULES`.
+### 6.4 Add the tool to the list
 
-The sidebar, home grid, and command palette now list the tool. Its code loads only when it is opened.
-
-**To sync data**, define a `type` and a `ShapeOf<T>` in `types.ts`, then create a repository in `data.ts`:
-
-```typescript
-export const snippets = createRepository<Snippet>('snippets_items', snippetShape);
-```
-
-Then list the collection name in `collections`. You don't need a Worker or database change. Copy the Timesheet projects view for the loading/error/data/empty pattern and the `onDataChange` subscription.
-
-## 7. Working on the Worker
-
-1. Create `worker/.dev.vars` (git-ignored):
+1. Open `src/modules/registry.ts`.
+2. Add this line below the other `import` lines:
+   ```typescript
+   import { uuidModule } from './uuid/module';
    ```
-   MONGODB_URI=mongodb+srv://user:pass@cluster.example.mongodb.net/
-   API_TOKEN=<at least 32 characters>
+3. Add `uuidModule` at the end of the `MODULES` list.
+4. Save the file.
+   **Result:** The menu, the home page, and the command palette show **UUID**.
+
+### 6.5 Save data that syncs (optional)
+
+If your tool must save data, do these steps:
+
+1. In `types.ts`, write the data type as a `type`, not an `interface`.
+2. In `types.ts`, write a `ShapeOf` object for the type.
+3. In `data.ts`, make a repository:
+   ```typescript
+   export const snippets = createRepository<Snippet>('snippets_items', snippetShape);
    ```
-2. Run `npm run worker:dev`. The Worker listens on `http://localhost:8787`.
-3. In the app, open **Settings → Sync** and enter `http://localhost:8787` and the token.
-4. Local Worker logs print in the `worker:dev` terminal. For the deployed Worker, run `npx wrangler@4.151.3 tail` in `worker/`.
+4. In `module.ts`, put the collection name in `collections`.
 
-Worker unit tests use a fake database. To test against a real MongoDB, set `MONGODB_TEST_URI` and run `worker/src/mongo/integration.test.ts` (see the README).
+You do not need to change the Worker or the database. For a full example screen, look at `src/modules/timesheet/projects-view.ts`.
 
-## 8. Common issues
+---
 
-| Problem | Fix |
+## Part 7: Run the Worker on your computer
+
+You need your **Connection string** from step 2.6 of the [Deployment Guide](deployment.md#26-copy-the-connection-string).
+
+1. In the folder `worker/`, make a file with the name `.dev.vars` and this text. Use a code editor, for example VS Code. Notepad and TextEdit can add `.txt` to the name.
+   ```
+   MONGODB_URI=YOUR_CONNECTION_STRING
+   API_TOKEN=YOUR_API_TOKEN
+   ```
+2. Replace `YOUR_CONNECTION_STRING` with your **Connection string**. Replace `YOUR_API_TOKEN` with your **API token**.
+   Example:
+   ```
+   MONGODB_URI=mongodb+srv://csb-api:Xk82mQ4pLr7TnB2v@csb-cluster.ab12c.mongodb.net/?retryWrites=true&w=majority
+   API_TOKEN=4b1e8f2a6c3d9e0f7a5b2c8d1e4f6a9b3c7d0e2f5a8b1c4d7e0f3a6b9c2d5e8f
+   ```
+3. In Terminal, type `npm run worker:dev` and press **Enter**.
+   **Result:** The Worker runs at `http://localhost:8787`.
+4. In the app, click **Settings**.
+5. In **API URL**, type `http://localhost:8787`.
+6. In **API token**, type the `API_TOKEN` value from `.dev.vars`.
+7. Click **Save and sync**.
+
+> **WARNING:** Git ignores the file `.dev.vars`. Do not rename it. Do not put its values in another file.
+
+The Worker log shows in the Terminal window where the Worker runs.
+
+---
+
+## Part 8: Fix a problem
+
+| Problem | Solution |
 | --- | --- |
-| `npm run preview` shows an old build | The service worker serves the cached version. Select **Reload** on the update banner, or in DevTools go to Application → Service workers → Unregister. |
-| Inline `<script>` or `style=""` does not work in preview | The production Content Security Policy blocks inline code. Use modules, CSS classes, or `element.style.setProperty`. |
-| ESLint: "Build DOM with el() instead of innerHTML" | Rendering HTML strings is banned. Use `el()` from `core/dom.ts`. |
-| Type error on persisted data | Persisted module data must be a `type` alias (not an `interface`) so it is assignable to `JsonObject`. |
-| A view keeps running after you navigate away | The `Unmount` you return must clear intervals and call the `onDataChange` unsubscribe. |
-| Port 5173 or 4173 is busy | Pass `--port`, for example `npm run dev -- --port 5174`. To sync from that port, add `http://localhost:5174` to `ALLOWED_ORIGINS` in `worker/wrangler.toml`. |
+| `npm run preview` shows an old version. | Click **Reload** on the update message. Or open the browser developer tools, go to **Application**, then **Service workers**, and click **Unregister**. |
+| An inline `<script>` or `style=""` does not work in preview. | The security policy blocks inline code. Use a module, a CSS class, or `element.style.setProperty()`. |
+| ESLint shows "Build DOM with el() instead of innerHTML". | Do not use HTML text. Use `el()` from `src/core/dom.ts`. |
+| TypeScript shows an error on saved data. | Write the saved data type as a `type`, not an `interface`. |
+| A screen continues to run after you leave it. | The function that `mount()` returns must stop all timers and listeners. |
+| Port 5173 or 4173 is not free. | Type `npm run dev -- --port 5174`. To sync from that port, add `http://localhost:5174` to `ALLOWED_ORIGINS` in `worker/wrangler.toml`. |
 
-## 9. Where to ask what
+---
 
-| Question | Look in |
+## Part 9: Where to find answers
+
+| Question | Where to look |
 | --- | --- |
-| How do I deploy, rotate a token, or troubleshoot sync? | [deployment.md](deployment.md) |
-| What is the rule for X? | `.claude/skills/` |
-| How does the wire protocol work? | `worker/src/mongo/*.ts` and their tests |
+| How do I deploy? How do I change a token? Why does sync fail? | [Deployment Guide](deployment.md) |
+| What is the rule for this code? | `.claude/skills/` |
+| How does the MongoDB connection work? | `worker/src/mongo/` and its test files |

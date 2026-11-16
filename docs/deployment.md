@@ -1,337 +1,769 @@
 # Deployment Guide
 
-This guide takes you from nothing to a live, syncing app. No prior cloud experience is needed. Every click is written out.
+This guide puts Cyber Swiss Blade on the internet. It also connects the app to a database, so your data syncs between your devices.
 
-- **Time:** about 45 minutes.
-- **Cost:** free. MongoDB Atlas Free cluster, Cloudflare Workers Free plan, and GitHub Pages on a public repository.
-- **Order:** 1 Database → 2 API → 3 Website → 4 Connect the app.
+You do not need cloud experience. Do the steps in order. Do one step at a time.
 
-> Cloud dashboards change their wording from time to time. If a label differs slightly, look for the closest match in the same place.
+You can do Parts 2 and 4 on the websites or in Terminal. The main steps use the websites. [Part 8](#part-8-terminal-method-optional) shows the Terminal method.
 
-## What you are building
+| | |
+| --- | --- |
+| **Time** | Approximately 45 minutes |
+| **Cost** | Free. All three services have a free plan. |
+| **You need** | A computer with Windows, macOS, or Linux. A MongoDB account, a Cloudflare account, and a GitHub account. |
 
-```
-Your phone / laptop                 Cloudflare (free)                 MongoDB Atlas (free)
-┌───────────────────────┐  HTTPS   ┌─────────────────────────┐  TLS  ┌─────────────────────┐
-│ Cyber Swiss Blade app │ ───────► │ Worker: the sync API    │ ────► │ Free cluster: data  │
-│ (from GitHub Pages)   │  token   │ holds the DB password   │       │                     │
-└───────────────────────┘          └─────────────────────────┘       └─────────────────────┘
-```
-
-The app always works offline. The Worker and database add backup and sync between your devices.
-
-## Values you will collect
-
-Open a note in your password manager now and fill this in as you go. Never paste these values into the code, chat, or a public place.
-
-| # | Value | Example | From step |
-| --- | --- | --- | --- |
-| A | Database username | `csb-api` | 1.3 |
-| B | Database password | `Xk82mQ...` | 1.3 |
-| C | Connection string | `mongodb+srv://csb-api:Xk82...@csb-cluster.ab12c.mongodb.net/?retryWrites=true&w=majority` | 1.5 |
-| D | API token | 64 random letters and digits | 2.5 |
-| E | Worker URL | `https://cyber-swiss-blade-api.yourname.workers.dev` | 2.4 |
-| F | Website URL | `https://yourname.github.io/cyber-swiss-blade/` | 3.4 |
+> **NOTE:** Websites change their button names sometimes. If a name in this guide is different on your screen, find the nearest match in the same area.
 
 ---
 
-## Part 0: Prepare your Mac
+## How to read the steps
 
-You run a few commands in **Terminal**, the text window for typing commands.
+Each step has one action. Many steps also have a result.
 
-1. Press `⌘ Space`, type `Terminal`, and press Return.
-2. Check that Node.js is installed. Type the command, then press Return:
+1. Click **Save**.
+   **Result:** A green message shows.
+
+If you do not see the result, stop. Go to [Part 7: Fix a problem](#part-7-fix-a-problem).
+
+**Bold text** is a button, a menu, or a field on the screen. `Code text` is text that you type or copy.
+
+### Keys
+
+The keys are different on each system. This guide uses the Windows names. Use this table to find your key.
+
+| This guide says | Windows | macOS | Linux |
+| --- | --- | --- | --- |
+| **Enter** | Enter | Return | Enter |
+| **Ctrl + S** (save a file) | Ctrl + S | Command + S | Ctrl + S |
+| **Ctrl + C** (stop a command in Terminal) | Ctrl + C | Ctrl + C | Ctrl + C |
+| **Paste in Terminal** | Ctrl + V, or right-click | Command + V | Ctrl + Shift + V |
+
+---
+
+## Words in this guide
+
+| Word | Meaning |
+| --- | --- |
+| Terminal | The window where you type commands. On Windows, this guide uses Command Prompt. Step 1.1 shows how to open it. |
+| Command | A line of text that you type in Terminal. Press **Enter** to run it. |
+| Repository (repo) | The project folder on GitHub. |
+| Push | Send your code from your computer to GitHub. |
+| Cluster | Your database server on MongoDB Atlas. One cluster can hold many databases. |
+| Database | A named group of data in a cluster. This app uses the database `cyber_swiss_blade`. |
+| Connection string | The address and password of the database, in one line of text. |
+| Worker | A small program on Cloudflare. It connects the app to the database. |
+| Secret | A private value that only the Worker can read. |
+| API token | A password that the app uses to talk to the Worker. |
+
+---
+
+## Values that you will collect
+
+You save six values during this guide. Save each value in a password manager. Use the name in the first column. The steps use the same names.
+
+> **WARNING:** These values give access to your data. Do not put them in the code. Do not send them in chat or email.
+
+The examples in this guide use the GitHub username `jsmith`. Use your own values. Do not use the example values.
+
+| Name | Example | Step |
+| --- | --- | --- |
+| **Database username** | `csb-api` | 2.3 |
+| **Database password** | `Xk82mQ4pLr7TnB2v` | 2.3 |
+| **Connection string** | `mongodb+srv://csb-api:Xk82mQ4pLr7TnB2v@csb-cluster.ab12c.mongodb.net/?retryWrites=true&w=majority` | 2.6 |
+| **API token** | `4b1e8f2a6c3d9e0f7a5b2c8d1e4f6a9b3c7d0e2f5a8b1c4d7e0f3a6b9c2d5e8f` | 3.6 |
+| **Worker URL** | `https://cyber-swiss-blade-api.jsmith.workers.dev` | 3.5 |
+| **Website URL** | `https://jsmith.github.io/cyber-swiss-blade/` | 4.6 |
+
+---
+
+## Part 1: Prepare your computer
+
+### 1.1 Open Terminal
+
+Do the steps for your system:
+
+| System | Steps |
+| --- | --- |
+| Windows | Press the **Windows** key. Type `cmd`. Press **Enter**. **Command Prompt** opens. |
+| macOS | Press **Command + Space**. Type `Terminal`. Press **Return**. |
+| Linux | Press **Ctrl + Alt + T**. Or open **Terminal** from the app menu. |
+
+**Result:** A window with a text prompt opens. This guide calls this window "Terminal".
+
+> **NOTE:** On Windows, use Command Prompt. Do not use PowerShell. Some commands in this guide do not work in PowerShell.
+
+### 1.2 Make sure that Node.js is installed
+
+1. In Terminal, type this command and press **Enter**:
    ```sh
    node -v
    ```
-   - If you see `v24.x.x` (or newer), continue.
-   - If you see `command not found`, go to https://nodejs.org, download the **LTS** installer for macOS, run it, then close and reopen Terminal.
-3. Check Git:
+2. Look at the result.
+   - If you see `v24` or a higher number, go to step 1.3.
+   - If you see `not found` or `not recognized`, do the next three steps.
+3. Go to https://nodejs.org.
+4. Download the **LTS** version for your system. Open the installer and follow the instructions. On Linux, follow the instructions on the download page.
+5. Close Terminal. Open it again (step 1.1). Do step 1.2 again.
+
+### 1.3 Make sure that Git is installed
+
+1. Type this command and press **Enter**:
    ```sh
    git --version
    ```
-   If macOS offers to install the **Command Line Developer Tools**, click **Install** and wait for it to finish.
-4. Go to the project folder and install its tools:
+   **Result:** You see a version, for example `git version 2.50.1`.
+2. If you do not see a version, install Git for your system:
+
+| System | Steps |
+| --- | --- |
+| Windows | Go to https://git-scm.com/downloads. Download the installer for Windows. Keep all the default options. |
+| macOS | A window asks you to install **Command Line Developer Tools**. Click **Install**. Wait until it finishes. |
+| Linux | Type `sudo apt install git` (Ubuntu or Debian) or `sudo dnf install git` (Fedora). Press **Enter**. |
+
+3. Close Terminal. Open it again (step 1.1). Do step 1.3 again.
+
+### 1.4 Go to the project folder
+
+1. Type `cd` and one space. Do not press **Enter** yet.
+2. Open your file manager. On Windows, this is **File Explorer**. On macOS, this is **Finder**.
+3. Drag the project folder `cyber-swiss-blade` into the Terminal window.
+   **Result:** Terminal shows the path of the folder after `cd`. Examples:
+
+   | System | Example |
+   | --- | --- |
+   | Windows | `cd C:\Users\jsmith\Projects\cyber-swiss-blade` |
+   | macOS | `cd /Users/jsmith/Projects/cyber-swiss-blade` |
+   | Linux | `cd /home/jsmith/projects/cyber-swiss-blade` |
+4. Press **Enter**.
+5. Type this command and press **Enter**:
    ```sh
-   cd ~/source/repos/cyber-swiss-blade
    npm ci
    ```
-   The install ends with a line like `added 128 packages`.
+   **Result:** After some seconds, you see a line like `added 128 packages`.
 
-> **Tip:** Every command block below assumes Terminal is in the project folder. If you open a new Terminal window, run the `cd` line above again.
+> **NOTE:** On Windows, the folder can be on a different drive, for example `D:`. Then type `cd /d` in step 1, not `cd`.
+
+> **NOTE:** All the commands in this guide start in this project folder. If you open a new Terminal window, do step 1.4 again.
 
 ---
 
-## Part 1: MongoDB Atlas (the database)
+## Part 2: Set up the database (MongoDB Atlas)
 
-### 1.1 Sign in and create a project
+In this part, you make a cluster, a database user, and a connection string.
+
+You do not make the database. The Worker makes the database `cyber_swiss_blade` at the first sync. It also makes the collections. To use a different name, do step 2.7.
+
+> **NOTE:** To do this part in Terminal, do step [8.2](#82-set-up-the-database-in-terminal) instead. Then go to Part 3.
+
+> **NOTE:** You can use a cluster that you have already. Then skip steps 2.1 and 2.2. In the other steps, use your project and your cluster name. Do step 2.7 to select the database.
+
+### 2.1 Make a project
 
 1. Go to https://cloud.mongodb.com and sign in.
-2. In the top navigation bar, open the **Projects** menu and select **New Project**.
-3. Name it `cyber-swiss-blade`, select **Next**, then select **Create Project**.
+2. At the top of the page, click the **Projects** menu.
+3. Click **New Project**.
+4. In the name field, type `cyber-swiss-blade`.
+5. Click **Next**.
+6. Click **Create Project**.
+   **Result:** The page of your new project opens.
 
-### 1.2 Create a free cluster
+### 2.2 Make a free cluster
 
-1. In the left sidebar, select **Project Overview**.
-2. Select **Create**.
-3. Choose the **Free** option (marked **M0** on older screens).
-4. **Provider:** keep the default, such as AWS.
-5. **Region:** pick the one nearest to you from the list. Atlas lists only regions that offer free clusters.
-6. **Name:** type `csb-cluster`. You can't change the name later.
-7. Select **Create Deployment** (or **Create**). After a few seconds, the **Security Quickstart** window appears.
+1. In the left menu, click **Project Overview**.
+2. Click **Create**.
+3. Select the **Free** option. Some screens show the name **M0**.
+4. For **Provider**, keep the default value.
+5. For **Region**, select the region that is nearest to you.
+6. In the **Name** field, type `csb-cluster`.
+7. Click **Create Deployment**. Some screens show **Create**.
+   **Result:** The **Security Quickstart** window opens.
 
-### 1.3 Create the database user (values A and B)
+### 2.3 Make the database user
 
-In the Security Quickstart window:
+Do these steps in the **Security Quickstart** window.
 
-1. **Username:** type `csb-api`. This is **value A**.
-2. **Password:** select **Autogenerate Secure Password**, then select **Copy**. Paste it into your note as **value B**. Generated passwords use only letters and digits, which is what this project needs.
-3. Select **Create Database User**.
-4. Under the IP address section, select **Add My Current IP Address**. You will open access fully in the next step.
-5. Select **Finish and Close**, then **Go to Overview**.
+1. In the **Username** field, type `csb-api`.
+2. Save `csb-api` in your password manager with the name **Database username**.
+3. Click **Autogenerate Secure Password**.
+4. Click **Copy**.
+5. Save the password in your password manager with the name **Database password**.
+6. Click **Create Database User**.
+   **Result:** The user shows in a list.
+7. Click **Add My Current IP Address**.
+8. Click **Finish and Close**.
+9. Click **Go to Overview**.
 
-**Lower the user's permissions.** The quickstart may give the user full admin rights; the app needs less.
+### 2.4 Give the user less access
 
-1. In the left sidebar, under **Security**, select **Database & Network Access**.
-2. Open the **Database Users** tab.
-3. On the `csb-api` row, select **Edit**.
-4. Under **Built-in Role**, choose **Read and write to any database**.
-5. Select **Update User**.
+The new user can change all settings. The app needs less access. Less access is safer.
 
-### 1.4 Let Cloudflare reach the database
+1. In the left menu, under **Security**, click **Database & Network Access**.
+2. Click the **Database Users** tab.
+3. On the `csb-api` row, click **Edit**.
+4. Find **Built-in Role**. Select **Read and write to any database**.
+5. Click **Update User**.
+   **Result:** The `csb-api` row shows the new role.
 
-Cloudflare Workers connect from changing IP addresses, so the database must accept connections from any address. The strong password from 1.3 and encrypted connections protect it.
+### 2.5 Let Cloudflare connect to the database
 
-1. In the left sidebar, under **Security**, select **Database & Network Access**.
-2. In the inner left menu, under **Network Access**, select **IP Access List**.
-3. Select **Add IP Address**.
-4. Select **Allow Access from Anywhere**, or type `0.0.0.0/0` in the address field.
-5. **Comment:** type `Cloudflare Worker`.
-6. Select **Confirm**.
+Cloudflare uses many different addresses. Thus, the database must accept all addresses. Your strong password keeps the database safe.
 
-The status shows **Pending** for about a minute, then **Active**. Atlas emails you a security warning about this entry; that is expected.
+1. In the left menu, under **Security**, click **Database & Network Access**.
+2. In the second menu, under **Network Access**, click **IP Access List**.
+3. Click **Add IP Address**.
+4. Click **Allow Access from Anywhere**.
+   **Result:** The field shows `0.0.0.0/0`.
+5. In the **Comment** field, type `Cloudflare Worker`.
+6. Click **Confirm**.
+   **Result:** The new row shows **Pending**. After approximately one minute, it shows **Active**.
 
-### 1.5 Copy the connection string (value C)
+> **NOTE:** MongoDB sends you an email about this change. This is normal.
 
-1. In the left sidebar, under **Database**, select **Clusters**.
-2. On `csb-cluster`, select **Connect**.
-3. Select **Drivers**. Ignore the driver and version dropdowns; they don't change the string.
-4. Under **Add your connection string into your application code**, select the copy icon. The string looks like this:
-   ```
-   mongodb+srv://csb-api:<db_password>@csb-cluster.ab12c.mongodb.net/?retryWrites=true&w=majority&appName=csb-cluster
-   ```
-5. Paste it into your note. Replace `<db_password>`, including the angle brackets, with **value B**.
-6. This complete string is **value C**. Select **Close**.
+### 2.6 Copy the connection string
 
-> **If you chose your own password:** encode these characters in the connection string: `@` → `%40`, `:` → `%3A`, `/` → `%2F`, `?` → `%3F`, `#` → `%23`, `%` → `%25`. Autogenerated passwords never need this.
+1. In the left menu, under **Database**, click **Clusters**.
+2. On the `csb-cluster` card, click **Connect**.
+3. Click **Drivers**.
+4. Find the step **Add your connection string into your application code**.
+5. Click the copy icon next to the text that starts with `mongodb+srv://`.
+6. Save the text in your password manager with the name **Connection string**.
+7. Find `<db_password>` in the text. Replace it with your **Database password**. Remove the `<` and `>` signs.
+   - Before: `mongodb+srv://csb-api:<db_password>@csb-cluster.ab12c.mongodb.net/?retryWrites=true&w=majority`
+   - After: `mongodb+srv://csb-api:Xk82mQ4pLr7TnB2v@csb-cluster.ab12c.mongodb.net/?retryWrites=true&w=majority`
+8. Save the changed text.
+9. Click **Close**.
+
+> **CAUTION:** If you typed your own password, it can contain special characters. Replace them in the connection string with this table. Generated passwords do not have these characters.
+>
+> | Character | Replace with |
+> | --- | --- |
+> | `@` | `%40` |
+> | `:` | `%3A` |
+> | `/` | `%2F` |
+> | `?` | `%3F` |
+> | `#` | `%23` |
+> | `%` | `%25` |
+
+### 2.7 Select the database name (optional)
+
+The Worker uses the database `cyber_swiss_blade`. It makes this database at the first sync. You do not make it yourself.
+
+To use a different database, change the Worker settings file. Do not change your **Connection string**.
+
+1. In your file manager, open the project folder `cyber-swiss-blade`, then the folder `worker`.
+2. Open the file `wrangler.toml` in a text editor.
+3. Find the line that starts with `MONGODB_DB`.
+4. Change `cyber_swiss_blade` to your database name. Keep the `"` signs.
+   - Before: `MONGODB_DB = "cyber_swiss_blade"`
+   - After (example for the database `my_tools`): `MONGODB_DB = "my_tools"`
+5. Press **Ctrl + S** to save. Close the text editor.
+   **Result:** In step 3.8, the Worker shows `"database":"my_tools"`.
+
+**Terminal method:** In the project folder, type this command. Replace `my_tools` with your database name. Press **Enter**.
+```sh
+node -e "const fs=require('fs');const f='worker/wrangler.toml';fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace('cyber_swiss_blade','my_tools'))"
+```
+
+> **CAUTION:** Use a database only for this app. The app makes collections with names like `timesheet_projects` and `quotation_quotes`. Another app can use the same names.
+
+> **NOTE:** If you change the name after step 3.5, type `npm run worker:deploy`. The Worker uses the new name after this command.
+
+To give the user access to only this database, change step 2.4:
+1. On the `csb-api` row, click **Edit**.
+2. Remove the built-in role.
+3. Click **Add Specific Privilege**.
+4. Select the role `readWrite`. In the **Database** field, type the database name, for example `my_tools`.
+5. Click **Update User**.
 
 ---
 
-## Part 2: Cloudflare Worker (the API)
+## Part 3: Set up the API (Cloudflare Worker)
 
-### 2.1 Sign in and choose your workers.dev address
+### 3.1 Sign in to Cloudflare
 
-1. Go to https://dash.cloudflare.com and sign in. Verify your email address if Cloudflare asks; deploying requires it.
-2. In the left sidebar, select **Workers & Pages**. If Cloudflare offers a "Get started" screen, skip it; you deploy from Terminal.
-3. Find **Your subdomain** on the right side of the page. If none is set, select **Change** (or **Set up**), type a name such as your username, and save. Your Worker address will be `https://cyber-swiss-blade-api.<subdomain>.workers.dev`.
+1. Go to https://dash.cloudflare.com and sign in.
+2. If Cloudflare asks you to verify your email address, do it now. You cannot deploy without it.
 
-### 2.2 Tell the API which website may use it
+### 3.2 Get your workers.dev name
 
-The API accepts requests only from your own website.
+1. In the left menu, click **Workers & Pages**.
+2. If you see a **Get started** page, close it. You use Terminal for the next steps.
+3. On the right side, find **Your subdomain**.
+4. If no name shows, click **Change**. Type a name, for example your username. Click **Save**.
+   **Result:** Your Worker address will be `https://cyber-swiss-blade-api.YOUR-SUBDOMAIN.workers.dev`.
+   Example: for the name `jsmith`, the address is `https://cyber-swiss-blade-api.jsmith.workers.dev`.
 
-1. Open `worker/wrangler.toml` in any text editor, such as TextEdit.
-2. Find the line starting with `ALLOWED_ORIGINS`.
-3. Replace `tshego3` with **your GitHub username in lowercase**. Keep the two `localhost` entries:
-   ```toml
-   ALLOWED_ORIGINS = "https://yourname.github.io,http://localhost:5173,http://localhost:4173"
+### 3.3 Write your website address in the Worker settings
+
+The Worker accepts requests only from your website. You must tell it your website address.
+
+> **NOTE:** To do this step in Terminal, do step [8.3](#83-write-your-website-address-in-terminal) instead.
+
+1. In your file manager, open the project folder `cyber-swiss-blade`.
+2. Open the folder `worker`.
+3. Right-click the file `wrangler.toml`. Open it with a text editor, for example VS Code, Notepad, or TextEdit.
+4. Find the line that starts with `ALLOWED_ORIGINS`.
+5. Change `tshego3` to your GitHub username. Use lowercase letters. Do not change other text.
+   - Before:
+     ```toml
+     ALLOWED_ORIGINS = "https://tshego3.github.io,http://localhost:5173,http://localhost:4173"
+     ```
+   - After (example for `jsmith`):
+     ```toml
+     ALLOWED_ORIGINS = "https://jsmith.github.io,http://localhost:5173,http://localhost:4173"
+     ```
+6. Press **Ctrl + S** to save.
+7. Close the text editor.
+
+> **NOTE:** If your GitHub username is `tshego3`, do not change this line.
+
+### 3.4 Connect Terminal to your Cloudflare account
+
+1. In Terminal, type these commands. Press **Enter** after each line.
+   ```sh
+   cd worker
+   npx wrangler@4.151.3 login
    ```
-   Use only the scheme and host, with no path and no trailing slash.
-4. Save the file.
+2. If Terminal asks `Ok to proceed? (y)`, type `y` and press **Enter**.
+   **Result:** Your browser opens a Cloudflare page.
+3. In the browser, click **Allow**.
+   **Result:** Terminal shows `Successfully logged in`.
 
-### 2.3 Log Wrangler in to your Cloudflare account
+### 3.5 Deploy the Worker
 
-Wrangler is Cloudflare's command-line tool. `npx` downloads it the first time you use it.
+1. Type this command and press **Enter**:
+   ```sh
+   npx wrangler@4.151.3 deploy
+   ```
+2. If Terminal asks to register a workers.dev subdomain, type `y`. Then type a name and press **Enter**.
+   **Result:** The last lines show an address that starts with `https://cyber-swiss-blade-api`.
+   Example: `https://cyber-swiss-blade-api.jsmith.workers.dev`
+3. Save this address in your password manager with the name **Worker URL**.
 
-```sh
-cd worker
-npx wrangler@4.151.3 login
-```
+> **NOTE:** The Worker is online now. It cannot use the database yet. The next steps add the secrets.
 
-1. A browser tab opens. Select **Allow**.
-2. Back in Terminal, the message `Successfully logged in` appears.
+### 3.6 Make the API token
 
-### 2.4 Deploy the Worker (value E)
+1. Type this command and press **Enter**:
+   ```sh
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+   **Result:** Terminal shows a line of 64 letters and digits.
+   Example: `4b1e8f2a6c3d9e0f7a5b2c8d1e4f6a9b3c7d0e2f5a8b1c4d7e0f3a6b9c2d5e8f`
+2. Save this line in your password manager with the name **API token**.
 
-```sh
-npx wrangler@4.151.3 deploy
-```
+### 3.7 Add the two secrets to the Worker
 
-- If Wrangler asks to register a workers.dev subdomain, answer `y` and pick a name.
-- The output ends with a URL such as `https://cyber-swiss-blade-api.yourname.workers.dev`. That is **value E**.
+1. Type this command and press **Enter**:
+   ```sh
+   npx wrangler@4.151.3 secret put MONGODB_URI
+   ```
+   **Result:** Terminal shows `Enter a secret value:`.
+2. Paste your **Connection string**. Press **Enter**.
+   **Result:** Terminal shows `Success! Uploaded secret MONGODB_URI`.
+3. Type this command and press **Enter**:
+   ```sh
+   npx wrangler@4.151.3 secret put API_TOKEN
+   ```
+4. Paste your **API token**. Press **Enter**.
+   **Result:** Terminal shows `Success! Uploaded secret API_TOKEN`.
 
-The Worker runs but can't reach the database yet, because it has no secrets.
+> **NOTE:** When you paste a secret, Terminal does not show it. This is normal.
 
-### 2.5 Add the two secrets (value D)
+**Other method:** You can also add the secrets in the Cloudflare dashboard:
+1. Click **Workers & Pages**. On the **Overview** tab, click **cyber-swiss-blade-api**.
+2. Click **Settings**.
+3. Find **Variables and Secrets**. Click **Add**.
+4. For **Type**, select **Secret**. For **Variable name**, type `MONGODB_URI`. For **Value**, paste your **Connection string**.
+5. Click **Add variable**. Add `API_TOKEN` with your **API token** in the same way.
+6. Click **Deploy**.
 
-**First, create the API token.** It is the password your app uses to talk to the API.
+### 3.8 Test the Worker
 
-```sh
-openssl rand -hex 32
-```
+1. Type this command, but do not press **Enter** yet:
+   ```sh
+   curl -H "Authorization: Bearer YOUR_API_TOKEN" YOUR_WORKER_URL/status
+   ```
+2. Replace `YOUR_API_TOKEN` with your **API token**. Replace `YOUR_WORKER_URL` with your **Worker URL**.
+   Example:
+   ```sh
+   curl -H "Authorization: Bearer 4b1e8f2a6c3d9e0f7a5b2c8d1e4f6a9b3c7d0e2f5a8b1c4d7e0f3a6b9c2d5e8f" https://cyber-swiss-blade-api.jsmith.workers.dev/status
+   ```
+3. Press **Enter**.
+4. Compare the result with this table.
 
-Copy the 64-character output into your note. This is **value D**.
+| You see | What it means | What to do |
+| --- | --- | --- |
+| `{"ok":true,"database":"cyber_swiss_blade",...}` | The Worker and the database work. The name is your database name (step 2.7). | Go to step 3.9. |
+| `{"error":"Unauthorized."}` | The token is wrong. | Do step 3.7 again for `API_TOKEN`. |
+| `{"error":"The sync server could not complete the request."}` | The Worker cannot connect to the database. | Make sure that step 2.5 shows **Active**. Make sure that your **Connection string** has no `<db_password>` text. Then do step 3.7 again for `MONGODB_URI`. |
+| `Could not resolve host` | The address is wrong. | Look for a typing error in your **Worker URL**. |
 
-**Then store both secrets in Cloudflare.** Each command asks `Enter a secret value:`. Paste the value and press Return. Nothing appears while you paste; that is normal.
+### 3.9 Go back to the project folder
 
-```sh
-npx wrangler@4.151.3 secret put MONGODB_URI
-npx wrangler@4.151.3 secret put API_TOKEN
-```
-
-- For `MONGODB_URI`, paste **value C**.
-- For `API_TOKEN`, paste **value D**.
-- Each command prints `Success! Uploaded secret ...` and deploys the change automatically.
-
-<details>
-<summary>Prefer the dashboard? Add the secrets by clicking instead</summary>
-
-1. Go to **Workers & Pages**, and on the **Overview** tab select **cyber-swiss-blade-api**.
-2. Open **Settings**.
-3. Under **Variables and Secrets**, select **Add**.
-4. **Type:** Secret. **Variable name:** `MONGODB_URI`. **Value:** value C.
-5. Select **Add variable**, then add `API_TOKEN` with value D the same way.
-6. Select **Deploy**.
-
-</details>
-
-### 2.6 Test the API
-
-Replace the two placeholders, then run:
-
-```sh
-curl -H "Authorization: Bearer VALUE_D" https://VALUE_E/status
-```
-
-| You see | Meaning |
-| --- | --- |
-| `{"ok":true,"database":"cyber_swiss_blade",...}` | Everything works. Continue. |
-| `{"error":"Unauthorized."}` | The token doesn't match. Run `secret put API_TOKEN` again. |
-| `{"error":"The sync server could not complete the request."}` | The Worker can't reach Atlas. Check 1.4 (Active entry) and value C (password filled in). See [Reading the logs](#reading-the-logs). |
-| `Could not resolve host` | Check value E for typos. |
-
-Go back to the project folder:
-
-```sh
-cd ..
-```
+1. Type this command and press **Enter**:
+   ```sh
+   cd ..
+   ```
 
 ---
 
-## Part 3: GitHub Pages (the website)
+## Part 4: Put the website online (GitHub Pages)
 
-### 3.1 Create the repository
+> **NOTE:** To do this part in Terminal, do step [8.4](#84-put-the-website-online-in-terminal) instead. Then go to Part 5.
+
+### 4.1 Make the repository
 
 1. Go to https://github.com and sign in.
-2. Select **+** in the top-right corner, then **New repository**.
-3. **Repository name:** `cyber-swiss-blade`. The site address depends on this exact name.
-4. Select **Public**. Free GitHub Pages requires a public repository; your data is never in the repository.
-5. Leave **Add a README**, **.gitignore**, and **license** unchecked; the project already has them.
-6. Select **Create repository**.
+2. In the top-right corner, click **+**.
+3. Click **New repository**.
+4. In **Repository name**, type `cyber-swiss-blade`. Use this exact name.
+5. Select **Public**.
+6. Do not select **Add a README**, **.gitignore**, or **license**. The project has them already.
+7. Click **Create repository**.
+   **Result:** An empty repository page opens.
 
-### 3.2 Turn on Pages with GitHub Actions
+> **NOTE:** Free GitHub Pages needs a public repository. Your app data does not go into the repository. Only the code goes there.
 
-1. In the new repository, select **Settings**. If you don't see it, open the **⋯** menu.
-2. In the left sidebar, under **Code, planning, and automation**, select **Pages**.
-3. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+### 4.2 Set the website source
 
-You don't need to pick a template. The project already contains the workflow.
+1. On the repository page, click **Settings**. If you cannot see it, click **⋯** first.
+2. In the left menu, under **Code, planning, and automation**, click **Pages**.
+3. Find **Build and deployment**.
+4. In the **Source** list, select **GitHub Actions**.
 
-### 3.3 Create a token for pushing code
+> **CAUTION:** Do not select **Deploy from a branch**. Do not use the `npx gh-pages` command. These two methods show a blank page for this project.
 
-GitHub doesn't accept your account password in Terminal. It needs a personal access token.
+### 4.3 Let GitHub Actions run
 
-1. Select your profile picture (top right), then **Settings**.
-2. In the left sidebar, at the bottom, select **Developer settings**.
-3. Select **Personal access tokens**, then **Tokens (classic)**.
-4. Select **Generate new token**, then **Generate new token (classic)**.
-5. **Note:** `cyber-swiss-blade push`. **Expiration:** 90 days, or your choice.
-6. Tick **repo** and **workflow**. **workflow** is required, because the project includes a deployment workflow file.
-7. Select **Generate token** and copy it. GitHub shows it only once.
+1. On the repository page, click **Settings**.
+2. In the left menu, click **Actions**, then **General**.
+3. Under **Actions permissions**, select **Allow all actions and reusable workflows**.
+4. Click **Save**.
 
-### 3.4 Push the code (value F)
+### 4.4 Make a token to push code
 
-Commit your work if you haven't yet, then connect and push. Replace `yourname`.
+GitHub does not accept your account password in Terminal. You must make a token.
 
-```sh
-git remote add origin https://github.com/yourname/cyber-swiss-blade.git
-git push -u origin main
-```
+1. In the top-right corner, click your profile picture.
+2. Click **Settings**.
+3. In the left menu, at the bottom, click **Developer settings**.
+4. Click **Personal access tokens**, then **Tokens (classic)**.
+5. Click **Generate new token**, then **Generate new token (classic)**.
+6. In **Note**, type `cyber-swiss-blade push`.
+7. In **Expiration**, select **90 days**.
+8. Select the **repo** box.
+9. Select the **workflow** box.
+10. Click **Generate token**.
+11. Copy the token to your password manager. GitHub shows it only one time.
 
-When Terminal asks:
-- **Username:** your GitHub username.
-- **Password:** the token from 3.3. Nothing appears while you paste.
+> **NOTE:** The **workflow** box is necessary. Without it, GitHub rejects the push.
 
-Watch the deployment:
+### 4.5 Push the code
 
-1. In the repository, open the **Actions** tab.
-2. Select the run named **Deploy to GitHub Pages**. It shows a yellow dot while running.
-3. After about two minutes, both jobs, **build** and **deploy**, show green ticks.
-4. The **deploy** job shows your site address, `https://yourname.github.io/cyber-swiss-blade/`. That is **value F**.
+1. Type these commands. Press **Enter** after each line. Replace `yourname` with your GitHub username.
+   ```sh
+   git add -A
+   git commit -m "Set up deployment"
+   git remote add origin https://github.com/yourname/cyber-swiss-blade.git
+   git push -u origin main
+   ```
+   Example of the third line: `git remote add origin https://github.com/jsmith/cyber-swiss-blade.git`
+2. If a GitHub sign-in window opens, click **Sign in with your browser**. Follow the steps in the browser.
+3. If Terminal asks for **Username**, type your GitHub username. Press **Enter**.
+4. If Terminal asks for **Password**, paste the token from step 4.4. Press **Enter**.
+   **Result:** Terminal shows `main -> main`.
 
-If the run shows a red cross, select it, open the failed step, and read the last lines. The usual fix is redoing step 3.2.
+> **NOTE:** If Terminal shows `nothing to commit`, that is correct. Continue.
+> If Terminal shows `remote origin already exists`, that is also correct. Continue.
+
+### 4.6 Wait for the deployment
+
+1. On the repository page, click the **Actions** tab.
+2. Click the newest run with the name **Deploy to GitHub Pages**.
+   **Result:** You see two jobs: **build** and **deploy**. A yellow dot shows that a job runs.
+3. Wait approximately two minutes.
+   **Result:** Both jobs show a green tick.
+4. Click the **deploy** job. Find the website address.
+   Example: `https://jsmith.github.io/cyber-swiss-blade/`
+5. Save the address in your password manager with the name **Website URL**.
+6. Open your **Website URL** in your browser.
+   **Result:** The app opens.
+
+If you do not see a run, do these steps:
+1. Click **Deploy to GitHub Pages** in the left list.
+2. Click **Run workflow**.
+3. Select the branch `main`.
+4. Click the green **Run workflow** button.
 
 ---
 
-## Part 4: Connect the app
+## Part 5: Connect the app to the Worker
 
-1. Open **value F** in your browser.
-2. In the left sidebar, select **Settings**. On a phone, tap **☰** first.
-3. Under **Sync**:
-   - **API URL:** value E.
-   - **API token:** value D.
-4. Select **Save and sync**. The message **Connected to cyber_swiss_blade** appears, and the sidebar shows **Synced just now**.
+### 5.1 Enter the sync settings
 
-**Install it as an app:**
-- **Chrome or Edge on a computer:** select the install icon at the right of the address bar, then **Install**.
-- **iPhone (Safari):** tap **Share**, then **Add to Home Screen**.
-- **Android (Chrome):** tap **⋮**, then **Add to Home screen** (or **Install app**).
+1. Open your **Website URL** in your browser.
+2. In the left menu of the app, click **Settings**. On a phone, tap **☰** first.
+3. In **API URL**, paste your **Worker URL**. Example: `https://cyber-swiss-blade-api.jsmith.workers.dev`
+4. In **API token**, paste your **API token**. Example: a line of 64 letters and digits.
+5. Click **Save and sync**.
+   **Result:** A message shows **Connected to cyber_swiss_blade**, or your database name from step 2.7. The menu shows **Synced just now**.
 
-**Add another device:** open value F there and repeat steps 2 to 4. Both devices then sync through the same database.
+### 5.2 Install the app (optional)
 
-### Check your data in Atlas (optional)
-
-1. In Atlas, in the left sidebar under **Database**, select **Clusters**.
-2. On `csb-cluster`, select **Browse Collections**. Newer screens may call it **Data Explorer**.
-3. Open the `cyber_swiss_blade` database. Each table in the app, such as `timesheet_projects`, appears after its first sync.
-
----
-
-## Updating later
-
-| You want to | Do this | Then |
-| --- | --- | --- |
-| Ship app changes | `git push` | The Actions run redeploys. Open apps show **A new version is ready**; select **Reload**. |
-| Ship API changes | `npm run worker:deploy` | Live in seconds. |
-| Change the API token | `cd worker`, then `npx wrangler@4.151.3 secret put API_TOKEN` | Enter the new token in **Settings → Sync** on every device. |
-| Change the database password | In Atlas, go to **Database & Network Access → Database Users → Edit → Edit Password**, rebuild value C, then `secret put MONGODB_URI`. | No app change is needed. |
-| Move to a new database | `secret put MONGODB_URI` with the new string | In the app, select **Disconnect**, then connect again so each device uploads its data. |
-
-## Reading the logs
-
-When sync fails, the Worker log says why.
-
-- **Terminal:** run `cd worker`, then `npx wrangler@4.151.3 tail`. Use the app, then watch the lines appear. Press `Ctrl C` to stop.
-- **Dashboard:** go to **Workers & Pages**, select **cyber-swiss-blade-api**, then **Logs**, then **Live**.
-
-## Troubleshooting
-
-| Symptom | What to check |
+| Device | Steps |
 | --- | --- |
-| Settings shows "The API token was rejected." | The token in the app must equal `API_TOKEN` exactly. Paste it again, with no spaces. |
-| Settings shows "Network error." | Check value E. Also check that `ALLOWED_ORIGINS` (step 2.2) contains `https://yourname.github.io` exactly, then run `npm run worker:deploy` again. |
-| "The sync server could not complete the request." | Read the logs. The usual causes are an IP access list entry not yet **Active**, `<db_password>` still in value C, or a password with unencoded symbols. |
-| The cluster shows as **Paused** in Atlas | Select **Resume** on the cluster card. |
-| The website shows a blank page or 404 | The repository name must be exactly `cyber-swiss-blade`. Otherwise, update `BASE` in `vite.config.ts` and the paths in `public/manifest.webmanifest`. |
-| `git push` is rejected for workflow files | The token is missing the **workflow** scope. Create a new token (step 3.3). |
-| The app still shows an old version | Select **Reload** on the update banner, or close every tab of the app and open it again. |
-| No install option in the browser | Open the site over `https://` (value F), not a local file. |
+| Computer (Chrome or Edge) | Click the install icon at the right side of the address bar. Click **Install**. |
+| iPhone or iPad (Safari) | Tap **Share**. Tap **Add to Home Screen**. Tap **Add**. |
+| Android (Chrome) | Tap **⋮**. Tap **Install app** or **Add to Home screen**. |
+
+### 5.3 Add another device
+
+1. On the other device, open your **Website URL**.
+2. Do step 5.1 again.
+   **Result:** Both devices show the same data.
+
+### 5.4 See your data in MongoDB (optional)
+
+1. In MongoDB Atlas, in the left menu, under **Database**, click **Clusters**.
+2. On the `csb-cluster` card, click **Browse Collections**. Some screens show **Data Explorer**.
+3. Click the database `cyber_swiss_blade`, or your database name from step 2.7.
+   **Result:** You see one collection for each type of data, for example `timesheet_projects`.
+
+---
+
+## Part 6: Make changes later
+
+| Task | Steps | Result |
+| --- | --- | --- |
+| Change the app | Do step 4.5 (only `git add`, `git commit`, and `git push`). | GitHub deploys the new version. The app shows **A new version is ready**. Click **Reload**. |
+| Change the Worker | In Terminal, type `npm run worker:deploy`. | The new Worker is online after some seconds. |
+| Change the API token | Do steps 3.6 and 3.7 (only `API_TOKEN`). Then do step 5.1 on each device. | The old token stops working. |
+| Change the database password | In Atlas, go to **Database & Network Access**, then **Database Users**. Click **Edit**, then **Edit Password**. Make a new **Connection string** (step 2.6). Do step 3.7 (only `MONGODB_URI`). | The app continues to work. |
+| Use a new database | For a different cluster, make a new **Connection string** and do step 3.7 (only `MONGODB_URI`). For a different name, do step 2.7. Type `npm run worker:deploy`. In the app, click **Settings**, then **Disconnect**. Then do step 5.1. | Each device sends its data to the new database. |
+
+---
+
+## Part 7: Fix a problem
+
+### 7.1 Read the Worker log
+
+The Worker log tells you why sync failed.
+
+**In Terminal:**
+1. Type `cd worker` and press **Enter**.
+2. Type `npx wrangler@4.151.3 tail` and press **Enter**.
+3. Use the app. Look at the new lines in Terminal.
+4. Press **Ctrl + C** to stop.
+
+**In the Cloudflare dashboard:**
+1. Click **Workers & Pages**.
+2. Click **cyber-swiss-blade-api**.
+3. Click **Logs**.
+4. Click **Live**.
+
+### 7.2 Problems and solutions
+
+| Problem | Solution |
+| --- | --- |
+| On Windows, `npm` or `curl` shows a red error about scripts or parameters. | You use PowerShell. Open Command Prompt (step 1.1). Do step 1.4 again. |
+| `git commit` shows `Please tell me who you are`. | Type `git config --global user.name "Your Name"` and press **Enter**. Type `git config --global user.email "you@example.com"` and press **Enter**. Do step 4.5 again. |
+| The website is blank. | Right-click the page. Click **View Page Source**. If you see `/src/main.ts`, the website source is wrong. Do steps 4.2 and 4.3. Then do the "If you do not see a run" steps in 4.6. |
+| The **Actions** tab shows no run. | Do step 4.3. Then do the "If you do not see a run" steps in 4.6. |
+| The **Actions** run shows a red cross. | Click the run. Click the failed job. Read the last lines. Make sure that step 4.2 shows **GitHub Actions**. |
+| `git push` fails with a message about `workflow`. | Your token has no **workflow** access. Do step 4.4 again. Select **workflow**. |
+| The app shows "The API token was rejected." | The token in the app is different from the Worker token. Do step 5.1 again. Paste your **API token** carefully. |
+| The app shows "Network error." | Make sure that your **Worker URL** is correct. Make sure that step 3.3 has your GitHub username. Then type `npm run worker:deploy`. |
+| The app shows "The sync server could not complete the request." | Read the Worker log (7.1). Make sure that step 2.5 shows **Active**. Make sure that your **Connection string** has the password and no `<db_password>` text. |
+| Atlas shows the cluster as **Paused**. | Click **Resume** on the cluster card. |
+| The website shows 404 errors. | The repository name must be `cyber-swiss-blade`. Use this name, or ask a developer to change `BASE` in `vite.config.ts`. |
+| The app shows an old version. | Click **Reload** on the update message. Or close all tabs of the app and open it again. |
+| The browser does not show an install option. | Open your **Website URL**. The address must start with `https://`. |
+
+---
+
+## Part 8: Terminal method (optional)
+
+This part does the website steps with commands. The result is the same as Parts 2 and 4.
+
+> **NOTE:** Each service still opens your browser one time. You sign in there and approve Terminal.
+
+### 8.1 Install the command tools
+
+You need two more tools. They stay on your computer. They do not go into the app.
+
+| Tool | What it controls | Licence |
+| --- | --- | --- |
+| Atlas CLI (`atlas`) | MongoDB Atlas | Apache-2.0 |
+| GitHub CLI (`gh`) | GitHub | MIT |
+
+1. Do the steps for your system:
+
+| System | Steps |
+| --- | --- |
+| Windows | Type `winget install MongoDB.MongoDBAtlasCLI` and press **Enter**. Then type `winget install GitHub.cli` and press **Enter**. |
+| macOS | Install Homebrew from https://brew.sh. Then type `brew install mongodb-atlas gh` and press **Enter**. |
+| Linux | Follow https://www.mongodb.com/docs/atlas/cli/current/install-atlas-cli/. Then follow https://github.com/cli/cli#installation. |
+
+2. Close Terminal. Open it again (step 1.1). Do step 1.4 again.
+3. Type `atlas --version` and press **Enter**.
+   **Result:** You see a version.
+4. Type `gh --version` and press **Enter**.
+   **Result:** You see a version.
+
+### 8.2 Set up the database in Terminal
+
+This step replaces steps 2.1 to 2.6.
+
+1. Type this command and press **Enter**:
+   ```sh
+   atlas auth login
+   ```
+   **Result:** Your browser opens an Atlas page.
+2. Sign in. Follow the steps in the browser.
+3. If Terminal asks questions about default values, press **Enter** for each question.
+   **Result:** Terminal shows that you are logged in.
+4. Type this command and press **Enter**:
+   ```sh
+   atlas projects create cyber-swiss-blade
+   ```
+   **Result:** Terminal shows `Project '...' created.` The text between the `'` signs is the project ID.
+   Example: `Project '6745f1c2a8b3d40012e5f7a9' created.`
+5. Type this command and press **Enter**. Replace `YOUR_PROJECT_ID` with the project ID.
+   ```sh
+   atlas config set project_id YOUR_PROJECT_ID
+   ```
+   Example: `atlas config set project_id 6745f1c2a8b3d40012e5f7a9`
+6. Type this command and press **Enter**:
+   ```sh
+   atlas clusters create csb-cluster --provider AWS --region US_EAST_1 --tier M0
+   ```
+7. Type this command and press **Enter**:
+   ```sh
+   atlas clusters watch csb-cluster
+   ```
+   **Result:** After some minutes, Terminal shows `Cluster available.`
+8. Type this command and press **Enter**:
+   ```sh
+   node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
+   ```
+   **Result:** Terminal shows a line of 48 letters and digits.
+   Example: `9f2c4e6a8b0d1f3e5a7c9b1d3f5e7a9c2b4d6f8e0a1c3e5b`
+9. Save this line in your password manager with the name **Database password**.
+10. Save `csb-api` in your password manager with the name **Database username**.
+11. Type this command. Replace `YOUR_DATABASE_PASSWORD` with your **Database password**. Press **Enter**.
+    ```sh
+    atlas dbusers create readWriteAnyDatabase --username csb-api --password YOUR_DATABASE_PASSWORD
+    ```
+    Example: `atlas dbusers create readWriteAnyDatabase --username csb-api --password 9f2c4e6a8b0d1f3e5a7c9b1d3f5e7a9c2b4d6f8e0a1c3e5b`
+12. Type this command and press **Enter**:
+    ```sh
+    atlas accessLists create 0.0.0.0/0 --type cidrBlock --comment "Cloudflare Worker"
+    ```
+    **Result:** Terminal shows `Created a new IP access list.`
+13. Type this command and press **Enter**:
+    ```sh
+    atlas clusters connectionStrings describe csb-cluster
+    ```
+    **Result:** Terminal shows an address that starts with `mongodb+srv://`.
+    Example: `mongodb+srv://csb-cluster.ab12c.mongodb.net`
+14. Make your connection string from this address. Put `csb-api:`, your **Database password**, and `@` after `mongodb+srv://`. Put `/` at the end.
+    - Before: `mongodb+srv://csb-cluster.ab12c.mongodb.net`
+    - After: `mongodb+srv://csb-api:9f2c4e6a8b0d1f3e5a7c9b1d3f5e7a9c2b4d6f8e0a1c3e5b@csb-cluster.ab12c.mongodb.net/`
+15. Save the result in your password manager with the name **Connection string**.
+    To use a database name other than `cyber_swiss_blade`, do step 2.7 now.
+16. Go to Part 3.
+
+> **NOTE:** `US_EAST_1` is in the USA. You can use a region nearer to you, for example `EU_WEST_1` (Ireland).
+
+> **CAUTION:** Terminal keeps a history of your commands. Thus, the history contains your database password. On a shared computer, use the website method (Part 2).
+
+### 8.3 Write your website address in Terminal
+
+This step replaces step 3.3.
+
+1. Type this command, but do not press **Enter** yet:
+   ```sh
+   node -e "const fs=require('fs');const f='worker/wrangler.toml';fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace('tshego3','yourname'))"
+   ```
+2. Replace `yourname` with your GitHub username. Use lowercase letters.
+   Example:
+   ```sh
+   node -e "const fs=require('fs');const f='worker/wrangler.toml';fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace('tshego3','jsmith'))"
+   ```
+3. Press **Enter**.
+   **Result:** Terminal shows no message. This is correct.
+
+> **NOTE:** If your GitHub username is `tshego3`, do not do this step.
+
+### 8.4 Put the website online in Terminal
+
+This step replaces steps 4.1 to 4.6. In all the commands, replace `yourname` with your GitHub username. For example, `repos/yourname/cyber-swiss-blade` becomes `repos/jsmith/cyber-swiss-blade`.
+
+1. Type this command and press **Enter**:
+   ```sh
+   gh auth login --scopes workflow
+   ```
+2. Terminal asks some questions. Use the arrow keys and **Enter** to select these answers:
+   - **GitHub.com**
+   - **HTTPS**
+   - **Yes** (authenticate Git with your GitHub credentials)
+   - **Login with a web browser**
+3. Copy the code that Terminal shows. Press **Enter**.
+   Example: `! First copy your one-time code: A1B2-C3D4`
+   **Result:** Your browser opens a GitHub page.
+4. Paste the code. Click **Continue**, then **Authorize**.
+   **Result:** Terminal shows `Logged in as yourname`. Example: `Logged in as jsmith`.
+5. Make the repository. Type this command and press **Enter**:
+   ```sh
+   gh repo create cyber-swiss-blade --public
+   ```
+6. Set the website source to GitHub Actions. Type this command and press **Enter**:
+   ```sh
+   gh api -X POST repos/yourname/cyber-swiss-blade/pages -f build_type=workflow
+   ```
+   **Result:** Terminal shows text that contains `"build_type": "workflow"`.
+   Example command: `gh api -X POST repos/jsmith/cyber-swiss-blade/pages -f build_type=workflow`
+7. If Terminal shows `409`, the website exists already. Type the same command with `PUT`, not `POST`.
+   Example: `gh api -X PUT repos/jsmith/cyber-swiss-blade/pages -f build_type=workflow`
+   **Result:** Terminal shows no message. This is correct.
+8. Let GitHub Actions run. Type this command and press **Enter**:
+   ```sh
+   gh api -X PUT repos/yourname/cyber-swiss-blade/actions/permissions -F enabled=true -f allowed_actions=all
+   ```
+9. Push the code. Type these commands. Press **Enter** after each line.
+   ```sh
+   git add -A
+   git commit -m "Set up deployment"
+   git remote add origin https://github.com/yourname/cyber-swiss-blade.git
+   git push -u origin main
+   ```
+   **Result:** Terminal shows `main -> main`. You do not need a token. The GitHub CLI signs in for Git.
+10. Type this command and press **Enter**:
+    ```sh
+    gh run watch
+    ```
+11. Select the run **Deploy to GitHub Pages**. Press **Enter**.
+    **Result:** After approximately two minutes, both jobs show a tick.
+12. Type this command and press **Enter**:
+    ```sh
+    gh api repos/yourname/cyber-swiss-blade/pages --jq .html_url
+    ```
+    **Result:** Terminal shows the address of your website.
+    Example: `https://jsmith.github.io/cyber-swiss-blade/`
+13. Save this address in your password manager with the name **Website URL**.
+14. Go to Part 5.
+
+If `gh run watch` shows no run, do these steps:
+1. Type `gh workflow run deploy.yml --ref main` and press **Enter**.
+2. Wait 10 seconds.
+3. Do step 10 again.
+
+### 8.5 Other tasks in Terminal
+
+| Task | Steps |
+| --- | --- |
+| Change the database password | Make a new password (step 8.2, step 8). Type `atlas dbusers update csb-api --password YOUR_NEW_PASSWORD`. Replace `YOUR_NEW_PASSWORD` with the new password. Make a new **Connection string** (step 8.2, step 14). Do step 3.7 (only `MONGODB_URI`). |
+| Look at the deployments | Type `gh run list --workflow deploy.yml`. |
+| Start a deployment again | Type `gh workflow run deploy.yml --ref main`. |
+| Read the Worker log | Do step 7.1 (**In Terminal**). |

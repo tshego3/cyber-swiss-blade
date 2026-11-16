@@ -1,123 +1,143 @@
 # Cyber Swiss Blade
 
-An offline-first, installable personal developer toolkit. One shell, independent modules, zero runtime dependencies, and free-tier hosting end to end.
+Cyber Swiss Blade is a set of developer tools in one app. You can install it on a computer or a phone. It works without an internet connection. All services that it uses are free.
 
-| Module | What it does | Storage |
+| Tool | What it does | Where it keeps data |
 | --- | --- | --- |
-| Timesheet | Projects, live timer, weekly totals, CSV export | IndexedDB, synced to MongoDB |
-| Quotations | Clients, line items, tax, status, print to PDF | IndexedDB, synced to MongoDB |
-| AES Encryption | Files and text, AES-256-GCM + PBKDF2-SHA256 | Device only |
-| Base64 | Text and files, URL-safe, data URLs | Device only |
+| Timesheet | Records your work hours per project. It has a timer, week totals, and CSV export. | On the device. It syncs to MongoDB. |
+| Quotations | Makes quotes for clients, with line items and tax. You can print a quote to PDF. | On the device. It syncs to MongoDB. |
+| AES Encryption | Encrypts and decrypts files and text with a password. | On the device only. |
+| Base64 | Changes text and files to Base64, and back. | On the device only. |
 
-New to the codebase? Start with [docs/onboarding.md](docs/onboarding.md). Deploying? Follow [docs/deployment.md](docs/deployment.md).
+## Start here
 
-## Architecture
-
-```
-GitHub Pages (static PWA)  --HTTPS + Bearer token-->  Cloudflare Worker  --TLS socket-->  MongoDB Atlas (M0)
-   IndexedDB + outbox                                   GET /status, POST /sync             one collection per entity
-   Service worker precache                              secrets: MONGODB_URI, API_TOKEN
-```
-
-| Path | Purpose |
+| You want to | Read |
 | --- | --- |
-| `src/core/` | Shell and shared services: router, IndexedDB, repository, sync engine, UI kit, theme, PWA |
-| `src/modules/<id>/` | One tool. `module.ts` declares it; `view.ts` is lazy-loaded |
-| `src/styles/` | Design tokens, base components, shell layout |
-| `shared/` | Code used by both the app and the Worker: sync protocol, byte helpers |
-| `worker/` | The API. It speaks the MongoDB wire protocol directly (`worker/src/mongo/`). The official driver is Apache-2.0, so it is not used |
-| `.claude/skills/` | Project rules for engineering, modules, data/sync, design, and testing |
+| Put the app online | [Deployment Guide](docs/deployment.md). It shows each click in MongoDB, Cloudflare, and GitHub. |
+| Change the code | [Onboarding Guide](docs/onboarding.md). It shows how to run the app and add a tool. |
 
-### Sync
+## How it works
 
-1. Every write goes to IndexedDB first and adds an outbox entry.
-2. The sync engine pushes the outbox and pulls changes in one `POST /sync` request.
-3. Sync runs on start, 2 s after a local change, when the device comes online, on tab focus, and every 5 minutes.
-
-Conflict and cursor rules:
-- **Conflicts:** last-write-wins on the client `updatedAt`. The Worker writes only if the stored copy is older. If the stored copy is newer, the Worker returns it and the client takes it.
-- **Deletes:** tombstones (`deleted: true`).
-- **Pull cursor:** the server-assigned `syncedAt`. It stays 60 s behind the server clock, so writes still in flight are not skipped.
-- **New server:** changing the API URL resets cursors and queues every local record for upload.
-
-## Prerequisites
-
-| Tool | Version | Needed for |
-| --- | --- | --- |
-| Node.js | 24 LTS | everything |
-| npm | 11 | everything |
-| Git + a GitHub account | any | hosting on GitHub Pages |
-| Cloudflare account (free) | n/a | the sync API |
-| MongoDB Atlas account (free) | n/a | the database |
-
-The app works fully without Cloudflare and Atlas. Those accounts are needed only for sync and backup.
-
-## Local setup
-
-```sh
-git clone https://github.com/<you>/cyber-swiss-blade.git
-cd cyber-swiss-blade
-npm ci
-npm run dev          # http://localhost:5173/cyber-swiss-blade/
+```
+Your device                     Cloudflare (free)                MongoDB Atlas (free)
+App from GitHub Pages  ──────►  Worker (the sync API)  ──────►  Database
+Data on the device              Keeps the database password
 ```
 
-| Command | Purpose |
+1. The app saves each change on the device first.
+2. The app sends the changes to the Worker. The Worker saves them in MongoDB.
+3. The Worker sends back the changes from your other devices.
+4. Sync starts when the app opens, 2 seconds after a change, when the device goes online, and every 5 minutes.
+
+**Sync rules:**
+- If two devices change the same record, the newest change wins.
+- A deleted record stays as a marker (`deleted: true`). The marker deletes the record on the other devices.
+- The Worker waits 60 seconds before it moves the sync position past a change. This prevents lost changes.
+- If you connect to a different Worker, the app sends all its data again.
+
+## Project folders
+
+| Folder | What it contains |
 | --- | --- |
-| `npm run dev` | Dev server with hot reload (no service worker) |
-| `npm test` | Unit tests (Vitest) |
-| `npm run lint` | ESLint, zero warnings allowed |
-| `npm run build` | Type-check the app and the Worker, then build `dist/` |
-| `npm run preview` | Serve `dist/` with the service worker on :4173 |
-| `npm run licenses` | Licence audit of installed packages |
-| `npm run worker:dev` | Run the Worker locally on :8787 |
-| `npm run worker:deploy` | Deploy the Worker to Cloudflare |
+| `src/core/` | The shared parts: layout, router, local database, sync, screen parts, and theme. |
+| `src/modules/<tool>/` | One tool. `module.ts` describes it. `view.ts` loads only when you open the tool. |
+| `src/styles/` | Colours, fonts, spacing, and layout. |
+| `shared/` | Code that the app and the Worker both use. |
+| `worker/` | The sync API. It connects to MongoDB without a driver package, because the official driver does not have the MIT licence. |
+| `docs/` | The deployment guide and the onboarding guide. |
+| `.claude/skills/` | The rules of the project. |
 
-The service worker registers only in production builds. To test offline behaviour, run `npm run build && npm run preview`, open the app once, stop the server, and reload.
+## What you need
 
-## Deployment
-
-Follow the step-by-step **[Deployment Guide](docs/deployment.md)**. It covers every screen in MongoDB Atlas, Cloudflare, and GitHub, and needs no prior cloud experience.
-
-| Step | Service (free tier) | Result |
+| Tool | Version | Why |
 | --- | --- | --- |
-| 1 | MongoDB Atlas Free cluster | Database user, IP access list, and connection string |
-| 2 | Cloudflare Workers | `cyber-swiss-blade-api.<subdomain>.workers.dev`, with secrets `MONGODB_URI` and `API_TOKEN` |
-| 3 | GitHub Pages (public repo) | `https://<you>.github.io/cyber-swiss-blade/`, deployed by GitHub Actions on every push to `main` |
-| 4 | The app | **Settings → Sync**: enter the Worker URL and API token |
+| Node.js | 24 or higher | To build and run the app. |
+| Git and a GitHub account | Any | To put the website online. |
+| Cloudflare account | Free plan | For the sync API. |
+| MongoDB Atlas account | Free cluster | For the database. |
 
-The guide also covers [updating](docs/deployment.md#updating-later), [reading the Worker logs](docs/deployment.md#reading-the-logs), and [troubleshooting](docs/deployment.md#troubleshooting).
+> **NOTE:** The app works without Cloudflare and MongoDB. You need them only for sync and backup.
 
-Secrets live only in Cloudflare. Never commit them, and never put them in frontend code.
+## Run the app on your computer
 
-## Integration test
+1. Open Terminal. The [Deployment Guide](docs/deployment.md#11-open-terminal) shows how on Windows, macOS, and Linux.
+2. Type these commands. Press **Enter** after each line. Replace `yourname` with the GitHub username, for example `jsmith`.
+   ```sh
+   git clone https://github.com/yourname/cyber-swiss-blade.git
+   cd cyber-swiss-blade
+   npm ci
+   npm run dev
+   ```
+3. Open `http://localhost:5173/cyber-swiss-blade/` in your browser.
 
-Unit tests cover BSON, SCRAM (RFC 7677 vector), and sync logic. To run the wire client against a real server:
+## Commands
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Starts the app. The page updates when you save a file. |
+| `npm test` | Runs the tests. |
+| `npm run lint` | Checks the code style. |
+| `npm run build` | Checks the types and makes the final files in `dist/`. |
+| `npm run preview` | Starts the final files on port 4173. The service worker runs here. |
+| `npm run licenses` | Shows the licence of each installed package. |
+| `npm run worker:dev` | Starts the Worker on your computer, on port 8787. |
+| `npm run worker:deploy` | Sends the Worker to Cloudflare. |
+
+**Test the app without internet:**
+1. Type `npm run build`, then `npm run preview`.
+2. Open the app one time.
+3. Stop the preview with **Ctrl + C**.
+4. Reload the page.
+   **Result:** The app opens.
+
+## Put the app online
+
+Use the [Deployment Guide](docs/deployment.md). You can use the websites or Terminal. Part 8 of the guide shows the Terminal method.
+
+This is a summary:
+
+| Step | Service | Result |
+| --- | --- | --- |
+| 1 | MongoDB Atlas | A free database, a database user, and a connection string. |
+| 2 | Cloudflare | The Worker at `cyber-swiss-blade-api.<your-name>.workers.dev`, with two secrets. |
+| 3 | GitHub Pages | The website at `https://<your-name>.github.io/cyber-swiss-blade/`. GitHub Actions deploys it after each push to `main`. |
+| 4 | The app | In **Settings**, you enter the Worker URL and the API token. |
+
+> **WARNING:** Keep the database password and the API token only in Cloudflare and your password manager. Do not put them in the code.
+
+## Test with a real database
+
+The normal tests do not need a database. This test uses a real MongoDB database:
 
 ```sh
 MONGODB_TEST_URI='mongodb+srv://user:pass@cluster.example.mongodb.net/' npx vitest run worker/src/mongo/integration.test.ts
 ```
 
-It creates and drops a `csb_test_*` database, so use a user that may drop databases.
+> **CAUTION:** The test makes a database with a name that starts with `csb_test_`. Then it deletes it. The database user must have permission to delete databases.
 
-## Dependencies
+## Packages
 
-There are no runtime dependencies. The browser bundle and the Worker contain first-party code only.
+The app and the Worker use no packages when they run. All their code is in this project.
 
-| Package | Licence | Role |
+These packages are for building and testing only:
+
+| Package | Licence | Use |
 | --- | --- | --- |
-| `vite`, `vitest`, `eslint`, `@eslint/js`, `typescript-eslint` | MIT | Build, test, lint |
-| `typescript` | Apache-2.0 | Compiler, required by the brief |
-| `wrangler` (via `npx`, pinned) | MIT OR Apache-2.0 | Worker deploys |
+| `vite`, `vitest`, `eslint`, `@eslint/js`, `typescript-eslint` | MIT | Build, test, and code checks |
+| `typescript` | Apache-2.0 | The TypeScript compiler. The project rules allow it. |
+| `wrangler` (with `npx`) | MIT or Apache-2.0 | Sends the Worker to Cloudflare |
 
-Transitive dev tooling includes ISC, BSD, Apache-2.0, MPL-2.0 (lightningcss), and BlueOak packages. None ship to users. `npm run licenses` prints the full list and fails CI if a direct dependency is not MIT.
+Some packages inside these tools have other licences, for example ISC, BSD, and MPL-2.0. They do not go into the app. `npm run licenses` shows the full list.
 
 ## Limits
 
-- **Workers free plan:** 100k requests/day and 10 ms CPU per request. The Worker caches derived SCRAM keys per isolate to stay inside the CPU budget.
-- **Atlas M0:** 512 MB storage.
-- **Authentication:** SCRAM-SHA-256 only. Use an ASCII database password; SASLprep is approximated with NFKC.
-- **Sync batches:** one round pushes up to 200 changes and pulls up to 500 records per collection, for up to 10 rounds per sync.
-- **AES:** runs in memory, so very large files (hundreds of MB) depend on device RAM.
+| Limit | Value |
+| --- | --- |
+| Cloudflare free plan | 100,000 requests each day. 10 ms of CPU time for each request. |
+| MongoDB free cluster | 512 MB of data. |
+| Database password | Use only letters and digits. |
+| One sync round | Sends up to 200 changes and gets up to 500 records for each type of data. |
+| AES files | The file must fit in the memory of the device. |
 
 ## Licence
 
