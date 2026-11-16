@@ -185,16 +185,24 @@
 }
 
 .ts-meter {
-  --fill: 0;
+  display: block;
   width: 72px;
   height: 4px;
+  overflow: hidden;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent) calc(var(--fill) * 100%), var(--surface-2) 0);
 }
 
-.ts-day[data-status='complete'] .ts-meter,
-.ts-day[data-status='over'] .ts-meter {
-  background: linear-gradient(90deg, var(--success) calc(var(--fill) * 100%), var(--surface-2) 0);
+.ts-meter-track {
+  fill: var(--surface-2);
+}
+
+.ts-meter-fill {
+  fill: var(--accent);
+}
+
+.ts-day[data-status='complete'] .ts-meter-fill,
+.ts-day[data-status='over'] .ts-meter-fill {
+  fill: var(--success);
 }
 
 .ts-day-body {

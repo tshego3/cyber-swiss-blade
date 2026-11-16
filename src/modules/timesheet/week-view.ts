@@ -39,11 +39,35 @@ const STATUS_TEXT: Readonly<Record<DaySheet['status'], string>> = {
   weekend: 'Weekend',
 };
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function setMeter(fill: SVGRectElement, fraction: number): void {
+  fill.setAttribute('width', String(Math.round(Math.min(Math.max(fraction, 0), 1) * 100)));
+}
+
+function hoursMeter(fraction: number): { readonly bar: SVGSVGElement; readonly fill: SVGRectElement } {
+  const bar = document.createElementNS(SVG_NS, 'svg');
+  bar.setAttribute('class', 'ts-meter');
+  bar.setAttribute('viewBox', '0 0 100 4');
+  bar.setAttribute('preserveAspectRatio', 'none');
+  bar.setAttribute('aria-hidden', 'true');
+  const track = document.createElementNS(SVG_NS, 'rect');
+  track.setAttribute('class', 'ts-meter-track');
+  track.setAttribute('width', '100');
+  track.setAttribute('height', '4');
+  const fill = document.createElementNS(SVG_NS, 'rect');
+  fill.setAttribute('class', 'ts-meter-fill');
+  fill.setAttribute('height', '4');
+  setMeter(fill, fraction);
+  bar.append(track, fill);
+  return { bar, fill };
+}
+
 interface DayParts {
   readonly article: HTMLElement;
   readonly codes: HTMLElement;
   readonly hours: HTMLElement;
-  readonly meter: HTMLElement;
+  readonly meter: SVGRectElement;
   readonly comment: HTMLElement;
 }
 
@@ -139,7 +163,7 @@ export function mountWeek(root: HTMLElement, context: ModuleContext, initialDate
     view.article.dataset.status = sheet.status;
     view.codes.textContent = sheet.codes || STATUS_TEXT[sheet.status];
     view.hours.textContent = `${formatHourValue(sheet.hours)} h`;
-    view.meter.style.setProperty('--fill', String(Math.min(sheet.hours / target(), 1)));
+    setMeter(view.meter, sheet.hours / target());
     view.comment.textContent = sheet.comment;
     renderSummary();
   };
@@ -210,13 +234,12 @@ export function mountWeek(root: HTMLElement, context: ModuleContext, initialDate
     const isOpen = open.has(day.date);
     const codes = el('span', { class: 'ts-codes', text: day.codes || STATUS_TEXT[day.status] });
     const hours = el('span', { class: 'ts-hours mono', text: `${formatHourValue(day.hours)} h` });
-    const meter = el('span', { class: 'ts-meter', attrs: { 'aria-hidden': 'true' } });
-    meter.style.setProperty('--fill', String(Math.min(day.hours / target(), 1)));
+    const { bar, fill: meter } = hoursMeter(day.hours / target());
     const comment = el('p', { class: 'ts-comment', text: day.comment });
     const head = el(
       'button',
       { class: 'ts-day-head', attrs: { type: 'button', 'aria-expanded': String(isOpen) } },
-      [el('span', { class: 'ts-date' }, [el('strong', { text: WEEKDAY.format(fromIsoDate(day.date)) }), el('span', { text: DAY_MONTH.format(fromIsoDate(day.date)) })]), codes, el('span', { class: 'ts-hours-wrap' }, [hours, meter])],
+      [el('span', { class: 'ts-date' }, [el('strong', { text: WEEKDAY.format(fromIsoDate(day.date)) }), el('span', { text: DAY_MONTH.format(fromIsoDate(day.date)) })]), codes, el('span', { class: 'ts-hours-wrap' }, [hours, bar])],
     );
     head.addEventListener('click', () => {
       if (open.has(day.date)) open.delete(day.date);
