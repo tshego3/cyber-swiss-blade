@@ -10,6 +10,7 @@ import { registerServiceWorker } from './core/pwa';
 import { currentRoute, navigate, onRouteChange, type Route } from './core/router';
 import { canEdit, canView, getSession, initSession, isAdmin, onSessionChange, refreshSession, sessionUser, type Session } from './core/session';
 import { mountSettings } from './core/settings-view';
+import { confirmSignOut } from './core/sign-out';
 import { createShell, type Shell } from './core/shell';
 import { createSyncEngine, type SyncEngine } from './core/sync';
 import { getThemePreference, nextThemePreference, setThemePreference } from './core/theme';
@@ -33,7 +34,9 @@ function buildCommands(sync: SyncEngine): Command[] {
     ...visibleModules().map((module): Command => ({ id: module.id, label: module.title, hint: module.category, icon: module.icon, run: () => navigate(module.id) })),
     ...(isAdmin() ? [{ id: 'admin', label: 'Administration', hint: 'Users, roles, permissions', icon: 'shield', run: () => navigate('admin') } satisfies Command] : []),
     { id: 'settings', label: 'Settings', hint: 'Account, sync, and appearance', icon: 'settings', run: () => navigate('settings') },
-    ...(signedIn ? [] : [{ id: 'sign-in', label: 'Sign in', hint: 'Account', icon: 'lock', run: () => navigate('sign-in') } satisfies Command]),
+    signedIn
+      ? ({ id: 'sign-out', label: 'Sign out', hint: 'Account', icon: 'log-out', run: () => void confirmSignOut() } satisfies Command)
+      : ({ id: 'sign-in', label: 'Sign in', hint: 'Account', icon: 'lock', run: () => navigate('sign-in') } satisfies Command),
     { id: 'sync', label: 'Sync now', hint: 'Push and pull changes', icon: 'refresh', run: () => void sync.syncNow() },
     { id: 'theme', label: 'Switch theme', hint: 'System, light, dark', icon: 'sun', run: () => setThemePreference(nextThemePreference(getThemePreference())) },
   ];
@@ -109,6 +112,7 @@ async function start(): Promise<void> {
     account: () => ({ name: sessionUser()?.displayName ?? null, isAdmin: isAdmin() }),
     sync,
     openPalette: showPalette,
+    signOut: () => void confirmSignOut(),
   });
 
   document.addEventListener('keydown', (event) => {

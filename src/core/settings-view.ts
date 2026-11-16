@@ -3,7 +3,8 @@ import { MIN_PASSWORD_LENGTH } from '../../shared/auth';
 import { errorMessage, fetchStatus, loadApiConfig, normalizeBaseUrl, saveApiConfig } from './api';
 import { eraseAllData } from './db';
 import { el, replaceChildren } from './dom';
-import { changePassword, getSession, onSessionChange, pendingChanges, signOut, updateProfile, type Session } from './session';
+import { changePassword, getSession, onSessionChange, updateProfile, type Session } from './session';
+import { confirmSignOut } from './sign-out';
 import { describeSyncState } from './sync-status';
 import type { SyncEngine } from './sync';
 import { getThemePreference, setThemePreference } from './theme';
@@ -106,16 +107,6 @@ function openPasswordDialog(): void {
       }
     },
   });
-}
-
-async function confirmSignOut(): Promise<void> {
-  const pending = await pendingChanges();
-  const message = pending > 0
-    ? `${pending} change${pending === 1 ? ' has' : 's have'} not synced yet. If you sign out now, they are lost. This device keeps no data after you sign out.`
-    : 'This device keeps no Timesheet or Quotations data after you sign out. Your data stays on the server.';
-  if (!(await confirmAction('Sign out', message, 'Sign out'))) return;
-  await signOut();
-  toast('Signed out');
 }
 
 async function erase(): Promise<void> {

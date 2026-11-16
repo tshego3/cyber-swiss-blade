@@ -22,6 +22,7 @@ export interface ShellOptions {
   readonly account: () => ShellAccount;
   readonly sync: SyncEngine;
   readonly openPalette: () => void;
+  readonly signOut: () => void;
 }
 
 const THEME_ICONS = { system: 'monitor', light: 'sun', dark: 'moon' } as const;
@@ -62,6 +63,11 @@ export function createShell(root: HTMLElement, options: ShellOptions): Shell {
       account.name
         ? el('a', { class: 'nav-link', attrs: { href: '#/settings', title: 'Your account' }, on: { click: closeNav } }, [icon('user'), el('span', { text: account.name })])
         : link('sign-in', 'Sign in', 'lock'),
+      account.name &&
+        el('button', { class: 'nav-link', attrs: { type: 'button' }, on: { click: () => {
+          closeNav();
+          options.signOut();
+        } } }, [icon('log-out'), el('span', { text: 'Sign out' })]),
     ]);
     setActive(active);
   };
