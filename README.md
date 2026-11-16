@@ -4,8 +4,8 @@ Cyber Swiss Blade is a set of developer tools in one app. You can install it on 
 
 | Tool | What it does | Where it keeps data |
 | --- | --- | --- |
-| Timesheet | Records your work hours per project. It has a timer, week totals, and CSV export. | On the device. It syncs to MongoDB. |
-| Quotations | Makes quotes for clients, with line items and tax. You can print a quote to PDF. | On the device. It syncs to MongoDB. |
+| Timesheet | Your weekly Agile Report. You log work items, meetings, notes, and leave per day. The app merges each day into one report row and exports the year to Excel. | On the device. It syncs to MongoDB. Each person sees only their own timesheet. |
+| Quotations | Quotes, deposit invoices, final invoices, payments, clients, and a service catalogue. You can print each document to PDF. | On the device. It syncs to MongoDB. Shared by the people who have access. |
 | AES Encryption | Encrypts and decrypts files and text with a password. | On the device only. |
 | Base64 | Changes text and files to Base64, and back. | On the device only. |
 
@@ -16,6 +16,20 @@ Cyber Swiss Blade is a set of developer tools in one app. You can install it on 
 | Put the app online | [Deployment Guide](docs/deployment.md). It shows each click in MongoDB, Cloudflare, and GitHub. |
 | Change the code | [Onboarding Guide](docs/onboarding.md). It shows how to run the app and add a tool. |
 
+## Accounts and roles
+
+Timesheet and Quotations need a sign-in. AES Encryption and Base64 do not.
+
+| Part | What it does |
+| --- | --- |
+| Setup | When a server has no users, the first sign-in creates the administrator. It needs the setup key (the `API_TOKEN` secret). |
+| Users | Administrators add users, reset passwords, and disable accounts in **Administration**. |
+| Roles | Every user has the role **Registered users**. Administrators can add more roles, for example **Quotation editors**. |
+| Permissions | Each tool has View and Edit permissions. Administrators give them to roles. Administrators always have full access. |
+| Offline | After you sign in, the app works offline with your last permissions. The Worker checks the permissions again at each sync. |
+
+The browser stretches each password with PBKDF2 (600,000 rounds) before it sends it. The Worker stores only a salted hash of that result.
+
 ## How it works
 
 ```
@@ -25,7 +39,7 @@ Data on the device              Keeps the database password
 ```
 
 1. The app saves each change on the device first.
-2. The app sends the changes to the Worker. The Worker saves them in MongoDB.
+2. The app sends the changes to the Worker with your session. The Worker checks your permissions and saves the changes in MongoDB.
 3. The Worker sends back the changes from your other devices.
 4. Sync starts when the app opens, 2 seconds after a change, when the device goes online, and every 5 minutes.
 
@@ -82,6 +96,7 @@ Data on the device              Keeps the database password
 | `npm run licenses` | Shows the licence of each installed package. |
 | `npm run worker:dev` | Starts the Worker on your computer, on port 8787. |
 | `npm run worker:deploy` | Sends the Worker to Cloudflare. |
+| `node scripts/import-agile-report.mjs <file> --api <URL>` | Imports an Agile Report workbook into your timesheet, one time. Add `--dry-run` to check the file first. |
 
 **Test the app without internet:**
 1. Type `npm run build`, then `npm run preview`.
@@ -101,19 +116,19 @@ This is a summary:
 | 1 | MongoDB Atlas | A free database, a database user, and a connection string. |
 | 2 | Cloudflare | The Worker at `cyber-swiss-blade-api.<your-name>.workers.dev`, with two secrets. |
 | 3 | GitHub Pages | The website at `https://<your-name>.github.io/cyber-swiss-blade/`. GitHub Actions deploys it after each push to `main`. |
-| 4 | The app | In **Settings**, you enter the Worker URL and the API token. |
+| 4 | The app | You sign in with the Worker URL and create the administrator with the setup key. Then you add your team. |
 
-> **WARNING:** Keep the database password and the API token only in Cloudflare and your password manager. Do not put them in the code.
+> **WARNING:** Keep the database password and the setup key only in Cloudflare and your password manager. Do not put them in the code.
 
 ## Test with a real database
 
 The normal tests do not need a database. This test uses a real MongoDB database:
 
 ```sh
-MONGODB_TEST_URI='mongodb+srv://user:pass@cluster.example.mongodb.net/' npx vitest run worker/src/mongo/integration.test.ts
+MONGODB_TEST_URI='mongodb+srv://user:pass@cluster.example.mongodb.net/' npx vitest run worker/src/mongo/integration.test.ts worker/src/auth.integration.test.ts
 ```
 
-> **NOTE:** The test writes to a database with a name that starts with `csb_test_`. Then it deletes the test collection. MongoDB then removes the empty database.
+> **NOTE:** The tests write to databases with names that start with `csb_test_`. Then they delete the test collections. MongoDB then removes the empty databases.
 
 ## Packages
 
@@ -138,6 +153,9 @@ Some packages inside these tools have other licences, for example ISC, BSD, and 
 | Database password | Use only letters and digits. |
 | One sync round | Sends up to 200 changes and gets up to 500 records for each type of data. |
 | AES files | The file must fit in the memory of the device. |
+| Sign-in attempts | 5 wrong passwords lock the account for 15 minutes. |
+| Sessions | A session lasts 30 days. A password change ends the other sessions of the user. |
+| Logo on documents | 200 KB or less. |
 
 ## Licence
 

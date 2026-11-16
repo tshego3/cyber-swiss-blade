@@ -13,6 +13,7 @@ export interface SyncRecord {
 
 export interface RemoteRecord extends SyncRecord {
   readonly syncedAt: string;
+  readonly ownerId?: string;
 }
 
 export interface CollectionSyncRequest {
@@ -38,6 +39,7 @@ export interface StatusResponse {
   readonly ok: true;
   readonly database: string;
   readonly serverTime: string;
+  readonly setupRequired: boolean;
 }
 
 export interface ErrorResponse {
@@ -68,5 +70,6 @@ export function isSyncRecord(value: unknown): value is SyncRecord {
 }
 
 export function isRemoteRecord(value: unknown): value is RemoteRecord {
-  return isSyncRecord(value) && 'syncedAt' in value && typeof value.syncedAt === 'string';
+  if (!isSyncRecord(value) || !('syncedAt' in value) || typeof value.syncedAt !== 'string') return false;
+  return !('ownerId' in value) || typeof value.ownerId === 'string';
 }

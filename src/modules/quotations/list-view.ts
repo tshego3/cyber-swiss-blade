@@ -4,7 +4,7 @@ import { formatDate, formatMoney, toIsoDate } from '../../core/format';
 import type { Entity } from '../../core/repository';
 import type { ModuleContext, Unmount } from '../../core/types';
 import { button, emptyState, errorState, loadingState, segmented, type Option } from '../../core/ui';
-import { clientLabel, clients, draftQuote, filterQuotes, isExpired, quoteTotals, quotes } from './data';
+import { clientLabel, clients, documentTotals, draftQuote, filterQuotes, isExpired, loadProfile, quotes } from './data';
 import { quotationHeader, statusBadge } from './header';
 import { QUOTATION_COLLECTIONS, QUOTE_STATUSES, STATUS_LABELS, type Client, type Quote, type QuoteStatus } from './types';
 
@@ -45,7 +45,7 @@ export function mountQuoteList(root: HTMLElement, context: ModuleContext): Unmou
     if (creating) return;
     creating = true;
     try {
-      const quote = await quotes.save(draftQuote(await quotes.list(), new Date()));
+      const quote = await quotes.save(draftQuote(await quotes.list(), await loadProfile(), context.user, new Date()));
       context.navigate(quote.id);
     } finally {
       creating = false;
@@ -57,14 +57,14 @@ export function mountQuoteList(root: HTMLElement, context: ModuleContext): Unmou
     if (state.errorMessage) return replaceChildren(results, [errorState(state.errorMessage, () => void load())]);
     if (state.quotes.length > 0) return replaceChildren(results, renderQuotes(state));
     replaceChildren(results, [
-      emptyState({ icon: 'quote', title: 'No quotes yet', text: 'Create a quote, add line items, and print it to PDF.', action: button({ label: 'New quote', icon: 'plus', variant: 'primary', onClick: () => void createQuote() }) }),
+      emptyState({ icon: 'quote', title: 'No quotes yet', text: 'Create a quote, add line items, and print it to PDF.', action: context.canEdit ? button({ label: 'New quote', icon: 'plus', variant: 'primary', onClick: () => void createQuote() }) : undefined }),
     ]);
   };
 
   const search = el('input', { class: 'input', attrs: { type: 'search', placeholder: 'Search number, title, or client', 'aria-label': 'Search quotes' } });
   search.addEventListener('input', () => setState({ search: search.value }));
   root.append(
-    quotationHeader('quotes', [button({ label: 'New quote', icon: 'plus', variant: 'primary', onClick: () => void createQuote() })]),
+    quotationHeader('quotes', context.canEdit ? [button({ label: 'New quote', icon: 'plus', variant: 'primary', onClick: () => void createQuote() })] : []),
     el('div', { class: 'toolbar' }, [search, segmented('Status', STATUS_OPTIONS, state.status, (status) => setState({ status }))]),
     results,
   );
@@ -98,7 +98,7 @@ function renderQuotes(state: ListState): HTMLElement[] {
             el('span', { class: 'quote-main' }, [el('span', { class: 'quote-title', text: quote.title || 'Untitled quote' }), el('span', { class: 'muted', text: clientLabel(clientsById.get(quote.clientId)) })]),
             el('span', { class: 'quote-date muted', text: formatDate(quote.issueDate) }),
             expired ? statusBadge('expired', 'Expired') : statusBadge(quote.status, STATUS_LABELS[quote.status]),
-            el('span', { class: 'quote-total mono', text: formatMoney(quoteTotals(quote).total, quote.currency) }),
+            el('span', { class: 'quote-total mono', text: formatMoney(documentTotals(quote).total, quote.currency) }),
           ]),
         ]);
       }),

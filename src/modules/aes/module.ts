@@ -6,6 +6,7 @@ export const aesModule: ToolModule = {
   summary: 'Encrypt and decrypt files or text with AES-256-GCM and a password. Nothing leaves the device.',
   icon: 'lock',
   category: 'Security',
+  access: 'public',
   collections: [],
   load: () => import('./view'),
 };

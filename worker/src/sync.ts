@@ -1,3 +1,4 @@
+import { isOwnerScoped, moduleForCollection, type Grants } from '../../shared/access';
 import {
   COLLECTION_PATTERN,
   MAX_CHANGES_PER_COLLECTION,
@@ -14,17 +15,24 @@ import {
   type SyncRequest,
   type SyncResponse,
 } from '../../shared/protocol';
+import { httpError } from './http';
 import { isBsonDocument, type BsonDocument, type BsonValue } from './mongo/bson';
 import type { MongoDatabase } from './mongo/client';
 import type { MongoServerError } from './mongo/connection';
+import { DUPLICATE_KEY, toJson } from './store';
 
-const DUPLICATE_KEY = 11000;
 const SETTLE_MS = 60_000;
 const MAX_FIELD_DEPTH = 8;
 
 export interface ValidationError {
   readonly type: 'validation';
   readonly message: string;
+}
+
+export interface SyncAccess {
+  readonly userId: string;
+  readonly isAdmin: boolean;
+  readonly grants: Grants;
 }
 
 export function parseSyncRequest(body: unknown): SyncRequest {
@@ -39,13 +47,18 @@ export function parseSyncRequest(body: unknown): SyncRequest {
   return { collections };
 }
 
-export async function handleSync(database: MongoDatabase, request: SyncRequest, now: () => number): Promise<SyncResponse> {
+export async function handleSync(database: MongoDatabase, request: SyncRequest, now: () => number, access: SyncAccess): Promise<SyncResponse> {
   const collections: Record<string, CollectionSyncResponse> = {};
   for (const [name, entry] of Object.entries(request.collections)) {
+    const module = moduleForCollection(name);
+    const grant = module ? access.grants[module] : undefined;
+    if (!grant?.view) throw httpError(403, `You do not have access to ${name}.`);
+    const owner = isOwnerScoped(name) ? access.userId : null;
+    const scope: BsonDocument = owner && !access.isAdmin ? { ownerId: owner } : {};
     if (!entry.since) await ensureIndex(database, name);
-    const rejected = await pushChanges(database, name, entry.changes, new Date(now()).toISOString());
-    const pulled = await findRecords(database, name, entry.since ? { syncedAt: { $gte: entry.since } } : {}, PULL_LIMIT);
-    const conflicts = rejected.length > 0 ? await findRecords(database, name, { _id: { $in: rejected } }, rejected.length) : [];
+    const rejected = grant.edit ? await pushChanges(database, name, entry.changes, new Date(now()).toISOString(), owner) : entry.changes.map((change) => change.id);
+    const pulled = await findRecords(database, name, entry.since ? { ...scope, syncedAt: { $gte: entry.since } } : scope, PULL_LIMIT);
+    const conflicts = rejected.length > 0 ? await findRecords(database, name, { ...scope, _id: { $in: rejected } }, rejected.length) : [];
     const cursor = nextCursor(entry.since, pulled, new Date(now() - SETTLE_MS).toISOString());
     collections[name] = {
       records: uniqueById([...pulled, ...conflicts]),
@@ -82,17 +95,20 @@ function hasSafeKeys(value: JsonValue, depth: number): boolean {
 }
 
 async function ensureIndex(database: MongoDatabase, collection: string): Promise<void> {
-  await database.command({ createIndexes: collection, indexes: [{ key: { syncedAt: 1, _id: 1 }, name: 'syncedAt_id' }] });
+  const indexes: BsonDocument[] = [{ key: { syncedAt: 1, _id: 1 }, name: 'syncedAt_id' }];
+  if (isOwnerScoped(collection)) indexes.push({ key: { ownerId: 1, syncedAt: 1, _id: 1 }, name: 'ownerId_syncedAt_id' });
+  await database.command({ createIndexes: collection, indexes });
 }
 
-async function pushChanges(database: MongoDatabase, collection: string, changes: readonly SyncRecord[], syncedAt: string): Promise<string[]> {
+async function pushChanges(database: MongoDatabase, collection: string, changes: readonly SyncRecord[], syncedAt: string, owner: string | null): Promise<string[]> {
   if (changes.length === 0) return [];
+  const ownership: BsonDocument = owner ? { ownerId: owner } : {};
   const reply = await database.command({
     update: collection,
     ordered: false,
     updates: changes.map((change) => ({
-      q: { _id: change.id, updatedAt: { $lt: change.updatedAt } },
-      u: { updatedAt: change.updatedAt, deleted: change.deleted, data: change.data, syncedAt },
+      q: { _id: change.id, updatedAt: { $lt: change.updatedAt }, ...ownership },
+      u: { updatedAt: change.updatedAt, deleted: change.deleted, data: change.data, syncedAt, ...ownership },
       upsert: true,
     })),
   });
@@ -108,7 +124,7 @@ async function pushChanges(database: MongoDatabase, collection: string, changes:
 }
 
 async function findRecords(database: MongoDatabase, collection: string, filter: BsonDocument, limit: number): Promise<RemoteRecord[]> {
-  const reply = await database.command({ find: collection, filter, sort: { syncedAt: 1, _id: 1 }, limit, singleBatch: true });
+  const reply = await database.command({ find: collection, filter, sort: { syncedAt: 1, _id: 1 }, limit, batchSize: limit, singleBatch: true });
   const batch = isBsonDocument(reply.cursor) ? reply.cursor.firstBatch : undefined;
   return (Array.isArray(batch) ? batch : []).map(toRemoteRecord).filter((record): record is RemoteRecord => record !== null);
 }
@@ -117,16 +133,9 @@ function toRemoteRecord(document: BsonValue): RemoteRecord | null {
   const json = toJson(document);
   if (!isJsonObject(json)) return null;
   const record = { id: json._id, updatedAt: json.updatedAt, deleted: json.deleted, data: json.data, syncedAt: json.syncedAt };
-  return isRemoteRecord(record) ? { id: record.id, updatedAt: record.updatedAt, deleted: record.deleted, data: record.data, syncedAt: record.syncedAt } : null;
-}
-
-function toJson(value: BsonValue | undefined): JsonValue {
-  if (value === undefined || value === null || typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') return value ?? null;
-  if (typeof value === 'bigint') return Number(value);
-  if (value instanceof Date) return value.toISOString();
-  if (value instanceof Uint8Array) return null;
-  if (Array.isArray(value)) return value.map((item: BsonValue) => toJson(item));
-  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, toJson(item)]));
+  if (!isRemoteRecord(record)) return null;
+  const base: RemoteRecord = { id: record.id, updatedAt: record.updatedAt, deleted: record.deleted, data: record.data, syncedAt: record.syncedAt };
+  return typeof json.ownerId === 'string' ? { ...base, ownerId: json.ownerId } : base;
 }
 
 function uniqueById(records: readonly RemoteRecord[]): RemoteRecord[] {

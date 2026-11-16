@@ -16,6 +16,7 @@ Read these rules before you change the code.
 | --- | --- |
 | Use native code | Use TypeScript, HTML, CSS, and browser features. Do not add a UI framework. Do not add a runtime package. |
 | One tool, one folder | Each tool is a folder in `src/modules/`. The app finds tools only through `src/modules/registry.ts`. |
+| Access by role | A tool is `public` or `restricted`. Restricted tools need a sign-in. Administrators give View and Edit permission to roles. |
 | Save locally first | The app saves all data on the device first. It uses the network only to sync. |
 | MIT licence only | A new package must have the MIT licence. You must also show that you cannot write it yourself. |
 | Keep code simple | If code needs a comment to explain it, make the code simpler. |
@@ -55,16 +56,14 @@ You do not need a MongoDB or Cloudflare account for this part.
 2. Open this address in your browser.
    **Result:** The home page of the app opens.
 
-### 2.3 Try each tool
+### 2.3 Try the public tools
 
-1. Click **Timesheet**. Click **New project**. Make a project. Click **Start** on the timer.
-2. Click **Quotations**. Add a client on the **Clients** tab. Make a quote. Change a line.
-   **Result:** The total changes when you type.
-3. Click **AES Encryption**, then the **Text** tab. Encrypt a sentence. Then decrypt it.
-4. Press **Ctrl + K**. On macOS, press **Command + K**.
+1. Click **AES Encryption**, then the **Text** tab. Encrypt a sentence. Then decrypt it.
+2. Click **Base64**. Encode a sentence.
+3. Press **Ctrl + K**. On macOS, press **Command + K**.
    **Result:** The command palette opens.
 
-> **NOTE:** The menu shows **Local only**. This is correct. The app does not sync until you connect a Worker.
+> **NOTE:** Timesheet and Quotations show **Sign in**. They need a Worker and an account. Part 7 shows how to run the Worker on your computer.
 
 ### 2.4 Stop the app
 
@@ -86,11 +85,15 @@ You do not need a MongoDB or Cloudflare account for this part.
 | `src/core/shape.ts` | Checks that saved data has the correct type. |
 | `src/core/sync.ts` | The sync engine. It sends changes and gets changes. |
 | `src/core/api.ts` | Calls to the Worker. |
+| `src/core/session.ts` | Sign-in, the cached session, and the permission checks `canView()` and `canEdit()`. |
+| `src/core/auth-view.ts`, `admin-view.ts` | The sign-in screen, and the Administration screen for users, roles, and permissions. |
+| `shared/access.ts` | The list of restricted tools, their collections, and the default roles. The app and the Worker both read it. |
 | `src/modules/registry.ts` | The list of tools. |
 | `src/modules/<tool>/` | One tool: `timesheet`, `quotations`, `aes`, or `base64`. |
 | `src/styles/` | Colours, fonts, spacing, and the layout. |
 | `shared/` | Code that the app and the Worker both use. |
-| `worker/src/` | The Worker: routes, checks, sync, and the MongoDB connection. |
+| `worker/src/` | The Worker: routes (`index.ts`), accounts (`auth.ts`, `session.ts`), administration (`admin.ts`), sync (`sync.ts`), and the MongoDB connection (`mongo/`). |
+| `scripts/import-agile-report.mjs` | The one-time import of an Agile Report workbook. |
 
 ---
 
@@ -99,10 +102,11 @@ You do not need a MongoDB or Cloudflare account for this part.
 1. A screen calls `save()` on a repository.
 2. The repository saves the record on the device. It also adds the record to a send list (the outbox).
 3. After 2 seconds, the sync engine sends the outbox to the Worker.
-4. The Worker saves each record in MongoDB if it is newer.
-5. The Worker sends back records that changed on other devices.
-6. The app saves those records on the device.
-7. Open screens show the new data.
+4. The Worker checks the session and the permissions of the user. To pull, the user needs View. To push, the user needs Edit.
+5. The Worker saves each record in MongoDB if it is newer. In owner-scoped collections, such as `timesheet_logs`, the Worker adds the user ID as `ownerId`.
+6. The Worker sends back records that changed on other devices. In owner-scoped collections, a user gets only their own records. Administrators get all records.
+7. The app saves those records on the device.
+8. Open screens show the new data.
 
 > **NOTE:** Screens never call the network or the local database directly. They call the `data.ts` file of their tool.
 
@@ -156,6 +160,7 @@ export const uuidModule: ToolModule = {
   summary: 'Generate random v4 UUIDs and copy them.',
   icon: 'braces',
   category: 'Encoding',
+  access: 'public',
   collections: [],
   load: () => import('./view'),
 };
@@ -208,9 +213,12 @@ If your tool must save data, do these steps:
    ```typescript
    export const snippets = createRepository<Snippet>('snippets_items', snippetShape);
    ```
-4. In `module.ts`, put the collection name in `collections`.
+4. In `module.ts`, set `access: 'restricted'`, and put the collection name in `collections`.
+5. In `shared/access.ts`, add the tool to `MODULE_ACCESS`. Give the same collections, the owner-scoped collections, and the default View and Edit roles.
+6. In your screens, use `context.canEdit` to disable inputs for users who can only view.
+7. Deploy the Worker (`npm run worker:deploy`). The Worker refuses collections that are not in `MODULE_ACCESS`.
 
-You do not need to change the Worker or the database. For a full example screen, look at `src/modules/timesheet/projects-view.ts`.
+The test `src/modules/registry.test.ts` fails if steps 4 and 5 do not match. For a full example screen, look at `src/modules/quotations/catalogue-view.ts`.
 
 ---
 
@@ -218,7 +226,7 @@ You do not need to change the Worker or the database. For a full example screen,
 
 You need your **Connection string** from step 2.6 of the [Deployment Guide](deployment.md#26-copy-the-connection-string).
 
-1. In the folder `worker/`, make a file with the name `.dev.vars` and this text. Use a code editor, for example VS Code. Notepad and TextEdit can add `.txt` to the name.
+1. In the folder `worker/`, make a file with the name `.dev.vars` and this text. Use a code editor, for example VS Code. Notepad and TextEdit can add `.txt` to the name. `API_TOKEN` is the setup key. Use 32 characters or more.
    ```
    MONGODB_URI=YOUR_CONNECTION_STRING
    API_TOKEN=YOUR_API_TOKEN
@@ -231,10 +239,13 @@ You need your **Connection string** from step 2.6 of the [Deployment Guide](depl
    ```
 3. In Terminal, type `npm run worker:dev` and press **Enter**.
    **Result:** The Worker runs at `http://localhost:8787`.
-4. In the app, click **Settings**.
-5. In **API URL**, type `http://localhost:8787`.
-6. In **API token**, type the `API_TOKEN` value from `.dev.vars`.
-7. Click **Save and sync**.
+4. In the app, click **Sign in**.
+5. In **Server URL**, type `http://localhost:8787`. Type any username and password. Click **Sign in**.
+   **Result:** The page shows **Create the administrator**.
+6. In **Setup key**, type the `API_TOKEN` value from `.dev.vars`. Fill in the other fields. Click **Create administrator**.
+   **Result:** Timesheet, Quotations, and Administration open.
+
+> **CAUTION:** Use a test database in `MONGODB_URI`, for example a name in `MONGODB_DB` that ends with `_dev`. The Worker writes users and data to it.
 
 > **WARNING:** Git ignores the file `.dev.vars`. Do not rename it. Do not put its values in another file.
 
@@ -251,6 +262,8 @@ The Worker log shows in the Terminal window where the Worker runs.
 | ESLint shows "Build DOM with el() instead of innerHTML". | Do not use HTML text. Use `el()` from `src/core/dom.ts`. |
 | TypeScript shows an error on saved data. | Write the saved data type as a `type`, not an `interface`. |
 | A screen continues to run after you leave it. | The function that `mount()` returns must stop all timers and listeners. |
+| Sync shows "You do not have access to …". | The collection is not in `MODULE_ACCESS` in `shared/access.ts`, or your roles have no View permission. Deploy the Worker after you change `shared/access.ts`. |
+| Old saved records do not show after you add a field. | Give `createRepository()` an upgrade function that fills the new field. See `upgradeQuote()` in `src/modules/quotations/data.ts`. |
 | Port 5173 or 4173 is not free. | Type `npm run dev -- --port 5174`. To sync from that port, add `http://localhost:5174` to `ALLOWED_ORIGINS` in `worker/wrangler.toml`. |
 
 ---

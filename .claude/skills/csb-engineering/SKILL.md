@@ -15,8 +15,8 @@ These rules are mandatory for all feature work, bug fixes, and refactors.
 
 ## Non-Negotiable Architecture Rules
 
-1. No app server beyond `worker/`. The Worker exposes only `GET /status` and `POST /sync`. New features use the generic sync protocol; do not add per-module endpoints.
-2. The browser never talks to MongoDB and never sees database credentials. `MONGODB_URI` and `API_TOKEN` live only in Cloudflare secrets (`wrangler secret put`). `worker/.dev.vars` is git-ignored.
+1. No app server beyond `worker/`. The Worker exposes `GET /status`, `POST /sync`, the `/auth/*` endpoints, and the `/admin/*` endpoints for users, roles, and permissions. New features use the generic sync protocol; do not add per-module endpoints.
+2. The browser never talks to MongoDB and never sees database credentials. `MONGODB_URI` and `API_TOKEN` (the setup key and session signing secret) live only in Cloudflare secrets (`wrangler secret put`). `worker/.dev.vars` is git-ignored.
 3. Local-first: every write goes to IndexedDB through `src/core/repository.ts`. The network is only for sync.
 4. Code shared by app and Worker lives in `shared/` and must not touch the DOM or Worker-only APIs.
 5. Modules never import from other modules. Shared behaviour moves into `src/core/` or `shared/`.
@@ -25,7 +25,7 @@ These rules are mandatory for all feature work, bug fixes, and refactors.
 
 ```
 Views (src/modules/*/view.ts)  ->  Module data (data.ts: repositories + pure functions)  ->  Core services (src/core)  ->  shared/
-Worker: index.ts (HTTP, CORS, auth) -> sync.ts (validation, LWW) -> mongo/ (wire protocol, SCRAM, BSON)
+Worker: index.ts (HTTP, CORS, routing) -> auth.ts / admin.ts (sessions, users, roles, permissions) -> sync.ts (validation, permissions, owner scope, LWW) -> store.ts + mongo/ (wire protocol, SCRAM, BSON)
 ```
 
 | Layer | Responsibility | Location |

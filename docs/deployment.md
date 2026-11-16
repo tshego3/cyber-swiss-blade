@@ -53,13 +53,15 @@ The keys are different on each system. This guide uses the Windows names. Use th
 | Connection string | The address and password of the database, in one line of text. |
 | Worker | A small program on Cloudflare. It connects the app to the database. |
 | Secret | A private value that only the Worker can read. |
-| API token | A password that the app uses to talk to the Worker. |
+| Setup key | A long random value. It lets you make the first administrator account one time. Cloudflare keeps it as the `API_TOKEN` secret. |
+| Administrator | A person who manages users, roles, and permissions in the app. |
+| Role | A group of users, for example "Quotation editors". Permissions are given to roles. |
 
 ---
 
 ## Values that you will collect
 
-You save six values during this guide. Save each value in a password manager. Use the name in the first column. The steps use the same names.
+You save eight values during this guide. Save each value in a password manager. Use the name in the first column. The steps use the same names.
 
 > **WARNING:** These values give access to your data. Do not put them in the code. Do not send them in chat or email.
 
@@ -70,9 +72,11 @@ The examples in this guide use the GitHub username `jsmith`. Use your own values
 | **Database username** | `csb-api` | 2.3 |
 | **Database password** | `Xk82mQ4pLr7TnB2v` | 2.3 |
 | **Connection string** | `mongodb+srv://csb-api:Xk82mQ4pLr7TnB2v@csb-cluster.ab12c.mongodb.net/?retryWrites=true&w=majority` | 2.6 |
-| **API token** | `4b1e8f2a6c3d9e0f7a5b2c8d1e4f6a9b3c7d0e2f5a8b1c4d7e0f3a6b9c2d5e8f` | 3.6 |
+| **Setup key** | `4b1e8f2a6c3d9e0f7a5b2c8d1e4f6a9b3c7d0e2f5a8b1c4d7e0f3a6b9c2d5e8f` | 3.6 |
 | **Worker URL** | `https://cyber-swiss-blade-api.jsmith.workers.dev` | 3.5 |
 | **Website URL** | `https://jsmith.github.io/cyber-swiss-blade/` | 4.6 |
+| **Admin username** | `admin` | 5.1 |
+| **Admin password** | At least 10 characters | 5.1 |
 
 ---
 
@@ -342,7 +346,7 @@ The Worker accepts requests only from your website. You must tell it your websit
 
 > **NOTE:** The Worker is online now. It cannot use the database yet. The next steps add the secrets.
 
-### 3.6 Make the API token
+### 3.6 Make the setup key
 
 1. Type this command and press **Enter**:
    ```sh
@@ -350,7 +354,9 @@ The Worker accepts requests only from your website. You must tell it your websit
    ```
    **Result:** Terminal shows a line of 64 letters and digits.
    Example: `4b1e8f2a6c3d9e0f7a5b2c8d1e4f6a9b3c7d0e2f5a8b1c4d7e0f3a6b9c2d5e8f`
-2. Save this line in your password manager with the name **API token**.
+2. Save this line in your password manager with the name **Setup key**.
+
+> **NOTE:** You use the setup key one time, in step 5.1. It also signs the sign-in sessions. If you change it later, all users must sign in again.
 
 ### 3.7 Add the two secrets to the Worker
 
@@ -365,7 +371,7 @@ The Worker accepts requests only from your website. You must tell it your websit
    ```sh
    npx wrangler@4.151.3 secret put API_TOKEN
    ```
-4. Paste your **API token**. Press **Enter**.
+4. Paste your **Setup key**. Press **Enter**.
    **Result:** Terminal shows `Success! Uploaded secret API_TOKEN`.
 
 > **NOTE:** When you paste a secret, Terminal does not show it. This is normal.
@@ -375,27 +381,27 @@ The Worker accepts requests only from your website. You must tell it your websit
 2. Click **Settings**.
 3. Find **Variables and Secrets**. Click **Add**.
 4. For **Type**, select **Secret**. For **Variable name**, type `MONGODB_URI`. For **Value**, paste your **Connection string**.
-5. Click **Add variable**. Add `API_TOKEN` with your **API token** in the same way.
+5. Click **Add variable**. Add `API_TOKEN` with your **Setup key** in the same way.
 6. Click **Deploy**.
 
 ### 3.8 Test the Worker
 
 1. Type this command, but do not press **Enter** yet:
    ```sh
-   curl -H "Authorization: Bearer YOUR_API_TOKEN" YOUR_WORKER_URL/status
+   curl YOUR_WORKER_URL/status
    ```
-2. Replace `YOUR_API_TOKEN` with your **API token**. Replace `YOUR_WORKER_URL` with your **Worker URL**.
+2. Replace `YOUR_WORKER_URL` with your **Worker URL**.
    Example:
    ```sh
-   curl -H "Authorization: Bearer 4b1e8f2a6c3d9e0f7a5b2c8d1e4f6a9b3c7d0e2f5a8b1c4d7e0f3a6b9c2d5e8f" https://cyber-swiss-blade-api.jsmith.workers.dev/status
+   curl https://cyber-swiss-blade-api.jsmith.workers.dev/status
    ```
 3. Press **Enter**.
 4. Compare the result with this table.
 
 | You see | What it means | What to do |
 | --- | --- | --- |
-| `{"ok":true,"database":"cyber_swiss_blade",...}` | The Worker and the database work. The name is your database name (step 2.7). | Go to step 3.9. |
-| `{"error":"Unauthorized."}` | The token is wrong. | Do step 3.7 again for `API_TOKEN`. |
+| `{"ok":true,"database":"cyber_swiss_blade",...,"setupRequired":true}` | The Worker and the database work. The name is your database name (step 2.7). `setupRequired` is `true` until you do step 5.1. | Go to step 3.9. |
+| `{"error":"The server is not configured."}` | The `API_TOKEN` secret is missing or too short. | Do step 3.7 again for `API_TOKEN`. |
 | `{"error":"The sync server could not complete the request."}` | The Worker cannot connect to the database. | Make sure that step 2.5 shows **Active**. Make sure that your **Connection string** has no `<db_password>` text. Then do step 3.7 again for `MONGODB_URI`. |
 | `Could not resolve host` | The address is wrong. | Look for a typing error in your **Worker URL**. |
 
@@ -498,18 +504,61 @@ If you do not see a run, do these steps:
 
 ---
 
-## Part 5: Connect the app to the Worker
+## Part 5: Connect the app and add your team
 
-### 5.1 Enter the sync settings
+Timesheet and Quotations need an account. AES Encryption and Base64 work without an account.
+
+### 5.1 Create the administrator
+
+You do this step one time only.
 
 1. Open your **Website URL** in your browser.
-2. In the left menu of the app, click **Settings**. On a phone, tap **☰** first.
-3. In **API URL**, paste your **Worker URL**. Example: `https://cyber-swiss-blade-api.jsmith.workers.dev`
-4. In **API token**, paste your **API token**. Example: a line of 64 letters and digits.
-5. Click **Save and sync**.
-   **Result:** A message shows **Connected to cyber_swiss_blade**, or your database name from step 2.7. The menu shows **Synced just now**.
+2. In the left menu of the app, click **Sign in**. On a phone, tap **☰** first.
+3. In **Server URL**, paste your **Worker URL**. Example: `https://cyber-swiss-blade-api.jsmith.workers.dev`
+4. Type any username and password. Click **Sign in**.
+   **Result:** The page shows **Create the administrator**, because the server has no users yet.
+5. In **Setup key**, paste your **Setup key**.
+6. In **Username**, keep `admin`, or type a different name. Save it with the name **Admin username**.
+7. In **Display name**, type your name. Example: `Jo Smith`.
+8. In **Password** and **Confirm password**, type a new password with at least 10 characters. Save it with the name **Admin password**.
+9. Click **Create administrator**.
+   **Result:** The menu shows your name and **Administration**. The sync status shows **Synced just now**.
 
-### 5.2 Install the app (optional)
+> **NOTE:** After step 5.1, the setup key cannot make another administrator. Only an administrator can add users.
+
+### 5.2 Add your team members
+
+1. In the left menu, click **Administration**.
+2. On the **Users** tab, click **Add user**.
+3. Type the **Username**, **Display name**, and **Email** of the person. Example: `thabo`, `Thabo M`, `thabo@example.com`.
+4. Select the roles of the person. Every user has the role **Registered users**.
+5. Type a first password for the person. Type it again in **Confirm password**.
+6. Click **Add user**.
+   **Result:** The person shows in the list with the status **Active**.
+7. Give the username and the first password to the person in a safe way. Tell the person to change the password in **Settings**, then **Change password**.
+
+### 5.3 Give access with roles and permissions
+
+The default access is:
+
+| Tool | Who can view | Who can edit |
+| --- | --- | --- |
+| Timesheet | Every user. Each person sees only their own timesheet. Administrators see the timesheets of all users. | Every user |
+| Quotations | Administrators only | Administrators only |
+
+To give other people access to Quotations:
+
+1. In **Administration**, click the **Roles** tab.
+2. Click **Add role**.
+3. In **Role ID**, type `quotation-editors`. In **Name**, type `Quotation editors`. Click **Add role**.
+4. Click the **Users** tab. Click the edit icon next to a person. Select **Quotation editors**. Click **Save user**.
+5. Click the **Permissions** tab.
+6. In the **Quotations** table, on the **Quotation editors** row, select **Edit**.
+   **Result:** A message shows **Quotations permissions saved**. The person sees Quotations after the next sync, or after they sign in again.
+
+> **NOTE:** Select only **View** to let a role read quotes and invoices but not change them.
+
+### 5.4 Install the app (optional)
 
 | Device | Steps |
 | --- | --- |
@@ -517,18 +566,51 @@ If you do not see a run, do these steps:
 | iPhone or iPad (Safari) | Tap **Share**. Tap **Add to Home Screen**. Tap **Add**. |
 | Android (Chrome) | Tap **⋮**. Tap **Install app** or **Add to Home screen**. |
 
-### 5.3 Add another device
+### 5.5 Use another device
 
 1. On the other device, open your **Website URL**.
-2. Do step 5.1 again.
+2. Click **Sign in**. Type the **Worker URL**, your username, and your password. Click **Sign in**.
    **Result:** Both devices show the same data.
 
-### 5.4 See your data in MongoDB (optional)
+> **CAUTION:** When you sign out, the device deletes its copy of your Timesheet and Quotations data. Changes that did not sync yet are lost. The app warns you first.
+
+### 5.6 See your data in MongoDB (optional)
 
 1. In MongoDB Atlas, in the left menu, under **Database**, click **Clusters**.
 2. On the `csb-cluster` card, click **Browse Collections**. Some screens show **Data Explorer**.
 3. Click the database `cyber_swiss_blade`, or your database name from step 2.7.
-   **Result:** You see one collection for each type of data, for example `timesheet_projects`.
+   **Result:** You see one collection for each type of data, for example `timesheet_logs`. The `auth_` collections hold the users, roles, and permissions. Do not change them in Atlas.
+
+### 5.7 Import your Agile Report (one time, optional)
+
+You can copy an existing Agile Report workbook (`.xlsx`) into your timesheet. The import reads each day like this:
+
+| Part of the comment | Becomes |
+| --- | --- |
+| Text before ` || ` | A note, with the project from column B |
+| Each part that starts with a billing code and ` - `. Billing codes start with `CR-`, `PR-`, `WR-`, or `9001`, or are column B codes such as `Productive`. | One billing code item |
+| `For 1.5 hours,` at the start of an item | The hours of that item |
+| Text in `[ ]` at the end of an item | The summary of that item |
+
+1. Go to the project folder (step 1.4).
+2. Type this command. Replace the file path with the path of your workbook. Press **Enter**.
+   ```sh
+   node scripts/import-agile-report.mjs "2026 Agile Report.xlsx" --dry-run
+   ```
+   **Result:** Terminal shows the number of days and billing codes for each month. Nothing is sent.
+3. Type the same command again. Replace `--dry-run` with `--api` and your **Worker URL**. Press **Enter**.
+   Example:
+   ```sh
+   node scripts/import-agile-report.mjs "2026 Agile Report.xlsx" --api https://cyber-swiss-blade-api.jsmith.workers.dev
+   ```
+4. Type your username and password when Terminal asks.
+   **Result:** Terminal shows `Import complete`.
+5. Open the Timesheet in the app.
+   **Result:** After the next sync, the Month tab shows the imported days.
+
+> **NOTE:** If you run the import again, it updates the same entries. It does not make copies.
+
+> **NOTE:** Older versions of the app saved the timesheet in `timesheet_projects` and `timesheet_entries`. The new app does not use them. To delete them, open **Browse Collections** (step 5.6). Point to each collection and click the **trash** icon.
 
 ---
 
@@ -538,9 +620,12 @@ If you do not see a run, do these steps:
 | --- | --- | --- |
 | Change the app | Do step 4.5 (only `git add`, `git commit`, and `git push`). | GitHub deploys the new version. The app shows **A new version is ready**. Click **Reload**. |
 | Change the Worker | In Terminal, type `npm run worker:deploy`. | The new Worker is online after some seconds. |
-| Change the API token | Do steps 3.6 and 3.7 (only `API_TOKEN`). Then do step 5.1 on each device. | The old token stops working. |
+| Change the setup key | Do steps 3.6 and 3.7 (only `API_TOKEN`). | All users must sign in again, unless you use a separate session key. |
+| Use a separate session key (recommended) | Make a new value as in step 3.6. In the `worker` folder, type `npx wrangler@4.151.3 secret put SESSION_SECRET` and paste the value. | Sessions use this key, not the setup key. All users must sign in again one time. |
+| Reset the password of a user | In **Administration**, on the **Users** tab, click the edit icon. Type a **New password**. Click **Save user**. | The user signs in with the new password. Other sessions of the user end. |
+| Stop a person from signing in | In **Administration**, edit the user. Select **Disable this account**. Click **Save user**. | The person cannot sign in or sync. Their data stays. |
 | Change the database password | In Atlas, go to **Database & Network Access**, then **Database Users**. Click **Edit**, then **Edit Password**. Make a new **Connection string** (step 2.6). Do step 3.7 (only `MONGODB_URI`). | The app continues to work. |
-| Use a new database | For a different cluster, make a new **Connection string** and do step 3.7 (only `MONGODB_URI`). For a different name, do step 2.7. Type `npm run worker:deploy`. In the app, click **Settings**, then **Disconnect**. Then do step 5.1. | Each device sends its data to the new database. |
+| Use a new database | For a different cluster, make a new **Connection string** and do step 3.7 (only `MONGODB_URI`). For a different name, do step 2.7. Type `npm run worker:deploy`. Then do step 5.1 again, because the new database has no users. | The new database starts empty. |
 
 ---
 
@@ -572,7 +657,12 @@ The Worker log tells you why sync failed.
 | The **Actions** tab shows no run. | Do step 4.3. Then do the "If you do not see a run" steps in 4.6. |
 | The **Actions** run shows a red cross. | Click the run. Click the failed job. Read the last lines. Make sure that step 4.2 shows **GitHub Actions**. |
 | `git push` fails with a message about `workflow`. | Your token has no **workflow** access. Do step 4.4 again. Select **workflow**. |
-| The app shows "The API token was rejected." | The token in the app is different from the Worker token. Do step 5.1 again. Paste your **API token** carefully. |
+| The app shows "Your session has ended. Sign in again." | Click **Sign in** in the menu and sign in. This happens after a password change, after 30 days, or when the setup key changes. |
+| The app shows "The username or password is wrong." | Type the username in lowercase letters. Ask an administrator to reset your password (Part 6). |
+| The app shows "Too many failed attempts." | Wait 15 minutes. Then try again. |
+| The app shows "The setup key is wrong." | Paste your **Setup key** again. It must be the same value as the `API_TOKEN` secret (step 3.7). |
+| The app shows "Setup is already complete." | An administrator exists. Sign in with that account. |
+| The app shows "You do not have access to Quotations." | Ask an administrator to give one of your roles **View** permission (step 5.3). |
 | The app shows "Network error." | Make sure that your **Worker URL** is correct. Make sure that step 3.3 has your GitHub username. Then type `npm run worker:deploy`. |
 | The app shows "The sync server could not complete the request." | Read the Worker log (7.1). Make sure that step 2.5 shows **Active**. Make sure that your **Connection string** has the password and no `<db_password>` text. |
 | Atlas shows the cluster as **Paused**. | Click **Resume** on the cluster card. |

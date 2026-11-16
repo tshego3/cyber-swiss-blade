@@ -5,7 +5,7 @@ description: How Cyber Swiss Blade modules are structured and how to add a new t
 
 # Modules
 
-The modular design follows Oqtane: a shell hosts independent modules; each declares itself and owns its views and data. Unlike Oqtane, there is no runtime plugin loading or permission system. Registration is one import.
+The modular design follows Oqtane: a shell hosts independent modules; each declares itself and owns its views and data. Like Oqtane, restricted modules have View and Edit permissions per role, managed in Administration. Unlike Oqtane, there is no runtime plugin loading. Registration is one import plus, for synced modules, one entry in `shared/access.ts`.
 
 ## Anatomy
 
@@ -31,6 +31,7 @@ interface ToolModule {
   readonly summary: string;                 // one sentence for the home card
   readonly icon: IconName;                  // add paths to src/core/icons.ts if needed
   readonly category: ModuleCategory;        // groups the sidebar
+  readonly access: 'public' | 'restricted'; // restricted = sign-in plus View permission
   readonly collections: readonly string[];  // synced collections; [] for device-only tools
   readonly load: () => Promise<ModuleView>; // () => import('./view')
 }
@@ -39,14 +40,16 @@ interface ToolModule {
 ## Adding a Module (Checklist)
 
 1. Create `src/modules/<id>/` with the files above.
-2. Synced data: in `types.ts`, define `type` aliases, `ShapeOf<T>` validators, and collection names. Prefix each name with the module id, as in `timesheet_entries`. Names must match `COLLECTION_PATTERN`.
+2. Synced data: in `types.ts`, define `type` aliases, `ShapeOf<T>` validators, and collection names. Prefix each name with the module id, as in `timesheet_logs`. Names must match `COLLECTION_PATTERN`.
 3. In `data.ts`, create repositories with `createRepository<T>(collection, shape)`. Export pure functions and test them.
 4. Views follow `csb-state-testing` (4-branch rendering) and `csb-design-system`. Start with `moduleHeader(...)` from `core/ui`.
 5. Subscribe to `onDataChange` for the module's collections so remote sync refreshes the view. Unsubscribe in `Unmount`.
 6. Add one line to `registry.ts`.
+7. Synced modules: set `access: 'restricted'` and add the module to `MODULE_ACCESS` in `shared/access.ts` (same collections, owner-scoped collections, default roles). `registry.test.ts` checks that they match. Deploy the Worker.
+8. Views read `context.canEdit` (disable inputs and hide actions when false) and `context.user` (the signed-in user, for example for "Prepared by").
 7. Run `npm run lint && npm test && npm run build`.
 
-You need no Worker change, no IndexedDB schema bump, and no service worker edit. All records share one `records` store keyed by `[collection, id]`, and the precache list comes from the build.
+You need no Worker code change, no IndexedDB schema bump, and no service worker edit. All records share one `records` store keyed by `[collection, id]`, and the precache list comes from the build.
 
 ## Boundaries
 

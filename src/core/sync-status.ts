@@ -14,6 +14,8 @@ export function describeSyncState(state: SyncState, now = Date.now()): SyncStatu
   switch (state.kind) {
     case 'local-only':
       return { label: 'Local only', detail: 'Data stays on this device until you connect sync', icon: 'cloud-off', tone: 'muted' };
+    case 'signed-out':
+      return { label: 'Signed out', detail: 'Sign in to sync your data', icon: 'cloud-off', tone: 'muted' };
     case 'syncing':
       return { label: 'Syncing', detail: pending, icon: 'refresh', tone: 'busy' };
     case 'offline':

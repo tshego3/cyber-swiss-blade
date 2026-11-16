@@ -1,17 +1,20 @@
 import { connect } from 'cloudflare:sockets';
-import type { ErrorResponse, StatusResponse, SyncResponse } from '../../shared/protocol';
-import { parseMongoUri, withDatabase, type Connector } from './mongo/client';
+import type { StatusResponse } from '../../shared/protocol';
+import { handleAdmin } from './admin';
+import { authenticate, handleLogin, handlePassword, handleProfile, handleSetup, isSetupRequired, sessionResponse, type AuthEnv } from './auth';
+import { httpError, isHttpError, json, readJson, readObject } from './http';
+import { parseMongoUri, withDatabase, type Connector, type MongoDatabase } from './mongo/client';
 import { handleSync, parseSyncRequest, type ValidationError } from './sync';
 
 export interface Env {
   readonly MONGODB_URI: string;
   readonly API_TOKEN: string;
+  readonly SESSION_SECRET?: string;
   readonly MONGODB_DB: string;
   readonly ALLOWED_ORIGINS: string;
 }
 
-const MAX_BODY_BYTES = 1_000_000;
-const MIN_TOKEN_LENGTH = 32;
+const MIN_SECRET_LENGTH = 32;
 
 const connector: Connector = (address, tls) =>
   connect({ hostname: address.host, port: address.port }, { secureTransport: tls ? 'on' : 'off', allowHalfOpen: false });
@@ -22,10 +25,10 @@ export default {
     const cors = corsHeaders(origin, env.ALLOWED_ORIGINS);
     if (origin && !cors) return json({ error: 'Origin not allowed.' }, 403, {});
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors ?? {} });
-    if (!(await isAuthorized(request, env.API_TOKEN))) return json({ error: 'Unauthorized.' }, 401, cors ?? {});
     try {
-      return await route(request, env, cors ?? {});
+      return json(await route(request, env), 200, cors ?? {});
     } catch (error) {
+      if (isHttpError(error)) return json({ error: error.message }, error.status, cors ?? {});
       if (isValidationError(error)) return json({ error: error.message }, 400, cors ?? {});
       console.error('Request failed', error);
       return json({ error: 'The sync server could not complete the request.' }, 502, cors ?? {});
@@ -33,21 +36,34 @@ export default {
   },
 };
 
-async function route(request: Request, env: Env, cors: Record<string, string>): Promise<Response> {
-  const { pathname } = new URL(request.url);
-  const settings = parseMongoUri(env.MONGODB_URI);
+async function route(request: Request, env: Env): Promise<object> {
+  if (!env.API_TOKEN || env.API_TOKEN.length < MIN_SECRET_LENGTH) throw httpError(500, 'The server is not configured.');
+  const auth: AuthEnv = { secret: env.API_TOKEN, sessionSecret: env.SESSION_SECRET && env.SESSION_SECRET.length >= MIN_SECRET_LENGTH ? env.SESSION_SECRET : env.API_TOKEN, now: Date.now };
   const databaseName = env.MONGODB_DB || 'cyber_swiss_blade';
-  if (request.method === 'GET' && pathname === '/status') {
-    await withDatabase(settings, databaseName, connector, (database) => database.command({ ping: 1 }));
-    const body: StatusResponse = { ok: true, database: databaseName, serverTime: new Date().toISOString() };
-    return json(body, 200, cors);
+  const segments = new URL(request.url).pathname.split('/').filter(Boolean);
+  return withDatabase(parseMongoUri(env.MONGODB_URI), databaseName, connector, (database) => dispatch(database, request, segments, auth));
+}
+
+async function dispatch(database: MongoDatabase, request: Request, segments: readonly string[], auth: AuthEnv): Promise<object> {
+  const { method } = request;
+  const path = segments.join('/');
+  if (method === 'GET' && path === 'status') {
+    const body: StatusResponse = { ok: true, database: database.name, serverTime: new Date(auth.now()).toISOString(), setupRequired: await isSetupRequired(database) };
+    return body;
   }
-  if (request.method === 'POST' && pathname === '/sync') {
+  if (method === 'POST' && path === 'auth/setup') return handleSetup(database, await readObject(request), auth);
+  if (method === 'POST' && path === 'auth/login') return handleLogin(database, await readObject(request), auth);
+
+  const context = await authenticate(database, request, auth);
+  if (method === 'GET' && path === 'auth/me') return sessionResponse(database, context.user, auth);
+  if (method === 'POST' && path === 'auth/password') return handlePassword(database, context, await readObject(request), auth);
+  if (method === 'PUT' && path === 'auth/profile') return handleProfile(database, context, await readObject(request), auth);
+  if (method === 'POST' && path === 'sync') {
     const syncRequest = parseSyncRequest(await readJson(request));
-    const response = await withDatabase(settings, databaseName, connector, (database) => handleSync(database, syncRequest, Date.now));
-    return json(response, 200, cors);
+    return handleSync(database, syncRequest, auth.now, { userId: context.user.id, isAdmin: context.isAdmin, grants: context.grants });
   }
-  return json({ error: 'Not found.' }, 404, cors);
+  if (segments[0] === 'admin') return handleAdmin(database, context, method, segments.slice(1), () => readObject(request), auth.now());
+  throw httpError(404, 'Not found.');
 }
 
 function corsHeaders(origin: string | null, allowed: string): Record<string, string> | null {
@@ -55,46 +71,11 @@ function corsHeaders(origin: string | null, allowed: string): Record<string, str
   if (!origin || !origins.includes(origin)) return null;
   return {
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Authorization, Content-Type',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   };
-}
-
-async function isAuthorized(request: Request, token: string): Promise<boolean> {
-  if (!token || token.length < MIN_TOKEN_LENGTH) return false;
-  const header = request.headers.get('Authorization') ?? '';
-  const provided = header.startsWith('Bearer ') ? header.slice(7) : '';
-  const [expectedHash, providedHash] = await Promise.all([sha256(token), sha256(provided)]);
-  return expectedHash.every((byte, index) => byte === providedHash[index]) && provided.length > 0;
-}
-
-async function sha256(value: string): Promise<Uint8Array> {
-  return new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)));
-}
-
-async function readJson(request: Request): Promise<unknown> {
-  const length = Number(request.headers.get('Content-Length') ?? 0);
-  if (length > MAX_BODY_BYTES) throw validation('Request body is too large.');
-  const text = await request.text();
-  if (text.length > MAX_BODY_BYTES) throw validation('Request body is too large.');
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw validation('Request body is not valid JSON.');
-  }
-}
-
-function json(body: StatusResponse | SyncResponse | ErrorResponse, status: number, headers: Record<string, string>): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...headers, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-  });
-}
-
-function validation(message: string): ValidationError {
-  return { type: 'validation', message };
 }
 
 function isValidationError(error: unknown): error is ValidationError {

@@ -9,10 +9,17 @@ import { button } from './ui';
 export interface Shell {
   readonly main: HTMLElement;
   readonly setActive: (section: string) => void;
+  readonly refresh: () => void;
+}
+
+export interface ShellAccount {
+  readonly name: string | null;
+  readonly isAdmin: boolean;
 }
 
 export interface ShellOptions {
-  readonly modules: readonly ToolModule[];
+  readonly modules: () => readonly ToolModule[];
+  readonly account: () => ShellAccount;
   readonly sync: SyncEngine;
   readonly openPalette: () => void;
 }
@@ -32,14 +39,40 @@ export function createShell(root: HTMLElement, options: ShellOptions): Shell {
     return anchor;
   };
 
-  const categories = [...new Set(options.modules.map((module) => module.category))];
-  const nav = el('nav', { class: 'nav', attrs: { 'aria-label': 'Tools' } }, [
-    link('', 'Home', 'home'),
-    ...categories.flatMap((category) => [
-      el('p', { class: 'nav-group', text: category }),
-      ...options.modules.filter((module) => module.category === category).map((module) => link(module.id, module.title, module.icon)),
-    ]),
-  ]);
+  const nav = el('nav', { class: 'nav', attrs: { 'aria-label': 'Tools' } });
+  const accountLinks = el('div', { class: 'account-links' });
+  let active = '';
+
+  const refresh = (): void => {
+    for (const [key, anchor] of navLinks) {
+      if (nav.contains(anchor) || accountLinks.contains(anchor)) navLinks.delete(key);
+    }
+    const modules = options.modules();
+    const categories = [...new Set(modules.map((module) => module.category))];
+    replaceChildren(nav, [
+      link('', 'Home', 'home'),
+      ...categories.flatMap((category) => [
+        el('p', { class: 'nav-group', text: category }),
+        ...modules.filter((module) => module.category === category).map((module) => link(module.id, module.title, module.icon)),
+      ]),
+    ]);
+    const account = options.account();
+    replaceChildren(accountLinks, [
+      account.isAdmin && link('admin', 'Administration', 'shield'),
+      account.name
+        ? el('a', { class: 'nav-link', attrs: { href: '#/settings', title: 'Your account' }, on: { click: closeNav } }, [icon('user'), el('span', { text: account.name })])
+        : link('sign-in', 'Sign in', 'lock'),
+    ]);
+    setActive(active);
+  };
+
+  const setActive = (section: string): void => {
+    active = section;
+    for (const [key, anchor] of navLinks) {
+      if (key === section) anchor.setAttribute('aria-current', 'page');
+      else anchor.removeAttribute('aria-current');
+    }
+  };
 
   const sidebar = el('aside', { class: 'sidebar', attrs: { id: 'sidebar' } }, [
     el('a', { class: 'brand', attrs: { href: '#/' } }, [el('span', { class: 'brand-mark' }, [icon('blade', 18)]), el('span', { class: 'brand-name', text: 'Cyber Swiss Blade' })]),
@@ -49,7 +82,7 @@ export function createShell(root: HTMLElement, options: ShellOptions): Shell {
       el('kbd', { text: /Mac|iPhone|iPad/.test(navigator.userAgent) ? '⌘K' : 'Ctrl K' }),
     ]),
     nav,
-    el('div', { class: 'sidebar-footer' }, [syncIndicator(options.sync), themeToggle(), link('settings', 'Settings', 'settings')]),
+    el('div', { class: 'sidebar-footer' }, [syncIndicator(options.sync), accountLinks, themeToggle(), link('settings', 'Settings', 'settings')]),
   ]);
 
   const topbar = el('header', { class: 'topbar' }, [
@@ -64,15 +97,8 @@ export function createShell(root: HTMLElement, options: ShellOptions): Shell {
     if (event.key === 'Escape') closeNav();
   });
 
-  return {
-    main,
-    setActive(section) {
-      for (const [key, anchor] of navLinks) {
-        if (key === section) anchor.setAttribute('aria-current', 'page');
-        else anchor.removeAttribute('aria-current');
-      }
-    },
-  };
+  refresh();
+  return { main, setActive, refresh };
 }
 
 function syncIndicator(sync: SyncEngine): HTMLButtonElement {

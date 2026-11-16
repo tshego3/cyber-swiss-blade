@@ -25,7 +25,7 @@ The look is calm and editorial: paper-like warm neutrals, monochrome primary and
 | `--success` / `--warning` / `--danger` | green / amber / red | lighter tints | status only, never decoration |
 
 4. Do not introduce a hue for branding. Primary and secondary stay monochrome; hover states mix the accent toward `--bg`.
-5. Depth comes from 1px `--border` lines plus subtle `--shadow-sm/md/lg`. No heavy borders or gradients, except the faint accent wash on the running timer.
+5. Depth comes from 1px `--border` lines plus subtle `--shadow-sm/md/lg`. No heavy borders or gradients.
 
 ## Typography
 
@@ -42,7 +42,7 @@ The look is calm and editorial: paper-like warm neutrals, monochrome primary and
 
 ## UI Kit (`src/core/ui.ts`) - use before writing new markup
 
-`button`, `field`, `selectControl`, `segmented`, `moduleHeader`/`pageHeader`, `tabs`, `loadingState`/`errorState`/`emptyState`, `openFormDialog`, `confirmAction`, `toast`, `dropZone`, `downloadBlob`, `copyToClipboard`. Icons come from `icon(name)` in `src/core/icons.ts`. These are hand-drawn 24px stroke paths. Add new paths there; do not import icon packages.
+`button`, `field`, `selectControl`, `segmented`, `moduleHeader`/`pageHeader`, `tabs`, `loadingState`/`errorState`/`emptyState`, `openFormDialog`, `confirmAction`, `toast`, `dropZone`, `downloadBlob`, `copyToClipboard`. Tables use `.card.table-card` around `table.data-table`, with `.cell-title`, `.cell-meta`, `.cell-actions`, and `.cell-center`. Icons come from `icon(name)` in `src/core/icons.ts`. These are hand-drawn 24px stroke paths. Add new paths there; do not import icon packages.
 
 ## Interaction
 

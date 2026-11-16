@@ -6,6 +6,7 @@ import { matchesShape, type ShapeOf } from './shape';
 export interface EntityMeta {
   readonly id: string;
   readonly updatedAt: string;
+  readonly ownerId?: string;
 }
 
 export type Entity<T> = T & EntityMeta;
@@ -18,10 +19,13 @@ export interface Repository<T extends JsonObject> {
   readonly remove: (id: string) => Promise<void>;
 }
 
-export function createRepository<T extends JsonObject>(collection: string, shape: ShapeOf<T>): Repository<T> {
+export function createRepository<T extends JsonObject>(collection: string, shape: ShapeOf<T>, upgrade: (data: JsonObject) => JsonObject = (data) => data): Repository<T> {
   const toEntity = (record: StoredRecord | undefined): Entity<T> | undefined => {
-    if (!record || record.deleted || !matchesShape<T>(record.data, shape)) return undefined;
-    return { ...record.data, id: record.id, updatedAt: record.updatedAt };
+    if (!record || record.deleted) return undefined;
+    const data = upgrade(record.data);
+    if (!matchesShape<T>(data, shape)) return undefined;
+    const entity: Entity<T> = { ...data, id: record.id, updatedAt: record.updatedAt };
+    return record.ownerId === undefined ? entity : { ...entity, ownerId: record.ownerId };
   };
 
   return {
@@ -34,7 +38,9 @@ export function createRepository<T extends JsonObject>(collection: string, shape
       return toEntity(await getRecord(collection, id));
     },
     async save(data, id = newId()) {
-      const record: StoredRecord = { collection, id, updatedAt: nowIso(), deleted: false, data: withoutMeta(data) };
+      const existing = await getRecord(collection, id);
+      const base: StoredRecord = { collection, id, updatedAt: nowIso(), deleted: false, data: withoutMeta(data) };
+      const record: StoredRecord = existing?.ownerId === undefined ? base : { ...base, ownerId: existing.ownerId };
       await writeLocal(record);
       return { ...data, id, updatedAt: record.updatedAt };
     },
@@ -45,5 +51,5 @@ export function createRepository<T extends JsonObject>(collection: string, shape
 }
 
 function withoutMeta(data: JsonObject): JsonObject {
-  return Object.fromEntries(Object.entries(data).filter(([key]) => key !== 'id' && key !== 'updatedAt'));
+  return Object.fromEntries(Object.entries(data).filter(([key]) => key !== 'id' && key !== 'updatedAt' && key !== 'ownerId'));
 }

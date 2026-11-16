@@ -1,10 +1,12 @@
 import { MAX_CHANGES_PER_COLLECTION, type CollectionSyncRequest, type SyncRecord } from '../../shared/protocol';
-import { isApiError, loadApiConfig, postSync } from './api';
+import { isApiError, loadApiConfig, postSync, type ApiAuth } from './api';
 import { applySyncResult, getCursor, getMeta, getRecord, listOutbox, onDataChange, setMeta, type OutboxEntry } from './db';
-import type { ApiConfig, SyncState } from './types';
+import { expireSession, getSession, refreshSession } from './session';
+import type { SyncState } from './types';
 
 const LAST_SYNC_KEY = 'last-synced-at';
 const MAX_ROUNDS = 10;
+const MAX_PASSES = 3;
 const LOCAL_CHANGE_DELAY_MS = 2_000;
 const INTERVAL_MS = 5 * 60_000;
 
@@ -22,10 +24,11 @@ interface PreparedCollection {
   readonly pushed: readonly OutboxEntry[];
 }
 
-export function createSyncEngine(collections: readonly string[]): SyncEngine {
+export function createSyncEngine(collections: () => readonly string[]): SyncEngine {
   const listeners = new Set<SyncListener>();
   let current: SyncState = { kind: 'local-only', pending: 0 };
   let running: Promise<void> | null = null;
+  let again = false;
   let debounce: ReturnType<typeof setTimeout> | undefined;
 
   const publish = (state: SyncState): void => {
@@ -35,12 +38,17 @@ export function createSyncEngine(collections: readonly string[]): SyncEngine {
 
   const run = async (): Promise<void> => {
     const config = await loadApiConfig();
+    const session = getSession();
     const pending = await countPending();
     if (!config) return publish({ kind: 'local-only', pending });
+    if (!session) return publish({ kind: 'signed-out', pending });
     if (!navigator.onLine) return publish({ kind: 'offline', pending });
     publish({ kind: 'syncing', pending });
+    const userId = session.user.id;
+    const sameUser = (): boolean => getSession()?.user.id === userId;
     try {
-      await syncRounds(config, collections);
+      await syncRounds({ baseUrl: config.baseUrl, token: session.token }, collections(), sameUser);
+      if (!sameUser()) return;
       const lastSyncedAt = new Date().toISOString();
       await setMeta(LAST_SYNC_KEY, lastSyncedAt);
       publish({ kind: 'idle', pending: await countPending(), lastSyncedAt });
@@ -48,11 +56,23 @@ export function createSyncEngine(collections: readonly string[]): SyncEngine {
       const message = isApiError(error) ? error.message : 'Something went wrong. Please try again.';
       if (!isApiError(error)) console.error('Sync failed', error);
       publish({ kind: 'error', pending: await countPending(), message });
+      if (isApiError(error) && error.type === 'unauthorized' && sameUser()) await expireSession();
+      else if (isApiError(error) && error.type === 'forbidden' && sameUser()) await refreshSession().catch(() => undefined);
     }
   };
 
   const syncNow = (): Promise<void> => {
-    running ??= run().finally(() => {
+    if (running) {
+      again = true;
+      return running;
+    }
+    running = (async () => {
+      for (let pass = 0; pass < MAX_PASSES; pass += 1) {
+        again = false;
+        await run();
+        if (!again) return;
+      }
+    })().finally(() => {
       running = null;
     });
     return running;
@@ -100,21 +120,24 @@ export function createSyncEngine(collections: readonly string[]): SyncEngine {
   };
 }
 
-async function syncRounds(config: ApiConfig, collections: readonly string[]): Promise<void> {
+async function syncRounds(auth: ApiAuth, collections: readonly string[], sameUser: () => boolean): Promise<void> {
+  if (collections.length === 0) return;
   for (let round = 0; round < MAX_ROUNDS; round += 1) {
-    const hasMore = await syncRound(config, collections);
+    const hasMore = await syncRound(auth, collections, sameUser);
     if (!hasMore) return;
   }
 }
 
-async function syncRound(config: ApiConfig, collections: readonly string[]): Promise<boolean> {
+async function syncRound(auth: ApiAuth, collections: readonly string[], sameUser: () => boolean): Promise<boolean> {
   const prepared = new Map<string, PreparedCollection>();
   for (const collection of collections) {
     prepared.set(collection, await prepareCollection(collection));
   }
-  const response = await postSync(config, {
+  const response = await postSync(auth, {
     collections: Object.fromEntries([...prepared].map(([collection, entry]) => [collection, entry.request])),
   });
+  // The user signed out or switched accounts while the request ran: never write their records into the new state.
+  if (!sameUser()) return false;
   let hasMore = false;
   for (const [collection, entry] of prepared) {
     const result = response.collections[collection];

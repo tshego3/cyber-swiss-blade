@@ -9,6 +9,7 @@ const CURSOR_PREFIX = 'cursor:';
 
 export interface StoredRecord extends SyncRecord {
   readonly collection: string;
+  readonly ownerId?: string;
 }
 
 export interface OutboxEntry {
@@ -60,8 +61,8 @@ export async function listOutbox(collection?: string): Promise<OutboxEntry[]> {
   return requestResult<OutboxEntry[]>(store.getAll(range));
 }
 
-export function isUnchanged(local: StoredRecord | undefined, remote: SyncRecord): boolean {
-  return local !== undefined && local.updatedAt === remote.updatedAt && local.deleted === remote.deleted;
+export function isUnchanged(local: StoredRecord | undefined, remote: SyncRecord & { readonly ownerId?: string }): boolean {
+  return local !== undefined && local.updatedAt === remote.updatedAt && local.deleted === remote.deleted && local.ownerId === remote.ownerId;
 }
 
 export function shouldApplyRemote(local: StoredRecord | undefined, pending: OutboxEntry | undefined, remote: SyncRecord): boolean {
@@ -89,7 +90,8 @@ export async function applySyncResult(
     const local = await requestResult<StoredRecord | undefined>(records.get(key));
     const pending = await requestResult<OutboxEntry | undefined>(outbox.get(key));
     if (isUnchanged(local, record) || !shouldApplyRemote(local, pending, record)) continue;
-    records.put({ collection, id: record.id, updatedAt: record.updatedAt, deleted: record.deleted, data: record.data } satisfies StoredRecord);
+    const stored: StoredRecord = { collection, id: record.id, updatedAt: record.updatedAt, deleted: record.deleted, data: record.data };
+    records.put(record.ownerId === undefined ? stored : { ...stored, ownerId: record.ownerId });
     outbox.delete(key);
     changed += 1;
   }
@@ -134,6 +136,19 @@ export async function deleteMeta(key: string): Promise<void> {
   const db = await openDatabase();
   const transaction = db.transaction(META, 'readwrite');
   transaction.objectStore(META).delete(key);
+  await transactionDone(transaction);
+}
+
+export async function clearSyncedData(): Promise<void> {
+  const db = await openDatabase();
+  const transaction = db.transaction([RECORDS, OUTBOX, META], 'readwrite');
+  transaction.objectStore(RECORDS).clear();
+  transaction.objectStore(OUTBOX).clear();
+  const meta = transaction.objectStore(META);
+  const keys = await requestResult<IDBValidKey[]>(meta.getAllKeys());
+  for (const key of keys) {
+    if (typeof key === 'string' && key.startsWith(CURSOR_PREFIX)) meta.delete(key);
+  }
   await transactionDone(transaction);
 }
 

@@ -4,9 +4,10 @@ import { TIMESHEET_COLLECTIONS } from './types';
 export const timesheetModule: ToolModule = {
   id: 'timesheet',
   title: 'Timesheet',
-  summary: 'Track developer hours per project with a live timer, weekly totals, and CSV export.',
+  summary: 'Weekly Agile Report: work per billing code, meetings, and summaries, merged per day. Export to Excel.',
   icon: 'clock',
   category: 'Productivity',
+  access: 'restricted',
   collections: Object.values(TIMESHEET_COLLECTIONS),
   load: () => import('./view'),
 };

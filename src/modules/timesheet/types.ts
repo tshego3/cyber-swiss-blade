@@ -2,62 +2,98 @@ import type { Entity } from '../../core/repository';
 import type { ShapeOf } from '../../core/shape';
 
 export const TIMESHEET_COLLECTIONS = {
-  projects: 'timesheet_projects',
-  entries: 'timesheet_entries',
+  codes: 'timesheet_codes',
+  logs: 'timesheet_logs',
+  prefs: 'timesheet_prefs',
 } as const;
 
-export type Project = {
+export type LogKind = 'work' | 'meeting' | 'note' | 'leave' | 'holiday';
+
+export const LOG_KINDS: readonly LogKind[] = ['work', 'meeting', 'note', 'leave', 'holiday'];
+
+export const KIND_BADGES: Readonly<Record<LogKind, string>> = {
+  work: 'Code',
+  meeting: 'Meeting',
+  note: 'Note',
+  leave: 'Leave',
+  holiday: 'Holiday',
+};
+
+export const KIND_LABELS: Readonly<Record<LogKind, string>> = {
+  work: 'Billing code',
+  meeting: 'Meeting',
+  note: 'Note',
+  leave: 'Leave',
+  holiday: 'Public holiday',
+};
+
+export type BillingCode = {
   readonly name: string;
-  readonly client: string;
-  readonly hourlyRate: number;
-  readonly currency: string;
   readonly archived: boolean;
 };
 
-export type TimeEntry = {
-  readonly projectId: string;
+export type TimeLog = {
   readonly date: string;
-  readonly minutes: number;
-  readonly description: string;
-  readonly billable: boolean;
+  readonly kind: LogKind;
+  readonly codeId: string;
+  readonly workItem: string;
+  readonly title: string;
+  readonly hours: number;
+  readonly comment: string;
+  readonly summary: string;
+  readonly order: number;
 };
 
-export const projectShape: ShapeOf<Project> = {
-  name: 'string',
-  client: 'string',
-  hourlyRate: 'number',
-  currency: 'string',
-  archived: 'boolean',
+export type MeetingRoutine = {
+  readonly name: string;
+  readonly hours: number;
+  readonly weekdays: string;
 };
 
-export const timeEntryShape: ShapeOf<TimeEntry> = {
-  projectId: 'string',
+export type TimesheetPrefs = {
+  readonly standingNote: string;
+  readonly dailyTarget: number;
+  readonly defaultCodeId: string;
+  readonly meetings: readonly MeetingRoutine[];
+  readonly reportTitle: string;
+  readonly reportSubtitle: string;
+};
+
+export const codeShape: ShapeOf<BillingCode> = { name: 'string', archived: 'boolean' };
+
+export const logShape: ShapeOf<TimeLog> = {
   date: 'string',
-  minutes: 'number',
-  description: 'string',
-  billable: 'boolean',
+  kind: LOG_KINDS,
+  codeId: 'string',
+  workItem: 'string',
+  title: 'string',
+  hours: 'number',
+  comment: 'string',
+  summary: 'string',
+  order: 'number',
 };
 
-export interface RunningTimer {
-  readonly projectId: string;
-  readonly description: string;
-  readonly startedAt: string;
-}
+export const meetingShape: ShapeOf<MeetingRoutine> = { name: 'string', hours: 'number', weekdays: 'string' };
 
-export interface DaySummary {
+export const prefsShape: ShapeOf<TimesheetPrefs> = {
+  standingNote: 'string',
+  dailyTarget: 'number',
+  defaultCodeId: 'string',
+  meetings: [meetingShape],
+  reportTitle: 'string',
+  reportSubtitle: 'string',
+};
+
+export type DayStatus = 'empty' | 'planned' | 'under' | 'complete' | 'over' | 'leave' | 'weekend';
+
+export interface MergedDay {
   readonly date: string;
-  readonly minutes: number;
-  readonly entries: readonly Entity<TimeEntry>[];
+  readonly codes: string;
+  readonly hours: number;
+  readonly comment: string;
 }
 
-export interface WeekSummary {
-  readonly totalMinutes: number;
-  readonly billableMinutes: number;
-  readonly amounts: readonly CurrencyAmount[];
-  readonly days: readonly DaySummary[];
-}
-
-export interface CurrencyAmount {
-  readonly currency: string;
-  readonly amount: number;
+export interface DaySheet extends MergedDay {
+  readonly logs: readonly Entity<TimeLog>[];
+  readonly status: DayStatus;
 }

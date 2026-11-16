@@ -6,6 +6,7 @@ export const base64Module: ToolModule = {
   summary: 'Convert text and files to and from Base64, with URL-safe output and data URLs.',
   icon: 'braces',
   category: 'Encoding',
+  access: 'public',
   collections: [],
   load: () => import('./view'),
 };

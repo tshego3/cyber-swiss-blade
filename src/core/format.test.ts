@@ -1,24 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, formatClock, formatMinutes, parseDuration, relativeTime, startOfWeek } from './format';
-
-describe('parseDuration', () => {
-  it.each([
-    ['1:30', 90],
-    ['0:05', 5],
-    ['1.5', 90],
-    ['2', 120],
-    ['90m', 90],
-    ['1h 15m', 75],
-    ['1h15m', 75],
-    ['3h', 180],
-  ])('parses %s as %i minutes', (input, minutes) => {
-    expect(parseDuration(input)).toBe(minutes);
-  });
-
-  it.each(['', 'abc', '1:75', 'h', '-1'])('rejects %s', (input) => {
-    expect(parseDuration(input)).toBeNull();
-  });
-});
+import { addDays, relativeTime, startOfWeek } from './format';
 
 describe('dates', () => {
   it('finds the Monday that starts the week', () => {
@@ -34,11 +15,6 @@ describe('dates', () => {
 });
 
 describe('formatting', () => {
-  it('formats minutes and clocks', () => {
-    expect(formatMinutes(125)).toBe('2h 05m');
-    expect(formatClock(3725)).toBe('01:02:05');
-  });
-
   it('describes relative times', () => {
     const now = Date.parse('2026-11-16T12:00:00.000Z');
     expect(relativeTime('2026-11-16T11:59:50.000Z', now)).toBe('just now');

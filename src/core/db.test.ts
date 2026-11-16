@@ -24,5 +24,6 @@ describe('isUnchanged', () => {
     expect(isUnchanged(local, local)).toBe(true);
     expect(isUnchanged(local, { ...local, deleted: true })).toBe(false);
     expect(isUnchanged(undefined, local)).toBe(false);
+    expect(isUnchanged(local, { ...local, ownerId: 'u1' })).toBe(false);
   });
 });
