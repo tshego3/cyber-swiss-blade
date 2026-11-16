@@ -1,0 +1,185 @@
+.timer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.timer > select {
+  flex: 0 1 220px;
+}
+
+.timer > input {
+  flex: 1 1 240px;
+}
+
+.timer.is-running {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: linear-gradient(90deg, var(--accent-soft), transparent 60%), var(--surface);
+}
+
+.timer-info {
+  display: grid;
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.timer-info .muted {
+  overflow: hidden;
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timer-clock {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 var(--accent-soft);
+  animation: pulse 1.6s var(--ease) infinite;
+}
+
+@keyframes pulse {
+  70% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+.week-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.week-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.week-label {
+  margin-left: var(--space-3);
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.days {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.day {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.day.is-empty {
+  background: transparent;
+  border-style: dashed;
+}
+
+.day.is-today {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+
+.day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.day-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.day.is-today .day-title::after {
+  content: 'Today';
+  margin-left: var(--space-2);
+  color: var(--accent-text);
+  font-weight: 500;
+}
+
+.entries {
+  display: grid;
+  margin-top: var(--space-2);
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--border);
+}
+
+.entry-main {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-project {
+  color: var(--accent-text);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.entry-description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry-duration {
+  min-width: 64px;
+  text-align: right;
+}
+
+.entry-actions {
+  display: flex;
+  opacity: 0.55;
+  transition: opacity var(--duration) var(--ease);
+}
+
+.entry:hover .entry-actions,
+.entry:focus-within .entry-actions {
+  opacity: 1;
+}
+
+@media (max-width: 560px) {
+  .week-label {
+    width: 100%;
+    margin: var(--space-2) 0 0;
+  }
+
+  .entry {
+    flex-wrap: wrap;
+  }
+
+  .entry-main {
+    flex-basis: 100%;
+  }
+
+  .entry-duration {
+    margin-right: auto;
+    text-align: left;
+  }
+
+  .entry-actions {
+    opacity: 1;
+  }
+}

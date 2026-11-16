@@ -1,0 +1,12 @@
+name = "cyber-swiss-blade-api"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[vars]
+MONGODB_DB = "cyber_swiss_blade"
+ALLOWED_ORIGINS = "https://tshego3.github.io,http://localhost:5173,http://localhost:4173"
+
+# Secrets (never commit values):
+#   npx wrangler secret put MONGODB_URI
+#   npx wrangler secret put API_TOKEN
