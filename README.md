@@ -113,7 +113,7 @@ The normal tests do not need a database. This test uses a real MongoDB database:
 MONGODB_TEST_URI='mongodb+srv://user:pass@cluster.example.mongodb.net/' npx vitest run worker/src/mongo/integration.test.ts
 ```
 
-> **CAUTION:** The test makes a database with a name that starts with `csb_test_`. Then it deletes it. The database user must have permission to delete databases.
+> **NOTE:** The test writes to a database with a name that starts with `csb_test_`. Then it deletes the test collection. MongoDB then removes the empty database.
 
 ## Packages
 

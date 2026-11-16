@@ -36,7 +36,7 @@ description: Data layer, sync protocol, Cloudflare Worker, MongoDB wire client, 
 
 1. Single entry `src/index.ts`: CORS allowlist from `ALLOWED_ORIGINS`, Bearer token compared via SHA-256 digests, 1 MB body cap, generic error bodies.
 2. `src/sync.ts` validates every request: collection pattern, id pattern, ISO timestamps, max counts, no `$`-prefixed or NUL keys, and depth ≤ 8.
-3. `src/mongo/` is a dependency-free MongoDB client: OP_MSG framing (`connection.ts`), BSON subset (`bson.ts`), SCRAM-SHA-256 (`scram.ts`), and SRV lookup over DNS-over-HTTPS plus primary discovery (`client.ts`). It opens one connection per request and closes it in `finally`.
+3. `src/mongo/` is a dependency-free MongoDB client: OP_MSG framing (`connection.ts`), BSON subset (`bson.ts`), SCRAM-SHA-256 and SCRAM-SHA-1 (`scram.ts`, `md5.ts`), and SRV lookup over DNS-over-HTTPS plus primary discovery (`client.ts`). `hello` sends `saslSupportedMechs`; use SCRAM-SHA-1 only when the server does not offer SCRAM-SHA-256 (Atlas free and shared tiers offer only SCRAM-SHA-1). It opens one connection per request and closes it in `finally`.
 4. Sockets come from `cloudflare:sockets` through the `Connector` seam. Tests inject a Node connector.
 5. Never log secrets or request bodies. Never return MongoDB error text to the client.
 

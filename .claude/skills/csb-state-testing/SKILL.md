@@ -53,7 +53,7 @@ Log the raw error with `console.error`. Never render it.
 ## Testing (Vitest)
 
 1. Co-locate tests: `data.ts` → `data.test.ts`. The environment is Node; WebCrypto, TextEncoder, and DataView are available.
-2. Test pure logic: module calculations (totals, rounding, numbering, CSV), core helpers (durations, dates, shapes, base64, `shouldApplyRemote`), crypto round-trips and failures, the BSON codec, SCRAM against the RFC 7677 vector, and Worker sync validation/LWW with a fake `MongoDatabase`.
+2. Test pure logic: module calculations (totals, rounding, numbering, CSV), core helpers (durations, dates, shapes, base64, `shouldApplyRemote`), crypto round-trips and failures, the BSON codec, SCRAM against the RFC 7677 and MongoDB SCRAM-SHA-1 vectors, MD5 against RFC 1321, and Worker sync validation/LWW with a fake `MongoDatabase`.
 3. Name tests by behaviour: `it('keeps a pending local change that is newer than the remote record')`.
 4. AES tests use 100,000 PBKDF2 iterations (the minimum the decoder accepts) to stay fast.
 5. `worker/src/mongo/integration.test.ts` runs only when `MONGODB_TEST_URI` is set.

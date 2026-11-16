@@ -35,6 +35,6 @@ describe.skipIf(!uri)('MongoDB integration (set MONGODB_TEST_URI to run)', () =>
     );
     expect(second.collections.items?.records.map((item) => item.data)).toEqual([{ name: 'First' }]);
 
-    await withDatabase(settings, database, nodeConnector, (db) => db.command({ dropDatabase: 1 }));
+    await withDatabase(settings, database, nodeConnector, (db) => db.command({ drop: 'items' }));
   });
 });

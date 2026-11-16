@@ -1,6 +1,7 @@
 import type { BsonDocument } from './bson';
 import { openWireConnection, type DuplexStream, type WireConnection } from './connection';
-import { scramFinal, scramStart, verifyServerFinal } from './scram';
+import { md5Hex } from './md5';
+import { scramFinal, scramStart, verifyServerFinal, type ScramMechanism } from './scram';
 
 const DEFAULT_PORT = 27017;
 const DNS_OVER_HTTPS = 'https://cloudflare-dns.com/dns-query';
@@ -46,54 +47,69 @@ export function parseMongoUri(uri: string): MongoSettings {
 
 export async function withDatabase<T>(settings: MongoSettings, databaseName: string, connector: Connector, work: (database: MongoDatabase) => Promise<T>): Promise<T> {
   const hosts = settings.srvHost ? await resolveSrv(settings.srvHost) : settings.hosts;
-  const connection = await connectToPrimary(hosts, settings.tls, connector);
+  const user = settings.username ? `${settings.authSource}.${settings.username}` : null;
+  const { connection, mechanisms } = await connectToPrimary(hosts, settings.tls, connector, user);
   try {
-    if (settings.username) await authenticate(connection, settings);
+    if (settings.username) await authenticate(connection, settings, pickMechanism(mechanisms));
     return await work({ name: databaseName, command: (command) => connection.command(databaseName, command) });
   } finally {
     await connection.close();
   }
 }
 
-interface HelloResult {
-  readonly connection: WireConnection | null;
-  readonly primary: string | null;
+interface Primary {
+  readonly connection: WireConnection;
+  readonly mechanisms: readonly string[];
 }
 
-async function connectToPrimary(hosts: readonly HostAddress[], tls: boolean, connector: Connector): Promise<WireConnection> {
+interface HelloResult {
+  readonly primary: Primary | null;
+  readonly redirect: string | null;
+}
+
+async function connectToPrimary(hosts: readonly HostAddress[], tls: boolean, connector: Connector, user: string | null): Promise<Primary> {
   for (const address of hosts) {
-    const first = await hello(address, tls, connector);
-    if (first.connection) return first.connection;
-    if (!first.primary) continue;
-    const redirected = await hello(parseHost(first.primary), tls, connector);
-    if (redirected.connection) return redirected.connection;
+    const first = await hello(address, tls, connector, user);
+    if (first.primary) return first.primary;
+    if (!first.redirect) continue;
+    const redirected = await hello(parseHost(first.redirect), tls, connector, user);
+    if (redirected.primary) return redirected.primary;
   }
   throw new Error('No writable primary was found.');
 }
 
-async function hello(address: HostAddress, tls: boolean, connector: Connector): Promise<HelloResult> {
+async function hello(address: HostAddress, tls: boolean, connector: Connector, user: string | null): Promise<HelloResult> {
   const connection = openWireConnection(connector(address, tls));
-  let primary: string | null = null;
+  let redirect: string | null = null;
   try {
-    const reply = await connection.command('admin', { hello: 1 });
-    if (reply.isWritablePrimary === true) return { connection, primary: null };
-    primary = typeof reply.primary === 'string' ? reply.primary : null;
+    const reply = await connection.command('admin', user ? { hello: 1, saslSupportedMechs: user } : { hello: 1 });
+    const mechanisms = Array.isArray(reply.saslSupportedMechs) ? reply.saslSupportedMechs.filter((item): item is string => typeof item === 'string') : [];
+    if (reply.isWritablePrimary === true) return { primary: { connection, mechanisms }, redirect: null };
+    redirect = typeof reply.primary === 'string' ? reply.primary : null;
   } catch (error) {
     console.warn(`MongoDB host ${address.host} was unreachable`, error);
   }
   await connection.close().catch((error: unknown) => console.warn('Closing a MongoDB connection failed', error));
-  return { connection: null, primary };
+  return { primary: null, redirect };
 }
 
-async function authenticate(connection: WireConnection, settings: MongoSettings): Promise<void> {
+export function pickMechanism(mechanisms: readonly string[]): ScramMechanism {
+  return mechanisms.includes('SCRAM-SHA-1') && !mechanisms.includes('SCRAM-SHA-256') ? 'SCRAM-SHA-1' : 'SCRAM-SHA-256';
+}
+
+export function scramPassword(username: string, password: string, mechanism: ScramMechanism): string {
+  return mechanism === 'SCRAM-SHA-1' ? md5Hex(`${username}:mongo:${password}`) : password;
+}
+
+async function authenticate(connection: WireConnection, settings: MongoSettings, mechanism: ScramMechanism): Promise<void> {
   const start = scramStart(settings.username);
   let reply = await connection.command(settings.authSource, {
     saslStart: 1,
-    mechanism: 'SCRAM-SHA-256',
+    mechanism,
     payload: new TextEncoder().encode(start.message),
     options: { skipEmptyExchange: true },
   });
-  const final = await scramFinal(settings.password, start, payloadText(reply));
+  const final = await scramFinal(scramPassword(settings.username, settings.password, mechanism), start, payloadText(reply), mechanism);
   reply = await connection.command(settings.authSource, { saslContinue: 1, conversationId: reply.conversationId ?? 1, payload: new TextEncoder().encode(final.message) });
   verifyServerFinal(payloadText(reply), final.serverSignature);
   for (let step = 0; step < MAX_SASL_STEPS && reply.done !== true; step += 1) {
