@@ -1,16 +1,29 @@
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { basename, join, relative } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
+import { buildEntry } from './src/modules/docs/entry';
 
 const BASE = '/cyber-swiss-blade/';
 const SERVICE_WORKER = 'sw.js';
+
+const DOCS_ARTICLES = 'src/modules/docs/articles';
+
+function docsImageOrigins(): string[] {
+  const origins = new Set<string>();
+  for (const file of readdirSync(DOCS_ARTICLES).filter((name) => name.endsWith('.md'))) {
+    for (const match of readFileSync(join(DOCS_ARTICLES, file), 'utf8').matchAll(/!\[[^\]]*\]\((https:\/\/[^)\s]+)/g)) {
+      origins.add(new URL(match[1] ?? '').origin);
+    }
+  }
+  return [...origins].sort();
+}
 
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self'",
-  "img-src 'self' data: blob:",
+  ["img-src 'self' data: blob:", ...docsImageOrigins()].join(' '),
   "connect-src 'self' https: http://localhost:* http://127.0.0.1:*",
   "object-src 'none'",
   "base-uri 'self'",
@@ -56,9 +69,25 @@ function precachePlugin(): Plugin {
   };
 }
 
+const DOCS_META_QUERY = '?meta';
+
+function docsIndexPlugin(): Plugin {
+  return {
+    name: 'csb-docs-index',
+    enforce: 'pre',
+    load(id) {
+      if (!id.endsWith(`.md${DOCS_META_QUERY}`)) return null;
+      const file = id.slice(0, -DOCS_META_QUERY.length);
+      this.addWatchFile(file);
+      const entry = buildEntry(basename(file, '.md'), readFileSync(file, 'utf8'));
+      return `export default ${JSON.stringify(entry)};`;
+    },
+  };
+}
+
 export default defineConfig({
   base: BASE,
-  plugins: [precachePlugin()],
+  plugins: [docsIndexPlugin(), precachePlugin()],
   build: {
     outDir: 'dist',
     sourcemap: false,

@@ -8,6 +8,7 @@ Cyber Swiss Blade is a set of developer tools in one app. You can install it on 
 | Quotations | Quotes, deposit invoices, final invoices, payments, clients, and a service catalogue. You can print each document to PDF. | On the device. It syncs to MongoDB. Shared by the people who have access. |
 | AES Encryption | Encrypts and decrypts files and text with a password. | On the device only. |
 | Base64 | Changes text and files to Base64, and back. | On the device only. |
+| Docs | Guides, cheat sheets, and code samples from GitHub gists, with search, page navigation, and code highlighting. | In the app files. The text works offline. Images in some articles load from the web. |
 
 ## Start here
 
@@ -18,7 +19,7 @@ Cyber Swiss Blade is a set of developer tools in one app. You can install it on 
 
 ## Accounts and roles
 
-Timesheet and Quotations need a sign-in. AES Encryption and Base64 do not.
+Timesheet and Quotations need a sign-in. AES Encryption, Base64, and Docs do not.
 
 | Part | What it does |
 | --- | --- |
@@ -59,6 +60,7 @@ Data on the device              Keeps the database password
 | `shared/` | Code that the app and the Worker both use. |
 | `worker/` | The sync API. It connects to MongoDB without a driver package, because the official driver does not have the MIT licence. |
 | `docs/` | The deployment guide and the onboarding guide. |
+| `src/modules/docs/articles/` | The Docs articles, one Markdown file each. `.claude/skills/csb-docs-writing` has the writing rules. |
 | `.claude/skills/` | The rules of the project. |
 
 ## What you need

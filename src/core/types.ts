@@ -14,7 +14,7 @@ export interface ModuleView {
   readonly mount: (root: HTMLElement, context: ModuleContext) => Unmount;
 }
 
-export type ModuleCategory = 'Productivity' | 'Security' | 'Encoding';
+export type ModuleCategory = 'Productivity' | 'Security' | 'Encoding' | 'Knowledge';
 
 export interface ToolModule {
   readonly id: string;

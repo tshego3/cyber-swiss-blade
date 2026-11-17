@@ -1,0 +1,187 @@
+---
+title: Playwright web testing with a coding agent
+summary: Set up Playwright without admin rights, write and record tests, and let Claude Code or Copilot run, debug, and fix them in a loop.
+category: AI and design
+order: 80
+gist: 930b58773dc848ae6611132f7a4a3362
+---
+
+# Playwright web testing with a coding agent
+
+[Playwright](https://playwright.dev/) is a framework for end-to-end browser automation and tests in Chromium, Firefox, and WebKit. You can use it from Node.js, Python, .NET, or Java. This article uses the Node.js path, because the coding agents use it directly. It is part of the [local and hybrid AI agent operational model](doc:ai-agent-operational-model).
+
+Playwright works well with a coding agent. It has a codegen recorder, a trace viewer, and JSON and HTML reports that a machine can read. A coding agent can read a failed trace or report and fix the test or the page. A human does not have to replay the browser session manually.
+
+## Before you start
+
+- **Node.js 18 or later.** Read [AI agent setup and installation](doc:ai-agent-operational-model-setup#nodejs-needed-for-the-agent-clis). Verify with `node --version`.
+- No admin rights are necessary. `npm` and the Playwright browser binaries install for the current user.
+
+## Install Playwright
+
+### Create a new test project
+
+1. In the repository root or in a `tests/` subfolder, run:
+
+   ```bash
+   npm init playwright@latest
+   ```
+
+2. Answer the prompts: TypeScript or JavaScript, the test folder name (default `tests`), add a GitHub Actions workflow (yes or no), and install the browsers now (yes).
+
+**Result:** The command creates `playwright.config.ts`, an example `tests/example.spec.ts`, and, if you accepted it, `.github/workflows/playwright.yml`.
+
+### Add Playwright to an existing project
+
+```bash
+npm install -D @playwright/test
+npx playwright install
+```
+
+- `npx playwright install` downloads the Chromium, Firefox, and WebKit binaries into `%USERPROFILE%\AppData\Local\ms-playwright` (Windows) or `~/.cache/ms-playwright` (macOS and Linux). No admin rights are necessary.
+- To use less disk space, install only one browser: `npx playwright install chromium`.
+- **Corporate proxy:** If the browser downloads fail, set `HTTPS_PROXY` before you run `install`.
+
+### Install system dependencies (Linux only)
+
+`npx playwright install-deps` needs `sudo`. On a locked-down Linux workstation, ask IT to run it one time. Alternatively, run the tests in a container or a CI runner.
+
+## Configure Playwright
+
+Settings in `playwright.config.ts`:
+
+| Setting | Use |
+| --- | --- |
+| `testDir` | The folder with the spec files. The default is `./tests`. |
+| `baseURL` | Set it one time (for example `http://localhost:5000`). Tests can then use relative paths such as `page.goto('/login')`. |
+| `use.trace: 'on-first-retry'` | Keep a trace only when a test fails and then retries. Set it to `'on'` while a coding agent debugs a flaky test. |
+| `use.screenshot: 'only-on-failure'`, `use.video: 'retain-on-failure'` | Cheap evidence that the agent can read. |
+| `projects` | One entry for each browser (`chromium`, `firefox`, `webkit`) or for each viewport (desktop or mobile emulation). |
+| `webServer` | Playwright starts the application under test automatically before the run. |
+
+Example `webServer` block:
+
+```ts
+webServer: {
+  command: 'npm run start',
+  url: 'http://localhost:5000',
+  reuseExistingServer: !process.env.CI,
+}
+```
+
+## Write tests
+
+Basic structure:
+
+```ts
+import { test, expect } from '@playwright/test';
+
+test('user can log in', async ({ page }) => {
+  await page.goto('/login');
+  await page.getByLabel('Username').fill('demo');
+  await page.getByLabel('Password').fill('demo-pass');
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await expect(page.getByText('Welcome back')).toBeVisible();
+});
+```
+
+- **Locators:** Use `getByRole`, `getByLabel`, `getByText`, and `getByTestId`, not CSS selectors. They continue to work after markup refactors. This is important when a coding agent generates the UI code again.
+- **Auto-waiting:** Playwright tries assertions again until they pass or time out. Do not use manual `sleep` or `waitForTimeout`. It hides real timing bugs, and an agent must not add it as a fix.
+
+## Record tests with codegen
+
+1. Start the recorder against a running application:
+
+   ```bash
+   npx playwright codegen http://localhost:5000
+   ```
+
+2. Click through the flow in the browser. Playwright writes the matching TypeScript in a preview window.
+3. Copy the generated block into a `.spec.ts` file.
+4. Tell the coding agent to clean it up: rename the test, move repeated steps into a helper, and replace fragile selectors with role-based locators.
+
+Prompt example:
+
+```text
+Refactor the codegen output in `tests/checkout.spec.ts` to use `getByRole`/`getByLabel` locators, extract the login steps into a `login()` helper in `tests/utils.ts`, and keep behaviour identical.
+```
+
+## Run tests
+
+| Task | Command |
+| --- | --- |
+| Run all tests headless | `npx playwright test` |
+| Run one file | `npx playwright test tests/checkout.spec.ts` |
+| Run one test by name | `npx playwright test -g "user can log in"` |
+| Run headed, for visual debugging | `npx playwright test --headed` |
+| Step through with the Inspector | `npx playwright test --debug` |
+| Interactive UI mode (recommended for daily use) | `npx playwright test --ui`. It shows a timeline, DOM snapshots, and console and network logs for each step. |
+| Run in one browser only | `npx playwright test --project=chromium` |
+| Show the HTML report after a run | `npx playwright show-report` |
+
+## Use Playwright with a coding agent
+
+### Generate tests from a spec or a screenshot
+
+Prompt example:
+
+```text
+Read @Pages/Login.razor and write a Playwright test in `tests/login.spec.ts` covering the success path and the wrong-password path. Use role-based locators. Do not add `waitForTimeout`.
+```
+
+For a visual flow, attach a screenshot. Tell the agent to describe the steps first and then generate the spec. This is the same pattern as the [image-to-code workflows](doc:ai-agent-operational-model-design-to-code#image-to-code-workflows).
+
+### Let the agent run the suite
+
+Claude Code and Copilot can run `npx playwright test` in the integrated terminal and read the pass and fail summary. A human does not have to copy the output.
+
+### Debug a failure in a loop
+
+1. Run `npx playwright test --reporter=list`. Get the failed assertion and the error message.
+2. Send a prompt to the agent:
+
+   ```text
+   Test `tests/checkout.spec.ts:42` fails with: `<paste error>`. Read the trace at `test-results/.../trace.zip` if present, or the screenshot at `test-results/.../test-failed-1.png`, and fix the root cause (the test or the page), not the symptom.
+   ```
+
+3. After each fix, run only the failed test again: `npx playwright test tests/checkout.spec.ts -g "checkout flow"`.
+4. If the fix of the agent is not clear, open the trace manually: `npx playwright show-trace test-results/.../trace.zip`.
+
+### Add the Playwright MCP server (optional)
+
+Microsoft publishes an official Playwright MCP server. With it, the agent controls a live browser step by step (go to a page, click, read the accessibility tree, take a screenshot). Without it, the agent can only edit spec files.
+
+1. Add the server one time for each project:
+
+   ```bash
+   claude mcp add playwright npx @playwright/mcp@latest
+   ```
+
+2. Use it for exploratory tests, and to let the agent verify a UI change visually before it writes the permanent spec file.
+
+> **WARNING:** Apply the same [data governance rules](doc:ai-agent-operational-model#governance-security-and-compliance) as for all MCP servers. Do not point it at a browser session that has customer data or production credentials.
+
+### Keep the human gate
+
+A human must review generated tests before the merge, the same as generated application code.
+
+## Run tests in CI
+
+- The scaffolded `.github/workflows/playwright.yml` runs `npm ci`, `npx playwright install --with-deps`, and `npx playwright test` on each push and pull request.
+- Upload the HTML report and the traces as build artifacts. A human, or the coding agent with the artifact path, can then examine a failure without a new CI run.
+- Set `retries: 2` only in CI (use a `process.env.CI` check in the config). This absorbs environment flakiness and does not hide real bugs locally.
+
+## Troubleshooting
+
+| Problem | Fix |
+| --- | --- |
+| AppLocker or the proxy blocks the browser download | Set `HTTPS_PROXY` and `NODE_EXTRA_CA_CERTS` as in the [no-admin constraint](doc:ai-agent-operational-model#operating-constraint-no-admin-rights). Or run `npx playwright install` one time on a machine without restrictions and copy the `ms-playwright` cache folder. |
+| A test times out while it waits for an element | Make sure that `baseURL` and the `webServer` block point at the real development server port. In the trace viewer, look at the network tab for a failed API call that is not a UI problem. |
+| A test is flaky only in CI | Increase the `expect` timeout for that assertion. Do not add a sleep. Look for a race with the `webServer` startup probe. |
+| `browserType.launch` fails with a missing library (Linux) | System dependencies are missing. Run `npx playwright install-deps` (needs `sudo`), or run the suite in the CI container. |
+
+## Related links
+
+- [Playwright](https://playwright.dev/)
+- [Playwright MCP server](https://github.com/microsoft/playwright-mcp)
+- [AI agent methodology and workflows](doc:ai-agent-operational-model-methodology)

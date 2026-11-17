@@ -13,6 +13,7 @@ import { mountSettings } from './core/settings-view';
 import { confirmSignOut } from './core/sign-out';
 import { createShell, type Shell } from './core/shell';
 import { createSyncEngine, type SyncEngine } from './core/sync';
+import { lockMobileZoom } from './core/viewport';
 import { getThemePreference, nextThemePreference, setThemePreference } from './core/theme';
 import type { ToolModule, Unmount } from './core/types';
 import { errorState, loadingState } from './core/ui';
@@ -103,6 +104,7 @@ function startRouter(shell: Shell, sync: SyncEngine): () => void {
 }
 
 async function start(): Promise<void> {
+  lockMobileZoom();
   const root = document.getElementById('app') ?? document.body.appendChild(el('div', { attrs: { id: 'app' } }));
   await initSession();
   const sync = createSyncEngine(syncedCollections);
