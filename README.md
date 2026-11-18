@@ -6,8 +6,9 @@ Cyber Swiss Blade is a set of developer tools in one app. You can install it on 
 | --- | --- | --- |
 | Timesheet | Your weekly Agile Report. You log work items, meetings, notes, and leave per day. The app merges each day into one report row and exports the year to Excel. | On the device. It syncs to MongoDB. Each person sees only their own timesheet. |
 | Quotations | Quotes, deposit invoices, final invoices, payments, clients, and a service catalogue. You can print each document to PDF. | On the device. It syncs to MongoDB. Shared by the people who have access. |
-| AES Encryption | Encrypts and decrypts files and text with a password. | On the device only. |
-| Base64 | Changes text and files to Base64, and back. | On the device only. |
+| AES Encryption | Encrypts and decrypts files and text with a password. Files use the app format (`.csb`) or AES Crypt version 2 (`.aes`), which AES Crypt, pyAesCrypt, and the earlier JS AES File Encryption tool can also open. | On the device only. |
+| Base64 | Changes text and files to Base64, and back. A link such as `#/base64?token=<Base64>` opens the decoded value. An old `?token=<Base64>` link also works when its address points to this app. | On the device only. |
+| Text tools | Joins multi-line text into one line with a space, a comma, or no separator. | On the device only. |
 | Docs | Guides, cheat sheets, and code samples, with search, page navigation, and code highlighting. | In the app files. The text works offline. Images in some articles load from the web. |
 
 ## Start here
@@ -19,7 +20,7 @@ Cyber Swiss Blade is a set of developer tools in one app. You can install it on 
 
 ## Accounts and roles
 
-Timesheet and Quotations need a sign-in. AES Encryption, Base64, and Docs do not.
+Timesheet and Quotations need a sign-in. AES Encryption, Base64, Text tools, and Docs do not.
 
 | Part | What it does |
 | --- | --- |

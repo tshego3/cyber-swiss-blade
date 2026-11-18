@@ -66,6 +66,10 @@ export function resolveHref(href: string, slug: string): string | null {
     if (!/^[a-z0-9-]+$/.test(target)) return null;
     return anchor ? `#/docs/${target}/${encodeURIComponent(anchor)}` : `#/docs/${target}`;
   }
+  if (href.startsWith('app:')) {
+    const target = href.slice(4);
+    return /^[a-z0-9-]+(?:\/[^?#\s]*)?(?:\?[^#\s]*)?$/.test(target) ? `#/${target}` : null;
+  }
   if (/^(https?:|mailto:)/i.test(href)) return href;
   return null;
 }

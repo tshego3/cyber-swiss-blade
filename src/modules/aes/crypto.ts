@@ -98,12 +98,12 @@ function uint32(value: number): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
-function uint16(value: number): Uint8Array<ArrayBuffer> {
+export function uint16(value: number): Uint8Array<ArrayBuffer> {
   const bytes = new Uint8Array(2);
   new DataView(bytes.buffer).setUint16(0, value);
   return bytes;
 }
 
-function cryptoError(type: CryptoErrorType, message: string): CryptoError {
+export function cryptoError(type: CryptoErrorType, message: string): CryptoError {
   return { type, message };
 }

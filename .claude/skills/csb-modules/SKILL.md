@@ -33,6 +33,7 @@ interface ToolModule {
   readonly category: ModuleCategory;        // groups the sidebar
   readonly access: 'public' | 'restricted'; // restricted = sign-in plus View permission
   readonly collections: readonly string[];  // synced collections; [] for device-only tools
+  readonly legacyQueryKeys?: readonly string[]; // optional: "?key=..." links from an earlier standalone tool open this module
   readonly load: () => Promise<ModuleView>; // () => import('./view')
 }
 ```

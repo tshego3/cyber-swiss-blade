@@ -84,7 +84,7 @@ The renderer supports only these elements:
 | --- | --- |
 | Headings | `#` to `####`, ATX style only |
 | Emphasis | `**bold**`, `*italic*`, `~~strike~~`, `` `code` `` |
-| Links | `[text](https://example.com)`, `[text](#heading-id)` for this article, `[text](doc:slug)` or `[text](doc:slug#heading-id)` for another article |
+| Links | `[text](https://example.com)`, `[text](#heading-id)` for this article, `[text](doc:slug)` or `[text](doc:slug#heading-id)` for another article, `[text](app:base64?token=...)` for a tool in this app |
 | Images | `![alt text](https://example.com/image.png)` |
 | Lists | `-` or `1.` with 2 or 3 spaces of indent for each nested level. Task items: `- [ ]` and `- [x]` |
 | Code blocks | Fenced with three backticks and a language: `csharp`, `xml`, `json`, `ts`, `js`, `html`, `css`, `bash`, `powershell`, `cmd`, `sql`, `dart`, `yaml`, `xpp`, `kotlin`, `swift`, `java`, `python`, `php`, `dockerfile`, `ini`, `http`, `text` |

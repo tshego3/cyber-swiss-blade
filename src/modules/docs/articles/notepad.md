@@ -328,17 +328,17 @@ The last 3 items come from the [Veraxity YouTube channel](https://www.youtube.co
 
 | Name | Link | Notes |
 | --- | --- | --- |
-| The Play Inc. | [JavaScriptBase64 token](https://tshego3.github.io/JavaScriptBase64/?token=MywyMzYsODk2LVBJTiAyODAx) | |
-| Blue Cinema | [JavaScriptBase64 token](https://tshego3.github.io/JavaScriptBase64/?token=MTAwMDU1NTY0ODk1) | |
+| The Play Inc. | [Decode token](app:base64?token=MywyMzYsODk2LVBJTiAyODAx) | |
+| Blue Cinema | [Decode token](app:base64?token=MTAwMDU1NTY0ODk1) | |
 | Grade A Motion | [blackflagofamazon.com search](https://www.blackflagofamazon.com/api/search?code=chameleon%20case&region=dC5tb3Rzd2FnYWVAb3V0bG9vay5jb20=) | |
 | Identify Search API | [net.users.org search](https://net.users.org/api/search?area=255) | |
-| Yellow SuperStore | [JavaScriptBase64 token](https://tshego3.github.io/JavaScriptBase64/?token=MTYzMjUxMDI=) | |
-| Black SuperStore | [JavaScriptBase64 token](https://tshego3.github.io/JavaScriptBase64/?token=NjAwNzg1MzAxOTg2NDExNw==) | |
-| Blue SuperStore | [JavaScriptBase64 token](https://tshego3.github.io/JavaScriptBase64/?token=NzM1MzI4MDgyMDUwMzMxMg==) | |
-| Black Retail Store | [JavaScriptBase64 token](https://tshego3.github.io/JavaScriptBase64/?token=MTEwMDAwMDAyMjkwODk4OQ==) | |
-| Blue Pharmacy | [JavaScriptBase64 token](https://tshego3.github.io/JavaScriptBase64/?token=MDIwMDc5MjA2NjYxNQ==) | |
-| Red SuperStore | [JavaScriptBase64 token](https://tshego3.github.io/JavaScriptBase64/?token=OTcxMDA4NTA2MTc5MDA2Mg==) | |
-| Web Cinema | [JavaScriptBase64 token](https://tshego3.github.io/JavaScriptBase64/?token=dC5tb3Rzd2FnYWVAb3V0bG9vay5jb20=) | |
+| Yellow SuperStore | [Decode token](app:base64?token=MTYzMjUxMDI=) | |
+| Black SuperStore | [Decode token](app:base64?token=NjAwNzg1MzAxOTg2NDExNw==) | |
+| Blue SuperStore | [Decode token](app:base64?token=NzM1MzI4MDgyMDUwMzMxMg==) | |
+| Black Retail Store | [Decode token](app:base64?token=MTEwMDAwMDAyMjkwODk4OQ==) | |
+| Blue Pharmacy | [Decode token](app:base64?token=MDIwMDc5MjA2NjYxNQ==) | |
+| Red SuperStore | [Decode token](app:base64?token=OTcxMDA4NTA2MTc5MDA2Mg==) | |
+| Web Cinema | [Decode token](app:base64?token=dC5tb3Rzd2FnYWVAb3V0bG9vay5jb20=) | |
 | Web Checkout | [Vuma Reach](https://reach.vumatel.co.za/vuma-reach/home) | |
 
 ## Study and reading

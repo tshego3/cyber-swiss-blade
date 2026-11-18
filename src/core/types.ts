@@ -5,6 +5,7 @@ export type Unmount = () => void;
 
 export interface ModuleContext {
   readonly path: readonly string[];
+  readonly query: Readonly<Record<string, string>>;
   readonly navigate: (path: string) => void;
   readonly canEdit: boolean;
   readonly user: SessionUser | null;
@@ -24,6 +25,8 @@ export interface ToolModule {
   readonly category: ModuleCategory;
   readonly access: 'public' | 'restricted';
   readonly collections: readonly string[];
+  // Query keys from an earlier standalone tool. A URL such as "?token=..." without a route opens this module.
+  readonly legacyQueryKeys?: readonly string[];
   readonly load: () => Promise<ModuleView>;
 }
 

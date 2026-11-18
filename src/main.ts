@@ -8,7 +8,7 @@ import { el, replaceChildren } from './core/dom';
 import { mountHome } from './core/home';
 import { openPalette, type Command } from './core/palette';
 import { registerServiceWorker } from './core/pwa';
-import { currentRoute, navigate, onRouteChange, type Route } from './core/router';
+import { currentRoute, legacyQueryRoute, navigate, onRouteChange, type Route } from './core/router';
 import { canEdit, canView, getSession, initSession, isAdmin, onSessionChange, refreshSession, sessionUser, type Session } from './core/session';
 import { mountSettings } from './core/settings-view';
 import { confirmSignOut } from './core/sign-out';
@@ -53,6 +53,7 @@ async function mountModule(module: ToolModule, root: HTMLElement, route: Route, 
     root.replaceChildren();
     return view.mount(root, {
       path: route.path,
+      query: route.query,
       navigate: (path) => navigate(`${module.id}/${path}`),
       canEdit: module.access === 'public' || canEdit(module.id),
       user: sessionUser(),
@@ -107,6 +108,8 @@ function startRouter(shell: Shell, sync: SyncEngine): () => void {
 
 async function start(): Promise<void> {
   lockMobileZoom();
+  const legacy = legacyQueryRoute(window.location.search, window.location.hash, MODULES);
+  if (legacy) history.replaceState(null, '', `${window.location.pathname}${legacy}`);
   const root = document.getElementById('app') ?? document.body.appendChild(el('div', { attrs: { id: 'app' } }));
   await initSession();
   const sync = createSyncEngine(syncedCollections);

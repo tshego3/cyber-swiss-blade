@@ -153,10 +153,9 @@ Meter display codes:
 | RSS Reader (WASM) | [rss-feed-wasm.netlify.app](https://rss-feed-wasm.netlify.app/) | |
 | Sharp AES Crypt WASM Core | [eoi-sharpaescryptwasmcore.netlify.app](https://eoi-sharpaescryptwasmcore.netlify.app/) | |
 | JavaScript AES encryption equivalent of C# | [JavaScriptAesEncryption](https://tshego3.github.io/JavaScriptAesEncryption/) | |
-| JS AES File Encryption Tool | [JSAesFileEncryption](https://tshego3.github.io/JSAesFileEncryption/) | |
-| JavaScript Base64 Converter | [JavaScriptBase64](https://tshego3.github.io/JavaScriptBase64/) | |
-| JavaScript Base64 Converter | [Notepad](doc:notepad) | |
-| JS Newline Remover Tool | [NewlineRemoverTool](https://tshego3.github.io/NewlineRemoverTool/) | |
+| JS AES File Encryption Tool | [AES Encryption](app:aes) | Replaced by the AES tool in this app. Choose **AES Crypt (.aes)** to make files that the old tool can open. The AES tool also decrypts old `.aes` files. |
+| JavaScript Base64 Converter | [Base64](app:base64) | Replaced by the Base64 tool in this app. Old links still open the old site. To open an old `?token=` link here, change its address to this app, for example `https://blade.eoifilms.co.za/?token=<value>`. |
+| JS Newline Remover Tool | [Text tools](app:text) | Replaced by **Join lines** in this app. |
 | Apple Music Playlist Importer | [apple_music_playlist_importer](https://tshego3.github.io/apple_music_playlist_importer/) | |
 | EOI Workouts | [eoi-fitness-wasm.netlify.app](https://eoi-fitness-wasm.netlify.app/) | |
 | EOI Sign in | [eoifilms.co.za/signin.html](https://eoifilms.co.za/signin.html/) | |

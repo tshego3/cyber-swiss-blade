@@ -43,7 +43,7 @@ Worker: index.ts (HTTP, CORS, routing) -> auth.ts / admin.ts (sessions, users, r
 ## TypeScript Rules
 
 1. `strict`, `noUncheckedIndexedAccess`, `noImplicitReturns`, `noUnusedLocals/Parameters`. Warnings are errors.
-2. No `any`, no non-null assertions (`!`), no `@ts-ignore`. ESLint enforces `explicit-function-return-type`.
+2. Never use the `any` type, in any form: no `: any`, `as any`, `any[]`, `Record<string, any>`, `Promise<any>`, or a generic that falls back to `any`. Do not disable `@typescript-eslint/no-explicit-any`. For data of unknown shape, use `unknown` and narrow it with a type guard or `matchesShape`. Also no non-null assertions (`!`) and no `@ts-ignore`. ESLint enforces `no-explicit-any` and `explicit-function-return-type`.
 3. `interface` for object shapes. Exception: persisted module data uses `type` aliases so it stays assignable to `JsonObject`.
 4. Validate everything crossing a boundary (IndexedDB reads, API responses, request bodies) with a type guard or `matchesShape`. Do not cast unknown data.
 5. `readonly` on all model properties. `const` by default; `let` only for local view state that a `setState` closure replaces.

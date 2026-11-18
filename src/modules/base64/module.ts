@@ -8,5 +8,6 @@ export const base64Module: ToolModule = {
   category: 'Encoding',
   access: 'public',
   collections: [],
+  legacyQueryKeys: ['token'],
   load: () => import('./view'),
 };

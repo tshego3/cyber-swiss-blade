@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { MODULES } from '../registry';
 import { ARTICLES } from './catalog';
 import { buildEntry, isCategory, slugFromPath } from './entry';
 import { parseFrontMatter } from './front-matter';
@@ -69,6 +70,7 @@ describe('docs articles', () => {
         const broken = inlineNodes(document.blocks).flatMap((node) => {
           if (node.type !== 'link') return [];
           if (node.href.startsWith('#')) return HEADING_IDS.get(slug)?.has(node.href.slice(1)) ? [] : [node.href];
+          if (node.href.startsWith('app:')) return MODULES.some((module) => module.id === /^app:([a-z0-9-]+)/.exec(node.href)?.[1]) ? [] : [node.href];
           if (!node.href.startsWith('doc:')) return [];
           const [target = '', anchor] = node.href.slice(4).split('#');
           const ids = HEADING_IDS.get(target);
