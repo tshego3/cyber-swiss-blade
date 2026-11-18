@@ -65,7 +65,7 @@ description: Data layer, sync protocol, accounts and permissions, Cloudflare Wor
 
 ## Security
 
-1. CSP is injected at build: `default-src 'self'`, `script-src 'self'`, and `style-src 'self'` (no inline). `theme-init.js` is an external script for that reason.
+1. CSP is injected at build: `default-src 'self'`, `script-src 'self'`, and `style-src 'self'` (no inline). `theme-init.js` is an external script for that reason. The only exception is `style-src-attr 'unsafe-hashes'` with the hash of `text-overflow:inherit`, the style attribute that WebKit adds to every `<select>`. Never set a `style` attribute in app code.
 2. The server URL and the session token are stored only in IndexedDB `meta` on the user's device, never in source or `localStorage`. Passwords are never stored.
 3. AES: AES-256-GCM, PBKDF2-SHA256 at 600,000 iterations, a 16-byte random salt, and a 12-byte random IV per message. The header (magic `CSB1`, iterations, salt, IV) is authenticated as AAD. Never persist passwords or plaintext.
 4. Copy for Excel (`toTsv`) prefixes cells that start with `= + - @` with `'` to block formula injection. The `.xlsx` export writes inline strings, never formulas.

@@ -26,6 +26,9 @@ const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self'",
+  // WebKit (Safari) gives every <select> an internal style="text-overflow:inherit" attribute and
+  // reports it as a CSP violation. Allow only that exact value; all other inline styles stay blocked.
+  "style-src-attr 'unsafe-hashes' 'sha256-3oFxofzq3N//6J8H86e9ul4WT2OkJrtonB66gn/TLJw='",
   ["img-src 'self' data: blob:", ...docsImageOrigins()].join(' '),
   "connect-src 'self' https: http://localhost:* http://127.0.0.1:*",
   "object-src 'none'",
