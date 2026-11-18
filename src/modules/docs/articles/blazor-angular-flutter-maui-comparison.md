@@ -20,7 +20,7 @@ This comparison comes from [Blazor vs Angular: A Comprehensive Comparison for De
 | --- | --- | --- |
 | Origin | Open-source JavaScript framework, supported by Google | ASP.NET framework from Microsoft |
 | Language | TypeScript | C# with HTML and CSS (Razor syntax) |
-| Architecture | Model-View-Controller (MVC) | Component-based |
+| Architecture | Component-based (AngularJS, the earlier framework, used MVC) | Component-based |
 | Performance | Fast load speed | Can be slower than Angular in some scenarios |
 | Community | Large, with strong support | Smaller, still growing |
 | Main advantage | Flexible, with many prebuilt components and tools | Code reuse in the .NET ecosystem |
@@ -29,11 +29,11 @@ This comparison comes from [Blazor vs Angular: A Comprehensive Comparison for De
 
 ### Angular
 
-Angular uses the MVC design pattern. This pattern divides the app into 3 parts: the model (data), the view (UI), and the controller (interaction).
+Angular uses a component-based architecture. Each component has a TypeScript class, an HTML template, and styles. The earlier framework, AngularJS, used the Model-View-Controller (MVC) pattern: the model (data), the view (UI), and the controller (interaction).
 
 Features:
 
-- **MVC architecture:** Separates concerns. This makes development and maintenance easier.
+- **Component-based architecture:** Separates concerns. This makes development and maintenance easier.
 - **Two-way data binding:** Synchronizes data between the model and the view automatically. You do not change the DOM manually.
 - **Modular architecture:** Modules help you organize and reuse code.
 - **Dependency injection:** Makes the code more modular and easier to reuse.
@@ -92,13 +92,15 @@ Use Blazor for:
 
 | Topic | Flutter | .NET MAUI |
 | --- | --- | --- |
-| Origin | Google, launched in 2015 | Microsoft, the successor to Xamarin.Forms |
+| Origin | Google, first shown in 2015, version 1.0 in December 2018 | Microsoft, the successor to Xamarin.Forms |
 | Language | Dart | C# and XAML |
 | Rendering | Flutter Engine (C++), compiles to native code without bridges | Native controls through a unified API |
 | UI | Material Design (Android) and Cupertino (iOS) widgets | Native platform controls |
 | Hot reload | Yes | Yes, but debugging can be more complex |
 | Community | Large and active, many third-party plugins | Smaller, fewer plugins |
 | Best for | Startups and teams that need fast development and a high-quality UI | Enterprises that already use Microsoft tools |
+
+> **NOTE:** Dated (checked November 2026): Microsoft support for Xamarin.Forms ended on May 1, 2024. Move Xamarin.Forms apps to .NET MAUI.
 
 ### Development experience
 

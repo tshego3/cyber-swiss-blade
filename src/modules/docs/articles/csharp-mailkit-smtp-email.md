@@ -26,8 +26,11 @@ This article shows how to send email over SMTP with MailKit and MimeKit in a .NE
 The `Main` method calls `SendMessage`. To read a mailbox, remove the comment from `RetrieveMessagesViaPop3()` or `RetrieveMessagesIMAP()`.
 
 - `SendMessage` connects to the SMTP server with the default port and no authentication. The commented lines show how to connect on port 587 with `StartTls`, how to authenticate, and how to skip the certificate checks.
-- `GetAccessToken` gets an OAuth 2.0 token with the `password` grant type and the `https://outlook.office.com/IMAP.AccessAsUser.All` scope. Fill in `tenantId`, `clientId`, and `clientSecret`.
+- `GetAccessToken` gets an OAuth 2.0 token with the `password` grant type and the `IMAP.AccessAsUser.All` and `POP.AccessAsUser.All` scopes. Fill in `tenantId`, `clientId`, and `clientSecret`.
+- POP3 connects on port 995 and IMAP connects on port 993, both with SSL.
 - The POP3 and IMAP methods authenticate with `SaslMechanismOAuth2` and write the subjects of the first 10 messages.
+
+> **NOTE:** Dated (checked November 2026): Microsoft does not recommend the resource owner password credentials (`password`) grant, and it fails for accounts with multifactor authentication. For a mailbox without a user, use the client credentials grant with the `https://outlook.office365.com/.default` scope and the `IMAP.AccessAsApp` or `POP.AccessAsApp` application permission. For a user, use an interactive flow with MSAL.
 
 ```csharp
 using MailKit;
@@ -63,7 +66,7 @@ namespace TestMailboxClient {
                 string tenantId = "";
                 string clientId = "";
                 string clientSecret = "";
-                string scope = "email openid offline_access https://outlook.office.com/IMAP.AccessAsUser.All";
+                string scope = "email openid offline_access https://outlook.office.com/IMAP.AccessAsUser.All https://outlook.office.com/POP.AccessAsUser.All";
                 string tokenEndpoint = string.Format("https://login.microsoftonline.com/{0}/oauth2/v2.0/token", tenantId);
 
                 using (System.Net.WebClient client = new System.Net.WebClient())
@@ -124,11 +127,11 @@ namespace TestMailboxClient {
             {
                 using (var client = new Pop3Client())
                 {
-                    //client.Connect("webmail.contoso.co.za", 993, false);
+                    //client.Connect("webmail.contoso.co.za", 995, false);
                     //client.Authenticate("testmail@contoso.co.za", "PWS");
 
                     string accessToken = GetAccessToken("testmail@contoso.co.za", "PWS"); // Make sure this is a shared mailbox and that POP3 is enabled on MS Exchange.
-                    client.Connect("outlook.office365.com", 993, true);
+                    client.Connect("outlook.office365.com", 995, true);
                     SaslMechanismOAuth2 oauth2 = new SaslMechanismOAuth2("testmail@contoso.co.za", accessToken);
                     client.Authenticate(oauth2);
 
@@ -187,11 +190,14 @@ namespace TestMailboxClient {
 
 ## Read email with X++ in AX 2012
 
+> **NOTE:** Dated (checked November 2026): Extended support for Dynamics AX 2012 R3 ended on January 10, 2023. Dynamics 365 Finance and Operations is the replacement.
+
 The X++ version calls MailKit through .NET interop (`CLRInterop`). It gets the same OAuth 2.0 token, connects to `outlook.office.com` on port 993 with TLS 1.2, and searches the inbox for all messages delivered after the minimum date.
 
 - The sample authenticates with a `NetworkCredential` that holds the access token. The commented lines show the `SaslMechanismOAuth2` alternative.
+
+> **NOTE:** Verify the authentication step. MailKit can use the token from a `NetworkCredential` as a password, which Exchange Online rejects. If the authentication fails, use the commented `SaslMechanismOAuth2` lines, as the C# version does.
 - The message read in the loop is commented out. The code shows 3 options to load a message from its `UniqueId`.
-- `retrieveMessagesIMAP` calls `KYN_TM_TestMailboxClient::getAccessToken`. Change this name to the name of your class.
 
 ```xpp
 class TestMailboxClient
@@ -274,7 +280,7 @@ private static void retrieveMessagesIMAP()
             System.Security.Authentication.SslProtocols::Tls12
         );
 
-        accessToken = KYN_TM_TestMailboxClient::getAccessToken(
+        accessToken = TestMailboxClient::getAccessToken(
             "testmail@contoso.co.za",
             "PWS"
         );
@@ -377,6 +383,8 @@ Use this procedure to add a downloaded NuGet package, for example `MimeKit.4.13.
 - Visual Studio 2013 does not support NuGet v3 and later well.
 - The project targets a newer .NET Framework version (4.7.2) than the versions that Visual Studio 2013 was designed for.
 
+> **NOTE:** Dated (checked November 2026): Support for Visual Studio 2013 ended on April 9, 2024. Visual Studio 2022 supports NuGet v3 and `PackageReference`, and installs MimeKit and MailKit without these manual steps.
+
 ### Make sure that the package is compatible
 
 Make sure that the package supports .NET Framework 4.7.2. `MimeKit.4.13.0.nupkg` supports it, as its official specifications show.
@@ -409,6 +417,8 @@ If the package needs more DLLs (for example `BouncyCastle.Crypto.dll` or `System
 ### Add binding redirects
 
 If MimeKit or its dependencies use newer versions of common assemblies (for example `System.Buffers`), add binding redirects to `App.config` or `Web.config`:
+
+> **NOTE:** Verify the `newVersion` values. They must be the assembly versions of the DLLs in your `bin` folder, which can be different from the NuGet package versions.
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>

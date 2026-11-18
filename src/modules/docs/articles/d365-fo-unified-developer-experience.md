@@ -53,6 +53,8 @@ This guide shows how to set up and use the Unified Developer Experience (UDE) fo
 - Optional: 7-Zip, for faster metadata extraction.
 - Optional: a full SQL Server, if you want to keep the cross-reference database outside LocalDB.
 
+> **NOTE:** Dated (checked November 2026): The "What's new in platform update 10.0.49" article on Microsoft Learn says that from Platform Update 75, Microsoft no longer supports Visual Studio 2022 for X++ development. Only Visual Studio 2026 is supported. The Visual Studio 2022 and 17.13 rules in this article apply only to earlier platform updates. Refer to [What's new in platform update 10.0.49](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/fin-ops/get-started/whats-new-platform-updates-10-0-49).
+
 ## What UDE is
 
 - UDE replaces the LCS cloud-hosted developer VM. There is no VM, no RDP, and no local AOS.
@@ -454,7 +456,7 @@ Environment:
 Machine:
 
 - [ ] Visual Studio 2022 Professional or Enterprise, with the .NET desktop development workload and the Modeling SDK.
-- [ ] Visual Studio 2022 is on 17.13 or later. It is not an LTSC baseline below 17.13 and not Visual Studio 2026.
+- [ ] Visual Studio 2022 is on 17.13 or later. It is not an LTSC baseline below 17.13 and not Visual Studio 2026. From Platform Update 75, use Visual Studio 2026 instead.
 - [ ] Reporting Services Projects and RDLC Report Designer are installed.
 - [ ] LocalDB accepts Windows authentication.
 - [ ] 16 GB is free on the system drive (60 GB recommended).
@@ -517,7 +519,7 @@ Verification:
 
 As an alternative, install an older F&O extension from a Platform Update before the 17.13 dependency.
 
-A second cause: the `.sln` or `.rnrproj` file association opens Visual Studio 2026, which has no F&O extension. Open the solution with Visual Studio 2022.
+A second cause: the `.sln` or `.rnrproj` file association opens Visual Studio 2026, which has no F&O extension for your platform update. Open the solution with Visual Studio 2022. From Platform Update 75, the reverse applies: use Visual Studio 2026.
 
 ### Deployment and DBSync failures
 
@@ -552,6 +554,7 @@ A second cause: the `.sln` or `.rnrproj` file association opens Visual Studio 20
 - [Unified environment types and templates](https://learn.microsoft.com/en-us/power-platform/admin/unified-experience/unified-environment-types-and-templates)
 - [Overview of unified admin experience](https://learn.microsoft.com/en-us/power-platform/admin/unified-experience/finance-operations-apps-overview)
 - [Visual Studio requirements for X++](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/dev-tools/developer-tools-vs2017)
+- [What's new in platform update 10.0.49](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/fin-ops/get-started/whats-new-platform-updates-10-0-49)
 - [Build automation with Microsoft-hosted agents](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/dev-tools/hosted-build-automation)
 - [Asset library in Lifecycle Services](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/lifecycle-services/asset-library)
 - [LCS Shared asset library](https://lcs.dynamics.com/V2/SharedAssetLibrary)

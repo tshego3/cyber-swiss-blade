@@ -191,6 +191,10 @@ Add these entries to `Platforms/Android/AndroidManifest.xml`, inside `<manifest>
 </manifest>
 ```
 
+> **NOTE:** Verify the merged manifest. The `[Service]` attribute on `BackgroundService` also adds a `<service>` entry, with a generated name (a `crc64` hash prefix), not `.BackgroundService`. Open the merged `AndroidManifest.xml` in the `obj` folder. If it has two entries, remove the manual entry, or set `Name = "com.yourcompany.yourapp.BackgroundService"` in the attribute so that both names match.
+
+> **NOTE:** Dated (checked November 2026): On Android 15 (API 35) and later, a `dataSync` foreground service can run for 6 hours in 24 hours at most. Google recommends WorkManager or user-initiated data transfer jobs for long transfers.
+
 ### Create the upload worker
 
 Create `UploadWorker.cs`. WorkManager calls `DoWork`. If the upload fails, the worker returns a failure. If an exception occurs, the worker asks WorkManager to retry.
@@ -663,7 +667,7 @@ namespace YourApp.Platforms.iOS
 
 ### Register the BGTask in AppDelegate
 
-Edit `Platforms/iOS/AppDelegate.cs`. `FinishedLaunching` registers the task handler. When the app goes to the background, `DidEnterBackground` submits a `BGProcessingTaskRequest` that needs network connectivity and does not need external power. The earliest start is `TIMER_COOLDOWN` seconds later.
+Edit `Platforms/iOS/AppDelegate.cs`. `_backgroundWorker` is a property, so it gets the service when the task runs. A field initializer runs when iOS creates the `AppDelegate`, before the MAUI app exists, and gives `null`. `FinishedLaunching` registers the task handler. When the app goes to the background, `DidEnterBackground` submits a `BGProcessingTaskRequest` that needs network connectivity and does not need external power. The earliest start is `TIMER_COOLDOWN` seconds later.
 
 ```csharp
 using Foundation;
@@ -680,7 +684,7 @@ public class AppDelegate : MauiUIApplicationDelegate
 
     private const string REFRESH_IDENTIFIER = "com.yourcompany.yourapp.backgroundworker";
 
-    private IBackgroundWorker? _backgroundWorker = IPlatformApplication.Current?.Services?.GetService<IBackgroundWorker>();
+    private IBackgroundWorker? _backgroundWorker => IPlatformApplication.Current?.Services?.GetService<IBackgroundWorker>();
 
     public override bool FinishedLaunching(UIApplication application, NSDictionary? launchOptions)
     {
@@ -728,9 +732,11 @@ public class AppDelegate : MauiUIApplicationDelegate
 }
 ```
 
+> **NOTE:** Verify the task completion. Apple requires a call to `task.SetTaskCompleted(success)` when the work ends. The handler above does not call it and does not wait for `BackgroundWork`, so the system can end the task at expiration. Await the work, then call `SetTaskCompleted`, and submit a new request to schedule the next run.
+
 ### iOS notes
 
-- Use an `NSURLSession` background configuration, so that uploads continue when the system suspends the app.
+- Use an `NSURLSession` background configuration, so that uploads continue when the system suspends the app. The sample code uses `HttpClient` and does not do this.
 - `BGTaskScheduler` schedules processing tasks. The system decides the exact time.
 - Keep queued items in local storage (Core Data, SQLite, or a file). Let the background task read and upload them.
 - Test on a real device. The simulator limits background behavior.
@@ -812,6 +818,8 @@ Android:
 - [Started Services with Xamarin.Android](https://learn.microsoft.com/en-us/previous-versions/xamarin/android/app-fundamentals/services/creating-a-service/started-services)
 - [Background Work in Xamarin.Forms, Android (Medium)](https://medium.com/nerd-for-tech/background-work-in-xamarin-forms-part-1-xamarin-android-63f629e73f9)
 - [Resolve Google Play foreground service permission errors](doc:google-play-foreground-service-permissions)
+
+> **NOTE:** Dated (checked November 2026): Microsoft ended support for Xamarin on May 1, 2024. The Xamarin links go to archived documentation. The platform concepts still apply to .NET MAUI.
 
 iOS:
 

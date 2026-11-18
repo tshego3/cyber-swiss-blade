@@ -56,6 +56,8 @@ After the code is ready, tell Google about the foreground service.
 
 For the full list of types, see the [Android developer documentation](https://developer.android.com/about/versions/14/changes/fgs-types-required).
 
+> **NOTE:** Dated (checked November 2026): On Android 15 and later, a `dataSync` foreground service can run for 6 hours in each 24-hour period, and Google plans to deprecate the `dataSync` type. Where possible, use WorkManager or a user-initiated data transfer job.
+
 ## Troubleshooting
 
 ### The declaration is not in App content

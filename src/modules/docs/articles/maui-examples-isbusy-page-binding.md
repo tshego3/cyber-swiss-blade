@@ -20,11 +20,12 @@ Make sure that:
 
 ## Name the page in XAML
 
-Set `x:Name` on the `ContentPage`, so that XAML can refer to it. The `x:Name="Page"` attribute is the new line.
+Set `x:Name` on the `ContentPage`, so that XAML can refer to it. The `x:Name="Page"` attribute is the new line. The `xmlns:local` attribute declares the namespace of the converter.
 
 ```xml
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:YourNamespace"
              x:Class="YourNamespace.YourPage"
              x:Name="Page">
     <ContentPage.Resources>
@@ -49,7 +50,7 @@ public partial class YourPage : ContentPage
 {
     public YourPage()
     {
-        InitializeComponent()
+        InitializeComponent();
         SettingSwitch.IsToggled = false;
         SettingSwitch.Toggled += async (sender, e) => await OnSettingSwitchToggled(sender!, e);
     }
@@ -61,6 +62,7 @@ public partial class YourPage : ContentPage
         Console.WriteLine($"Setting switched to: {e.Value}");
         this.IsBusy = false;
     }
+}
 ```
 
 ## How it works
@@ -72,8 +74,6 @@ public partial class YourPage : ContentPage
 
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The code-behind does not compile. | The sample has no `;` after `InitializeComponent()` and no closing brace for the class. | Add the `;` and the `}`. |
-| XAML reports that the `local` prefix is not defined. | The sample does not declare `xmlns:local`. | Add `xmlns:local="clr-namespace:YourNamespace"` (the namespace of the converter) to the `ContentPage`. |
 | The converter is not found. | `InverseBooleanConverter` is not implemented or not in the resource dictionary. | Implement the converter and add it to the resource dictionary. |
 | A binding error stays. | The `x:Reference` name and the `x:Name` of the page are different. | Make sure that `x:Reference Page` matches the `x:Name` on the `ContentPage`. |
 

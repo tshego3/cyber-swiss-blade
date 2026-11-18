@@ -33,11 +33,12 @@ To start guest mode from the Run dialog, do these steps:
 ### Set a country in Tor Browser
 
 1. Open the `torrc` file: `C:\Users\User\Downloads\Tor Browser\Browser\TorBrowser\Data\Tor\torrc`.
-2. Add these lines. Replace `us` with the country code that you want.
+2. Add these lines. Replace `us` with the country code that you want. Put each option on its own line.
 
    ```text
-   EntryNodes {us} StrictNodes 1
-   ExitNodes {us} StrictNodes 1
+   EntryNodes {us}
+   ExitNodes {us}
+   StrictNodes 1
    ```
 
 ## Visual Studio Code
@@ -116,7 +117,6 @@ To change `MyClass.Property.ChildProperty` to `(await new MyClass().Property()).
 
   ```text
   \bMyClass\.(\w+)\.(\w+)\b
-  \(await\s+new\s+MyClass\(\)\.\w+\(\)\)
   ```
 
 - Replace:
@@ -531,8 +531,7 @@ These are common Git commands for daily work on macOS with Azure DevOps.
 | | `git config --global user.name "Name"` | Sets your commit name. |
 | | `git config --global user.email "email"` | Sets your commit email. |
 | | `git config --global --list` | Lists all global configuration values. |
-| | `git config --global merge.options "--no-commit"` | Sets a default option that stops automatic commits after a merge. |
-| | `git config --global merge.commit no` | A different way to stop automatic commits after a merge. |
+| | `git config --global branch.<name>.mergeOptions "--no-commit"` | Stops automatic commits after a merge into branch `<name>`. Set it for each branch. |
 | | `git remote -v` | Lists the remote URLs. Use it to check the authentication and origin. |
 | | `git config --global core.longpaths true` | Turns on long paths. |
 | Daily flow | `git status` | Shows changed files and the current branch. |
@@ -550,6 +549,8 @@ These are common Git commands for daily work on macOS with Azure DevOps.
 | | `git stash` | Puts your changes away temporarily, so you can work on something else. |
 | | `git stash pop` | Brings back your stashed changes. |
 | | `git log --oneline` | Shows a short history of commits. |
+
+> **NOTE:** Git has no `merge.options` or `merge.commit` setting, so Git ignores them. To stop the automatic commit for one merge, run `git merge --no-commit <branch>`.
 
 ### Create a pull request from the terminal
 
@@ -613,7 +614,7 @@ To run a query, do these steps:
 2. Go to **Metrics**.
 3. Set these values:
    - Metric namespace: **Log-based metrics**
-   - Metric: **Receiving response time**
+   - Metric: **Server response time**
    - Aggregation: **Average**
    - Time range: the last 3 days
 4. Optional: add filters for specific requests or operations.

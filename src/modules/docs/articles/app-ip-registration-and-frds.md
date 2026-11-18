@@ -22,6 +22,8 @@ This article shows how to register an application idea as intellectual property 
 6. **Convert the provisional application to a complete patent application.** Do this in 12 months or less after you file the provisional application. Include all the technical details, the claims, and the other necessary documents. Work closely with your IP attorney to meet all requirements.
 7. **Complete the patent examination.** The CIPC examines the complete application for novelty, inventiveness, and industrial applicability. You may have to reply to office actions and make amendments or clarifications to the application.
 
+> **NOTE:** Verify these points with your IP attorney. South Africa has mostly been a non-examining (depository) patent system, where the CIPC checks the formal requirements and does not always examine novelty and inventiveness. Also, the Patents Act excludes a computer program "as such" from patents, so an app idea alone is usually not patentable. Copyright protects the source code automatically.
+
 ## Prepare the FRD and the development
 
 1. **Write the FRD.** You can start the FRD while the patent application is in progress. The FRD gives the detailed functional specifications, the user interface, the features, and the interactions of the app. It helps developers understand your requirements, so that they make the app that you want.

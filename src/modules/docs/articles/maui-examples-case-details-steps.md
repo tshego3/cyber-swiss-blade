@@ -13,6 +13,9 @@ This tutorial builds a case details framework for .NET MAUI 9 with the MVVM patt
 ## Before you start
 
 - A .NET MAUI 9 project.
+
+> **NOTE:** Dated (checked November 2026): .NET 9 reached the end of support on November 10, 2026. Use .NET 10 (LTS). The code in this tutorial also builds on .NET 10.
+
 - The `CommunityToolkit.Mvvm` NuGet package.
 - Replace `YourNamespace` in the samples with the namespace of your project.
 
@@ -27,6 +30,8 @@ An AI prompt gave these requirements for the framework. The samples focus on the
 - Each step has a visibility indicator and a string that names the view to show for the step.
 - Navigate with `await Shell.Current.Navigation.PushAsync(new NewPage());`. Do not use `await Shell.Current.GoToAsync(nameof(NewPage));`.
 - Create the main page in `CreateWindow`. Do not set `MainPage` in the `App` constructor.
+
+> **NOTE:** The app in this tutorial uses a `NavigationPage`, not a Shell. Without a Shell, `Shell.Current` is `null`. For this reason, the code-behind calls `Navigation.PushAsync` on the page, and the ViewModel calls it on the page of the first window (`Application.Current!.Windows[0].Page!`). If your app uses a Shell, `Shell.Current.Navigation.PushAsync` works.
 
 The two `App` patterns for the last requirement:
 
@@ -85,7 +90,7 @@ public enum StepStatus
 
 ## Create the ViewModel
 
-Create the ViewModel that holds the categories and the selected step. `NavigateToStepAsync` opens the view of the selected step only if the step is in progress and visible. It finds the view type from the `ViewName` of the step and creates the page with `Activator.CreateInstance`.
+Create the ViewModel that holds the categories and the selected step. `NavigateToStepAsync` gets the step from the button as the command parameter and makes it the selected step. It opens the view of the step only if the step is in progress and visible. It finds the view type from the `ViewName` of the step and creates the page with `Activator.CreateInstance`.
 
 ```csharp
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -119,8 +124,13 @@ public partial class CaseDetailsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task NavigateToStepAsync()
+    private async Task NavigateToStepAsync(CaseStep? step)
     {
+        if (step != null)
+        {
+            SelectedStep = step;
+        }
+
         if (SelectedStep != null && SelectedStep.Status == StepStatus.InProgress && SelectedStep.IsVisible)
         {
             var viewType = Type.GetType($"YourNamespace.{SelectedStep.ViewName}");
@@ -129,7 +139,7 @@ public partial class CaseDetailsViewModel : ObservableObject
                 var page = Activator.CreateInstance(viewType) as Page;
                 if (page != null)
                 {
-                    await Shell.Current.Navigation.PushAsync(page);
+                    await Application.Current!.Windows[0].Page!.Navigation.PushAsync(page);
                 }
             }
         }
@@ -174,7 +184,7 @@ public partial class CaseDetailsViewModel : ObservableObject
                BindingContext = new CaseDetailsViewModel(); // Set the ViewModel
            }
 
-           private async Task OnCategorySelected(object sender, SelectionChangedEventArgs e)
+           private async void OnCategorySelected(object sender, SelectionChangedEventArgs e)
            {
                if (e.CurrentSelection.FirstOrDefault() is CaseCategory selectedCategory)
                {
@@ -184,7 +194,7 @@ public partial class CaseDetailsViewModel : ObservableObject
                        BindingContext = new CaseDetailsViewModel { SelectedCategory = selectedCategory }
                    };
 
-                   await Shell.Current.Navigation.PushAsync(caseDetailsView);
+                   await Navigation.PushAsync(caseDetailsView);
                }
 
                // Deselect the item
@@ -215,6 +225,7 @@ public partial class CaseDetailsViewModel : ObservableObject
                            <Label Text="{Binding Status}" FontSize="Small" Padding="10" />
                            <Button Text="Go to Step"
                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:CaseDetailsViewModel}}, Path=NavigateToStepCommand}"
+                                   CommandParameter="{Binding .}"
                                    IsEnabled="{Binding Status, Converter={StaticResource StepStatusToBoolConverter}}" />
                        </StackLayout>
                    </DataTemplate>
@@ -303,6 +314,7 @@ Register the converter in `App.xaml` or in the page that uses it.
 ```xml
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:YourNamespace"
              x:Class="YourNamespace.App">
     <Application.Resources>
         <ResourceDictionary>
@@ -339,9 +351,7 @@ The framework keeps the case categories and their steps in a ViewModel and shows
 
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| `OnCategorySelected` does not compile as an event handler. | A XAML event handler must return `void`. The sample returns `Task`. | Change the signature to `private async void OnCategorySelected(...)`. |
-| XAML reports that the `local` prefix is not defined in `App.xaml`. | The sample does not declare `xmlns:local`. | Add `xmlns:local="clr-namespace:YourNamespace"` to the `Application` element. |
-| `Go to Step` opens no view, or the view of another step. | `NavigateToStepAsync` uses `SelectedStep`. A click on the button does not select the row. | Select the row first, or send the step as `CommandParameter="{Binding .}"` and use it in the command. |
+| `viewModels:CaseDetailsViewModel` or `CaseDetailsViewModel` is not found. | The samples declare no namespace for the models and the ViewModel, but `CaseDetailsView.xaml` uses `YourNamespace.ViewModels`. | Put `CaseDetailsViewModel` in `YourNamespace.ViewModels`, and add `using YourNamespace.ViewModels;` to the code-behind files. |
 | `Type.GetType` returns `null`. | The `ViewName` does not match the class name, or the views are not in `YourNamespace`. | Make the namespace in `NavigateToStepAsync` and the `ViewName` values match the step view classes. |
 
 ## Related links

@@ -24,7 +24,7 @@ public class Program
     {
         string original = "hello";
 
-        // Decrypt the bytes to a string.
+        // Encrypt and decrypt the string, then decrypt a value that JavaScript encrypted.
         Console.WriteLine("Original:   {0}", original);
         Console.WriteLine("encryptedString:   {0}", Convert.ToBase64String(EncryptStringToBytes_Aes(original)));
         Console.WriteLine("decryptedString: {0}", DecryptStringFromBytes_Aes(EncryptStringToBytes_Aes(original)));
@@ -139,6 +139,8 @@ string plain = DecryptStringFromBytes_Aes(Convert.FromBase64String("gwSCI8Qf74fe
 - Each method makes a new `Rfc2898DeriveBytes` object, so encryption and decryption get the same key and IV.
 - `Aes.Create()` uses its default settings: CBC mode and PKCS7 padding.
 - The constructor that the code uses applies the default PBKDF2 settings of .NET: 1000 iterations and HMAC-SHA1. The JavaScript client must use the same settings, the same key and IV order, CBC mode, and PKCS7 padding.
+
+> **NOTE:** Dated (checked November 2026): The `Rfc2898DeriveBytes` constructors without an iteration count and a hash algorithm are obsolete in .NET 7 and later (warning SYSLIB0041). Use `Rfc2898DeriveBytes.Pbkdf2` with 1000 iterations and `HashAlgorithmName.SHA1` to stay compatible with existing JavaScript data. For new data, use more iterations and SHA-256 on both sides.
 
 > **WARNING:** The secrets are hard-coded and the salt is fixed. Keep real secrets out of source code.
 

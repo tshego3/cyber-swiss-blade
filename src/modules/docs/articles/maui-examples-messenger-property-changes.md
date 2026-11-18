@@ -14,13 +14,16 @@ This example uses the messenger of the MVVM Toolkit to handle property changes. 
 
 - The `CommunityToolkit.Mvvm` NuGet package.
 - The `Newtonsoft.Json` NuGet package for the `JsonIgnore` attribute.
+- Register `PersonViewModel` and `PersonViewPage` in `MauiProgram.cs`, so that the container injects the ViewModel into the page.
+
+> **NOTE:** The samples use `MauiApp` as the project namespace. Replace it with your own namespace. A namespace named `MauiApp` conflicts with the `Microsoft.Maui.Hosting.MauiApp` class in `MauiProgram.cs`.
 
 ## Register the messenger
 
 Register `WeakReferenceMessenger.Default` as the `IMessenger` service in `MauiProgram.cs`.
 
 ```csharp
-// /MauiApp/ViewModels/MauiProgram
+// /MauiApp/MauiProgram
 
 using CommunityToolkit.Mvvm.Messaging;
 
@@ -37,8 +40,10 @@ builder.Services.AddSingleton<IMessenger>((sp) => WeakReferenceMessenger.Default
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using Newtonsoft.Json;
 using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace MauiApp.ViewModels
@@ -46,7 +51,7 @@ namespace MauiApp.ViewModels
     public partial class Book : ObservableObject
     {
         [ObservableProperty]
-        private long _id; // It’s just a private field. No public property is generated.
+        private long _id; // Generates a public Id property.
         [ObservableProperty]
         private string author;
         [ObservableProperty]
@@ -137,8 +142,6 @@ namespace MauiApp.ViewModels
 }
 ```
 
-> **NOTE:** The comment on the `_id` field is not correct. `[ObservableProperty]` on a `_id` field generates a public `Id` property. Only a field without `[ObservableProperty]` stays private with no property.
-
 > **WARNING:** Set `IsActive = true` only after the relevant properties have their initial values. If you set it too early, the property change recipients can get wrong values, and data from different items can mix.
 
 ## Deactivate the ViewModel on the page
@@ -154,9 +157,9 @@ namespace MauiApp.Views
 {
     public partial class PersonViewPage : ContentPage
     {
-        public PersonViewPage()
+        public PersonViewPage(PersonViewModel viewModel)
         {
-            InitializeComponent(PersonViewModel viewModel);
+            InitializeComponent();
             BindingContext = viewModel;
         }
 
@@ -173,13 +176,6 @@ namespace MauiApp.Views
     }
 }
 ```
-
-## Troubleshooting
-
-| Problem | Cause | Fix |
-| --- | --- | --- |
-| `PersonViewPage` does not compile. | The sample puts the `PersonViewModel viewModel` parameter in the `InitializeComponent` call. | Make it a constructor parameter: `public PersonViewPage(PersonViewModel viewModel)`, then call `InitializeComponent();`. |
-| `ObservableCollection` or `PropertyChangedMessage` is not found. | The `Book` file has no `using` directives for these types. | Add `using System.Collections.ObjectModel;` and `using CommunityToolkit.Mvvm.Messaging.Messages;`. |
 
 ## Related links
 

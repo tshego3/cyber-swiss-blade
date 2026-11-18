@@ -163,6 +163,8 @@ iisreset
 
 **Cause:** `FUNCTIONS_WORKER_RUNTIME` is still `dotnet`, the in-process value.
 
+> **NOTE:** Dated (checked November 2026): Support for the .NET in-process model in Azure Functions ended on 10 November 2026. Move all .NET function apps to the isolated worker model (`dotnet-isolated`).
+
 1. In **Environment variables**, set `FUNCTIONS_WORKER_RUNTIME=dotnet-isolated`.
 2. If `FUNCTIONS_INPROC_NET8_ENABLED` exists, remove it.
 3. Select **Apply**, then refresh the page.

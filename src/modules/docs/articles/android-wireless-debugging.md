@@ -17,6 +17,10 @@ This article shows how to debug an Android app over Wi-Fi from Android Studio or
 - Android Studio Bumblebee 2021.1.1 or later, or Visual Studio 2022.
 - The device and the computer on the same network.
 
+> **NOTE:** Dated (checked November 2026): Microsoft ended support for Xamarin and Xamarin.Forms on 1 May 2024. Use .NET MAUI. The ADB pair and connect steps are the same for .NET MAUI apps.
+
+> **NOTE:** Dated (checked November 2026): In current Android Studio versions, the pairing command is also in the device selector of the toolbar, as **Pair Devices Using Wi-Fi**.
+
 ## Pair with Android Studio
 
 Android Studio Bumblebee 2021.1.1 and later have Wi-Fi debugging as a default feature.
@@ -62,7 +66,7 @@ Android Studio Bumblebee 2021.1.1 and later have Wi-Fi debugging as a default fe
    adb connect 192.168.1.221:3725
    ```
 
-> **NOTE:** The port for `adb connect` can be different from the pairing port. Use the IP address and port that the **Wireless debugging** screen shows.
+> **NOTE:** Verify the port. The source example uses `3725`, which can be a typo of the pairing port `37215`. The port for `adb connect` is usually different from the pairing port. Use the IP address and port that the **Wireless debugging** screen shows.
 
 ## Deploy the app
 

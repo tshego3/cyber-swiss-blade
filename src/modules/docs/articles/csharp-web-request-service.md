@@ -21,8 +21,7 @@ gist: 1569b70e53100af0157d63fa18e368c7
 | `"Scope"` | The scope of the API |
 | `"ClientSecret"` | The client secret |
 | `"PostUrl"` | The token endpoint in `GetToken` and `GetTokenAsync`, or the API URL in the `...ForProvidedModel` methods |
-| `"endpoint"` | The API URL for the generic post methods |
-| `AUTHORIZATION` | A constant with the value `"Authorization"`. The source does not declare it. |
+| `"endpoint"` | The API URL that `genericModelPost` sends to `GenericTypePost<T>` |
 
 ## Code
 
@@ -132,7 +131,7 @@ namespace Data.Services
                     client.Headers[HttpRequestHeader.Authorization] = GetToken();
 
                     string json = JsonConvert.SerializeObject(requestModel);
-                    string response = client.UploadString("endpoint", "POST", json);
+                    string response = client.UploadString(requestUri, "POST", json);
                     T model = JsonConvert.DeserializeObject<T>(response);
                     return model;
                 }
@@ -147,8 +146,8 @@ namespace Data.Services
         {
             try
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "endpoint");
-                request.Headers.Add("Authorization", GetToken());
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+                request.Headers.Add("Authorization", await GetTokenAsync());
                 string json = JsonConvert.SerializeObject(requestModel);
                 StringContent content = new StringContent(json, null, "application/json");
                 request.Content = content;
@@ -182,7 +181,7 @@ namespace Data.Services
             }
         }
         
-        public T genericModelPost<T>(object _paramOne, object _paramTwo)
+        public static T genericModelPost<T>(object _paramOne, object _paramTwo) where T : new()
         {
             try
             {
@@ -206,7 +205,7 @@ namespace Data.Services
             }
         }
         
-        public T genericModelPost<T, T1, T2>(T1 _paramOne, T2 _paramTwo)
+        public static T genericModelPost<T, T1, T2>(T1 _paramOne, T2 _paramTwo) where T : new()
         {
             try
             {
@@ -269,7 +268,7 @@ namespace Data.Services
             try
             {
                 var request = new HttpRequestMessage(HttpMethod.Post, "PostUrl");
-                request.Headers.Add(AUTHORIZATION, await WebRequestService.GetTokenAsync());
+                request.Headers.Add("Authorization", await WebRequestService.GetTokenAsync());
                 var content = new StringContent(json, null, "application/json");
                 request.Content = content;
                 var client = new HttpClient();
@@ -310,7 +309,7 @@ namespace Data.Services
 string token = await WebRequestService.GetTokenAsync();
 
 // Post a model and read the response as MyResponse.
-MyResponse result = await WebRequestService.GenericTypePostAsync<MyResponse>(requestModel, "endpoint");
+MyResponse result = await WebRequestService.GenericTypePostAsync<MyResponse>(requestModel, "https://api.example.com/items");
 
 // Post a JSON string and get the raw response.
 string response = WebRequestService.GetWebResponseForProvidedModel(json);
@@ -322,8 +321,8 @@ string response = WebRequestService.GetWebResponseForProvidedModel(json);
 | --- | --- | --- |
 | `GetToken` | `WebClientWithTimeout` | Posts the client credentials as form values. Returns `"Bearer "` plus the access token. |
 | `GetTokenAsync` | `HttpClient` | The same as `GetToken`. Returns an empty string if the status code is not a success code. |
-| `GenericTypePost<T>` | `WebClientWithTimeout` | Serializes the model to JSON, posts it with the token, and deserializes the response to `T`. |
-| `GenericTypePostAsync<T>` | `HttpClient` | The same as `GenericTypePost<T>`. It gets the token with the synchronous `GetToken`. |
+| `GenericTypePost<T>` | `WebClientWithTimeout` | Serializes the model to JSON, posts it with the token to `requestUri`, and deserializes the response to `T`. |
+| `GenericTypePostAsync<T>` | `HttpClient` | The same as `GenericTypePost<T>`. It gets the token with `GetTokenAsync`. |
 | `genericModelPost<T>` | Calls `GenericTypePost<T>` | Puts 2 values into a `Dictionary<string, object>` and posts them. |
 | `genericModelPost<T, T1, T2>` | Calls `GenericTypePost<T>` | Puts 2 values into an anonymous type and posts them. |
 | `GetWebResponseForProvidedModel` | `WebClientWithTimeout` | Posts a JSON string and returns the raw response. |
@@ -331,14 +330,7 @@ string response = WebRequestService.GetWebResponseForProvidedModel(json);
 
 - `WebClientWithTimeout` sets the request timeout. The service uses 900000 ms (15 minutes).
 - The methods catch all exceptions. They return `default`, `null`, or an empty string, and do not throw.
-- The generic post methods ignore the `requestUri` parameter. They always post to `"endpoint"`.
 - An anonymous type is the simplest payload when the shape is fixed and known at compile time. A tuple gives named slots without a class, but JSON serialization writes `Item1` and `Item2`, because the metadata does not keep the tuple field names.
-- In .NET Framework 4.8, use `return default;` in place of `return new();` in the `catch` blocks.
+- If `genericModelPost` fails, it returns a new, empty `T`. This needs the `where T : new()` constraint. `return new();` needs C# 9 or later. In .NET Framework 4.8 (C# 7.3), use `return default;` in the `catch` blocks.
 
-## Troubleshooting
-
-| Problem | Cause | Fix |
-| --- | --- | --- |
-| CS0708: cannot declare instance members in a static class | The 2 `genericModelPost` methods are not `static`, but the class is `static`. | Add `static` to the methods, or move them to a class that is not static. |
-| CS0304: cannot create an instance of `T` | `return new();` needs a `new()` constraint on `T`. | Add `where T : new()`, or use `return default;`. |
-| CS0103: the name `AUTHORIZATION` does not exist | The source does not declare the constant. | Declare `const string AUTHORIZATION = "Authorization";` or use the `"Authorization"` string. |
+> **NOTE:** Dated (checked November 2026): `WebClient` and `WebRequest` are obsolete in .NET 6 and later (warning SYSLIB0014). Use the `HttpClient` methods. Also reuse one `HttpClient` instance (or use `IHttpClientFactory`), because a new instance for each request can use up the available sockets.

@@ -180,11 +180,9 @@ Use tonal layers to separate dense dashboard areas. Use them before you add hard
 | Tier | Value | Use |
 | --- | --- | --- |
 | Surface | `#0D1117` | Base canvas. |
-| Surface Container Low | `#161B22` | Workspace sections. |
+| Surface Container | `#161B22` | Workspace sections. |
 | Surface Container High | `#1C2128` | Nested regions. |
 | Surface Container Lowest | `#050A08` | Cards. |
-
-> **NOTE:** The YAML front matter sets `surface-container-low` to `#0D1117` and `surface-container` to `#161B22`. The table above gives `#161B22` for Surface Container Low. Make sure that the file uses one value.
 
 ### Atmospheric rules
 
@@ -202,7 +200,7 @@ Use tonal layers to separate dense dashboard areas. Use them before you add hard
 The scale gives a clear vertical rhythm.
 
 - Headlines use tighter letter spacing and heavier weights. This gives an immediate hierarchy.
-- Body text uses a standard 1rem base with a large line height. This keeps long reports easy to read.
+- Body text uses the 14px base (0.875rem) with a large line height. This keeps long reports easy to read.
 - Controls use uppercase styling and more letter spacing. This makes UI elements different from static content.
 
 | Style | Size and weight | Use | Line height or letter spacing |
@@ -220,7 +218,7 @@ The scale gives a clear vertical rhythm.
 The layout uses a 12-column fluid grid on an 8px base unit.
 
 - **Containers:** Align all dashboard widgets and cards to the 8px grid.
-- **Rhythm:** Set the internal card padding to 16px (md). Set the gap between major layout sections (gutters) to 24px (lg).
+- **Rhythm:** Set the internal padding of standard cards to 24px (lg) and of compact cards to 16px (md). Set the gap between major layout sections (gutters) to 24px (lg).
 - **Density:** For data-heavy views such as the MudDataGrid, you can decrease the vertical spacing to 4px (xs). This shows more information and keeps it clear.
 
 ### Spacing scale
@@ -229,7 +227,7 @@ The layout uses a 12-column fluid grid on an 8px base unit.
 | --- | --- | --- |
 | xs | 4px | Compact spacing for dense layouts. |
 | sm | 8px | Minimal spacing. |
-| md | 16px | Standard padding for cards and containers. |
+| md | 16px | Padding for compact cards and containers. |
 | lg | 24px | Gutters and major section gaps. |
 | xl | 40px | Large section spacing. |
 
@@ -257,7 +255,7 @@ With this approach, the most important information and the interactive elements 
 The design system uses a rounded shape language. This makes the industrial look of a dashboard softer.
 
 - **Cards and data grids:** Use an 8px (0.5rem) corner radius. This agrees with the base spacing unit.
-- **Buttons:** Primary buttons use a radius of 4px to 6px. Secondary "ghost" buttons can use a pill shape (full rounding) to show a different action type.
+- **Buttons:** Primary buttons use a radius of 4px (the `sm` token). Secondary "ghost" buttons can use a pill shape (full rounding) to show a different action type.
 - **Form inputs:** Use the 8px radius on input fields. This keeps all interactive surfaces the same.
 - **Small elements:** Chips and badges use a 4px radius.
 
@@ -276,11 +274,8 @@ The design system uses a rounded shape language. This makes the industrial look 
 - **Width:** 240px.
 - **Style:** Flat, with a border on the right.
 - **Background:** Accent/Deep (`#050A08`). This gives strong structural contrast against surfaces.
-- **Default nav link:** Text color `#8B949E`, transparent background.
+- **Default nav link:** Light text color (`#E6EDF3`) for contrast on the dark background, transparent background.
 - **Active nav link:** Text color Primary (`#00FF8C`) and a background of Primary at 10% opacity. Add a left border indicator (4px wide) in Primary (`#00FF8C`).
-- **Text color:** Light text (`#E6EDF3`) on the dark background, for contrast.
-
-> **NOTE:** The source gives two text colors for nav links: `#8B949E` for the default link and `#E6EDF3` in the enhanced rule. The first version makes the left border optional. The enhanced version requires it.
 
 ### Data tables and data grids (MudDataGrid)
 
@@ -290,12 +285,10 @@ The design system uses a rounded shape language. This makes the industrial look 
 - **Density:** Use 'Compact' or 'Default', as the data volume requires.
 - **Status chips:** Use small, rounded chips with functional colors and a tinted background (for example, 'Paid' = Green/Primary tint).
 
-> **NOTE:** The first version of this rule makes zebra striping optional. The enhanced rule for MudDataGrid forbids it.
-
 ### Cards and surfaces
 
 - **Border radius:** 8px.
-- **Elevation:** Use a dark surface, Elevation 1, and a 1px border in the outline color (`#30363D`) to show the edges on dark backgrounds. The first version also permits Elevation 0 with a 1px border (`#21262D`) for a flatter look.
+- **Elevation:** Use a dark surface, Elevation 1, and a 1px border in the outline color (`#30363D`) to show the edges on dark backgrounds.
 - **Padding:** 24px (lg) for standard cards, 16px (md) for compact layouts.
 - **Tone first:** Use tone contrast between card and background before you add hard borders.
 
@@ -307,12 +300,14 @@ The design system uses a rounded shape language. This makes the industrial look 
 | Secondary | Outlined. Border Primary (`#00FF8C`), text Primary (`#00FF8C`), transparent background. |
 | Accent | Filled. Background Primary Container (`#1A4D38`), light text (`#E6EDF3`). For critical or special actions. |
 
-Use a radius of 4px to 6px.
+Use a radius of 4px (the `sm` token).
 
 ### Form fields
 
 - Use the "Outlined" variant for MudTextField and other form inputs.
 - When a field has focus, show the label in Primary Container (`#1A4D38`). This gives clear visual feedback.
+
+> **NOTE:** Verify the contrast of the focused label. Primary Container (`#1A4D38`) on the dark surfaces (`#0D1117`, `#161B22`) is probably below the WCAG 4.5:1 ratio for text. Primary (`#00FF8C`) is a possible replacement.
 - For error states, use the semantic red (`#E53935`) for the border and the helper text.
 - Use a standard input height of 40px, a padding of 12px, and a border radius of 8px.
 

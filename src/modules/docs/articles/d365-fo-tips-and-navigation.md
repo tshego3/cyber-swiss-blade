@@ -99,6 +99,8 @@ Generate a concise completed development feedback update for a Business Analyst.
 
 ## AX 2012 tasks
 
+> **NOTE:** Dated (checked November 2026): Microsoft ended extended support for Dynamics AX 2012 R3 on 10 January 2023. AIF and the CIL options do not exist in D365 F&O. Use these tasks only for systems that still run AX 2012.
+
 ### Reset or change a case service status
 
 1. Go to `{company}/Case management/Area page/Setup/Case Update/Case admin update`.

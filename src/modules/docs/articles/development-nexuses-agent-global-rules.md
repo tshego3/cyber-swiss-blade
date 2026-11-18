@@ -162,7 +162,7 @@ These rules come from the design system. They apply to all presentation screens.
 1. Follow the White-Labeled Enterprise UI direction: premium, authoritative layouts with a high signal.
 2. Apply the no-line rule for sections: use tonal surface layers, not grids with many borders.
 3. Use dynamic brand colors from appsettings or configuration. Do not hard-code a different palette.
-4. Align the typography to the Libre Franklin hierarchy, for display text and for dense operational data.
+4. Align the typography to the Public Sans hierarchy, for display text and for dense operational data.
 5. Use atmospheric depth (gradients, surface tiers, and subtle shadow tints), not flat blocks.
 6. Keep the layout responsive on desktop and mobile, and keep it easy to read.
 7. **Do not use scoped `.razor.css` files or `<style>` blocks in `.razor` components.** Use only the MudBlazor component API (props, variant, style classes, inline `Style=`) for all styles. The only exception is the global `wwwroot/app.css`, for baseline or framework-level styles that are not specific to a component. Never put CSS directly in `.razor` files.
@@ -245,6 +245,10 @@ Presentation  ──HTTP──►  API  ──MediatR──►  Application  ─
 | API | ASP.NET Core controllers, middleware, JWT and cookie authentication, and dependency injection setup. Sends requests through MediatR. **Must apply `[Authorize]` on data endpoints.** | `Controllers/`, `Middleware/`, `Program.cs` |
 | Presentation | Blazor Web App (SSR and Interactive Server), typed HttpClient API clients, Razor pages, and authentication state. **Never reference Domain or Application directly. Call the API through HTTP only.** | `Components/Pages/`, `Services/`, `Program.cs` |
 | Tests | xUnit unit and integration tests, with the same folder structure as Application. Use EF Core InMemory. Never mock `DbSet<T>`. | `Features/[Entity]/{Commands,Queries}/` |
+
+> **NOTE:** Verify the layer rule for shared types. The architecture rules say that all layers reference the Domain types directly, and that UI code uses Domain record factories such as `CreateEmpty()`. This table says that Presentation never references Domain. Decide if Presentation can reference Domain types (DTOs and records only) and make the rules agree.
+
+> **NOTE:** Dated (checked November 2026): MediatR changed to a commercial license from version 13 (2025). Version 12 stays free under Apache 2.0. Check the license before you add or upgrade MediatR, or use a free alternative such as a small in-house dispatcher.
 
 ## Add a new feature
 
@@ -386,7 +390,7 @@ Do not do these things:
 - Set `Loading = false` in more than one location.
 - Catch an exception without a log entry (silent exception handling).
 - Show raw error messages to users.
-- Render without a check of `Loading` or `HasResults`.
+- Render without a check of `Loading` or `HasSourceData`.
 - Put filter logic in the template.
 - Show page-level empty states based on `FilteredData.Any()` in tables with search.
 - Forget to initialize the state flags.
@@ -404,7 +408,7 @@ Test each component that uses this pattern for these paths:
 4. **Empty path:** An empty result set shows the empty state with guidance for the context.
 5. **Reset path:** `ResetFilters()` clears all state, including errors.
 
-For full implementation examples, Razor templates, testing patterns, and more anti-patterns, refer to the "Gold Standard State Management" section of the skill file (`SKILL.md`) in [Agent project skill for .NET 10 Blazor SSR](doc:development-nexuses-agent-project-skill).
+For full implementation examples, Razor templates, testing patterns, and more anti-patterns, refer to the "Gold Standard State Management" section of `.agents/skills/project-expert.md` in [Agent project skill for .NET 10 Blazor SSR](doc:development-nexuses-agent-project-skill).
 
 ## Related links
 

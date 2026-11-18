@@ -15,8 +15,6 @@ A command parameter holds one value. This example sends more than one value from
 - A .NET MAUI project, here `DemoApp`.
 - The `CommunityToolkit.Mvvm` NuGet package for `ObservableObject` and `RelayCommand`.
 
-> **NOTE:** In the XAML samples, a file name comment is above the XML declaration. In a real XAML file, the XML declaration must be the first line. Put the comment below it or remove it.
-
 ## Create the converter
 
 The converter returns the array of bound values with no change.
@@ -47,8 +45,8 @@ namespace DemoApp.Converters
 Add the converter to the application resources.
 
 ```xml
-<!-- /DemoApp/App.xaml -->
 <?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- /DemoApp/App.xaml -->
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
             xmlns:local="clr-namespace:DemoApp"
@@ -65,14 +63,15 @@ Add the converter to the application resources.
 
 ## Create the ViewModel
 
-The command gets the `object[]` and reads the 3 values by position.
+The command gets the `object[]` and reads the 3 values by position. The third value is the binding context of the button. On this page, that is the `DemoViewModel`. In a `DataTemplate`, it is the row item: cast it to your item type.
+
+> **NOTE:** Dated (checked November 2026): In .NET 10, `DisplayAlert` is obsolete. Use `DisplayAlertAsync` with the same parameters.
 
 ```csharp
 // /DemoApp/ViewModels/DemoViewModel.cs
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Diagnostics;
-using System.Windows;
 
 namespace DemoApp.ViewModels
 {
@@ -83,12 +82,12 @@ namespace DemoApp.ViewModels
         {
             if (parameter is object[] paramArray && paramArray.Length == 3)
             {
-                Microsoft.Maui.Controls.Label label = paramArray[0];
-                string note = paramArray[1];
-                DTOItem dtoItem = paramArray[2];
+                Microsoft.Maui.Controls.Label label = (Microsoft.Maui.Controls.Label)paramArray[0];
+                string? note = paramArray[1] as string;
+                object dtoItem = paramArray[2];
 
                 Debug.WriteLine($"Text1: {label.Text}, Note: {note}, DtoItem: {dtoItem}");
-                MessageBox.Show($"Clicked! Text1: {label.Text}, Note: {note}, DtoItem: {dtoItem}");
+                await Shell.Current.DisplayAlert("Clicked!", $"Text1: {label.Text}, Note: {note}, DtoItem: {dtoItem}", "OK");
             }
         }
     }
@@ -100,8 +99,8 @@ namespace DemoApp.ViewModels
 The `MultiBinding` in `Button.CommandParameter` sends 3 values: the `Label1` control, the text of the `NewNoteEntry` entry, and the current binding context (`Path="."`, or an empty `<Binding />`).
 
 ```xml
-<!-- /DemoApp/Views/DemoView.xaml -->
 <?xml version="1.0" encoding="utf-8" ?>
+<!-- /DemoApp/Views/DemoView.xaml -->
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
             x:Class="DemoApp.Views.DemoView"
@@ -114,9 +113,9 @@ The `MultiBinding` in `Button.CommandParameter` sends 3 values: the `Label1` con
     </ContentPage.BindingContext>
 
     <StackLayout Orientation="Vertical">
-        <Label x:Name="Label1" Content="Hello from label" />
+        <Label x:Name="Label1" Text="Hello from label" />
         <Entry x:Name="NewNoteEntry" Placeholder="Add a new note" Text="Demo" />
-        <Button Content="Click Me"
+        <Button Text="Click Me"
                 Command="{Binding ClickedCommand}">
             <Button.CommandParameter>
                 <MultiBinding Converter="{StaticResource MultiBindingConverter}">
@@ -129,17 +128,6 @@ The `MultiBinding` in `Button.CommandParameter` sends 3 values: the `Label1` con
     </StackLayout>
 </ContentPage>
 ```
-
-## Troubleshooting
-
-The sample has parts from WPF. Fix them before you build a .NET MAUI app.
-
-| Problem | Cause | Fix |
-| --- | --- | --- |
-| `MessageBox` and `System.Windows` are not found. | `MessageBox` is a WPF API. .NET MAUI does not have it. | Use `Shell.Current.DisplayAlert` and remove `using System.Windows;`. |
-| The label and the button show no text. | .NET MAUI `Label` and `Button` use `Text`, not `Content`. | Change `Content` to `Text`. |
-| The assignments from `paramArray` do not compile. | The array items are of type `object`. | Cast each item, for example `(string)paramArray[1]`. |
-| `DTOItem` is not found. | The sample does not define `DTOItem`. In this view, `Path="."` gives the `DemoViewModel`. | Define the type, or bind the third value to the object you need. |
 
 ## Related links
 

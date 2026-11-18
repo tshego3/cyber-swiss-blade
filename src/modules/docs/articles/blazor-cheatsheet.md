@@ -42,13 +42,13 @@ To create a new class, add a `.cs` file.
 
 To use a component in another component, add an element with the type name of the component. Add attributes for the component parameters.
 
-To add a new item to a list with a property value, use `List<T>.Add`. For example, add a todo item with the user input as the title:
+To add a new item to a list with a property value, use `List<T>.Add`. For example, add a todo item with the user input as the title. This is a pattern, not compilable code:
 
-```csharp
+```text
 List<T>.Add(new class<T> {property<T> = string<T>});
 ```
 
-For more information about classes with properties, see [CSharpeNotes](https://github.com/Martian42/CSharpeNotes/wiki/Home/_edit#how-to-create-a-class-with-properties).
+For more information about classes with properties, see [CSharpeNotes](https://github.com/Martian42/CSharpeNotes/wiki/Home#how-to-create-a-class-with-properties).
 
 ## Project structure
 
@@ -62,6 +62,8 @@ The Blazing Pizza solution has these projects:
 | `BlazingPizza.ComponentsLibrary` | A library of components and helper code for the app. |
 
 Set `BlazingPizza.Server` as the startup project.
+
+> **NOTE:** Dated (checked November 2026): This Client, Server, and Shared structure comes from the Blazor WebAssembly "ASP.NET Core hosted" template. .NET 8 removed that template. The Blazor Web App template replaces it. In that template, the layout is in `Components/Layout/MainLayout.razor` and the `<Router>` is in `Components/Routes.razor`.
 
 ## Get data from the backend
 
@@ -96,7 +98,7 @@ In this example, a dialog opens when the user clicks a pizza card. In the dialog
    bool showingConfigureDialog;     // True when the dialog is visible
    ```
 
-2. Add the method that runs when the user clicks a pizza special. `special` is the input. `Pizza` is a predefined class with the properties `Id`, `DefaultSize`, and `List<PizzaTopping>`.
+2. Add the method that runs when the user clicks a pizza special. `special` is the input. `Pizza` is a predefined class. The method sets its `Special`, `SpecialId`, `Size`, and `Toppings` properties and uses the `Pizza.DefaultSize` value.
 
    ```csharp
    void ShowConfigurePizzaDialog(PizzaSpecial special)

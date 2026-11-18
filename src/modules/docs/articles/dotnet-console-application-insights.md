@@ -17,7 +17,7 @@ This `Program.cs` file makes a .NET console application that runs as a Windows s
 | .NET 6 or later console template | The file uses the implicit `using` directives of the template, for example for `Task`, `CancellationToken`, and LINQ. Refer to [New C# console template](https://aka.ms/new-console-template). |
 | `Microsoft.Extensions.Hosting` | `Host`, `IHostedService`, and `BackgroundService` |
 | `Microsoft.Extensions.Hosting.WindowsServices` | `UseWindowsService()` |
-| `Microsoft.ApplicationInsights` | `TelemetryClient` |
+| `Microsoft.ApplicationInsights.WorkerService` | `TelemetryClient` and `AddApplicationInsightsTelemetryWorkerService()`. Put the connection string in `ApplicationInsights:ConnectionString` in `appsettings.json`. |
 
 ## Code
 
@@ -46,6 +46,7 @@ namespace ConsoleApp1
                 .UseWindowsService()
                 .ConfigureServices((hostContext, services) =>
                 {
+                    services.AddApplicationInsightsTelemetryWorkerService();
                     testModules.Add(new TestModule { Id = 30000, Name = "Task 1" });
                     testModules.Add(new TestModule { Id = 60000, Name = "Task 2" });
                     foreach (var task in testModules)
@@ -103,7 +104,9 @@ public class TestWorker : BackgroundService
 - `UseWindowsService()` lets the application run as a Windows service. It also runs as a normal console application.
 - The code registers one `IHostedService` singleton for each `TestModule`. The host starts all of them.
 - Each worker gets its services from the service provider with `GetService`. `GetService` returns `null` for a service that is not registered.
-- The code does not register `TelemetryClient`. Register Application Insights in `ConfigureServices` before a worker uses `_telemetryClient`.
+- `AddApplicationInsightsTelemetryWorkerService()` registers `TelemetryClient`, so each worker gets a working client.
+
+> **NOTE:** Dated (checked November 2026): Ingestion with an instrumentation key ended on March 31, 2025. Use a connection string. For new applications, Microsoft recommends the Azure Monitor OpenTelemetry Distro.
 - `Task.Delay` uses the `stoppingToken`, so the worker stops immediately when the host shuts down.
 
 ## Related links

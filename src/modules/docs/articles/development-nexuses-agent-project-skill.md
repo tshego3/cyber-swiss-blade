@@ -26,6 +26,9 @@ When the agent processes a feature request, these rules have absolute priority:
 
 All other rules in this file give more detail about these principles.
 
+
+> **NOTE:** Verify the rules for layer boundaries and Domain type ownership together. If the UI never references Domain, it cannot use the Domain DTOs and records. Decide if Presentation can reference Domain types (DTOs and records only) and make the rules agree.
+
 ## Architecture overview
 
 The project uses **Clean Architecture** with strict layer boundaries. Each layer can reference only the layers **below** it:

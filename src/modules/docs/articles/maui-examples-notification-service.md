@@ -17,7 +17,7 @@ This tutorial creates a .NET MAUI service that handles notifications: toasts, al
 
 ## Add the CommunityToolkit.Maui package
 
-The toast in the service uses `CommunityToolkit.Maui.Alerts`. If you do not use toasts, you can skip this task.
+`NotificationService` uses `CommunityToolkit.Maui.Alerts` for the toast and `CommunityToolkit.Maui.Core` for `ToastDuration`, so the project does not compile without this package. If you do not want toasts, remove `ShowToast` from the interface and the implementation, and skip this task.
 
 1. Add the package:
 
@@ -32,6 +32,8 @@ The toast in the service uses `CommunityToolkit.Maui.Alerts`. If you do not use 
 Define an interface for the notification service. With an interface, you can mock or replace the service.
 
 ```csharp
+using CommunityToolkit.Maui.Core;
+
 public interface INotificationService
 {
     Task ShowToast(string message, ToastDuration toastDuration);
@@ -46,7 +48,10 @@ public interface INotificationService
 
 Implement the interface. The toast uses the Community Toolkit. The alert and the confirmation use `DisplayAlert` on the page of the first window. The push notification and the local notification are placeholders.
 
+> **NOTE:** Dated (checked November 2026): In .NET 10, `DisplayAlert` is obsolete. Use `DisplayAlertAsync` with the same parameters.
+
 ```csharp
+using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls;
 
 public class NotificationService : INotificationService
@@ -119,13 +124,15 @@ public static class MauiProgram
 }
 ```
 
-The new lines are `UseMauiCommunityToolkit()` (only for the toast) and the three `builder.Services` registrations.
+The new lines are `UseMauiCommunityToolkit()` (for the toast) and the three `builder.Services` registrations.
 
 ## Inject and use the service
 
 Inject `INotificationService` into ViewModels, pages, or other services.
 
 ```csharp
+using CommunityToolkit.Maui.Core;
+
 public class MainViewModel
 {
     private readonly INotificationService _notificationService;
@@ -137,7 +144,7 @@ public class MainViewModel
 
     public async Task ShowNotification()
     {
-        _notificationService.ShowToast("This is a toast message!");
+        await _notificationService.ShowToast("This is a toast message!", ToastDuration.Short);
         await _notificationService.ShowAlertAsync("Alert", "This is an alert message.");
         bool result = await _notificationService.ShowConfirmationAsync("Confirm", "Are you sure?");
         if (result)
@@ -169,13 +176,6 @@ public partial class MainPage : ContentPage
     }
 }
 ```
-
-## Troubleshooting
-
-| Problem | Cause | Fix |
-| --- | --- | --- |
-| `MainViewModel` does not compile at the `ShowToast` call. | `ShowToast` has a required `toastDuration` parameter. The call gives only the message. | Add a `ToastDuration` value, for example `ToastDuration.Short`, and `await` the call. |
-| The toast does not show. | `UseMauiCommunityToolkit()` is not in `MauiProgram.cs`. | Add the call to the builder. |
 
 ## Related links
 

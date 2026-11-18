@@ -52,8 +52,6 @@ public class Program
                 blankValue = "0";
             else if (type == typeof(short))
                 blankValue = "0";
-            else if (type == typeof(Int64))
-                blankValue = "0";
             else if (type == typeof(DateTime))
                 blankValue = "GETDATE()";
             else if (type == typeof(Nullable<System.DateTime>))
@@ -110,4 +108,3 @@ SELECT '' AS PropOne,0 AS PropTwo,GETDATE() AS PropThree
 | All other types (for example `bool`) | `''` |
 
 - The properties named `PropFour` and `PropFive` always get `'In progress'`. Change these names to the status columns of your class.
-- `Int64` is the same type as `long`, so its condition never runs.

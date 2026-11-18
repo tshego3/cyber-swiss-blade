@@ -10,6 +10,8 @@ gist: a853c85791b121e373e171420130323f
 
 Windows Subsystem for Android (WSA) lets Windows run Android apps directly, without an emulator. When the guide was written, WSA was available only as a preview in the Beta Channel of the Windows Insider Program. This guide installs WSA on Windows 11 without the Windows Insider Program.
 
+> **NOTE:** Dated (checked November 2026): Microsoft ended support for Windows Subsystem for Android on 5 March 2025. WSA and the Amazon Appstore are no longer in the Microsoft Store, WSA gets no updates, and the download steps in this guide can fail. To run Android apps on Windows, use the Android Emulator. See [Android SDK manual setup](doc:android-sdk-manual-setup).
+
 ## Before you start
 
 - A device with any version and edition of Windows 11.

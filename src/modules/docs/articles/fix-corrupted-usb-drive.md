@@ -29,8 +29,13 @@ Video: [Windows procedure](https://youtu.be/XFBoXMkih-0)
    list disk
    select disk <number>
    clean
+   create partition primary
+   format fs=exfat quick
+   assign
    exit
    ```
+
+   After `clean`, the disk has no partitions. The `create partition primary`, `format`, and `assign` commands make a new volume and give it a drive letter. You can use `fs=ntfs` or `fs=fat32` in place of `fs=exfat`. Diskpart cannot format a FAT32 volume larger than 32 GB.
 
 ## Format the device on Linux
 
@@ -63,20 +68,20 @@ Ubuntu mounts a USB drive automatically when you attach it. Linux cannot format 
 1. Unmount the USB drive:
 
    ```bash
-   sudo umount /dev/sdb1
+   sudo umount /dev/sdc1
    ```
 
 2. Format the drive with the file system that you want. Most users select VFAT or NTFS, because Windows can use these file systems easily.
 
    | File system | Command |
    | --- | --- |
-   | VFAT | `sudo mkfs.vfat /dev/sdb1` |
+   | VFAT | `sudo mkfs.vfat /dev/sdc1` |
    | NTFS | `sudo mkfs.ntfs /dev/sdc1` |
    | EXT4 | `sudo mkfs.ext4 /dev/sdc1` |
 
    You can use the same method for other file systems.
 
-> **CAUTION:** The source commands use both `/dev/sdb1` and `/dev/sdc1`. Replace the device in each command with the device that you identified with `df -h`.
+> **CAUTION:** Replace `/dev/sdc1` in each command with the device that you identified with `df -h`.
 
 ## Remove write protection
 

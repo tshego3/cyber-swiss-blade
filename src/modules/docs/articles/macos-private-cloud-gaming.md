@@ -20,6 +20,8 @@ This guide connects a macOS 15 (Sequoia) computer to a Windows 11 Pro PC in two 
 | Streaming software | Sunshine on the host, Moonlight on the client |
 | Network | Both devices on the same network, or a virtual LAN for streaming over the internet |
 
+> **NOTE:** Dated (checked November 2026): Microsoft renamed the Microsoft Remote Desktop app for macOS to Windows App in September 2024.
+
 ## Turn on Remote Desktop on Windows
 
 1. Open **Settings > System > Remote Desktop**.
@@ -80,7 +82,9 @@ The Windows App can save credentials in the macOS Keychain. But it still needs a
 1. Apply the UpinelBetterRDP registry file. It turns on 60 FPS, GPU acceleration, and RemoteFX improvements.
 2. In Local Group Policy Editor, go to `Computer Configuration > Administrative Templates > Windows Components > Remote Desktop Services > Remote Desktop Session Host > Remote Session Environment`.
 3. Enable **Use hardware graphics adapters for all Remote Desktop Services sessions**.
-4. To get higher frame rates, set the DWM frame interval to 15 (hexadecimal) at `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\DWM\DWMFRAMEINTERVAL`.
+4. To get frame rates above 30 FPS, go to `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations`. Create the DWORD value `DWMFRAMEINTERVAL` and set it to 15 (decimal). This sets the limit to 60 FPS.
+
+> **NOTE:** Dated (checked November 2026): Microsoft removed RemoteFX vGPU from Windows (disabled in 2020, removed in 2021). RemoteFX vGPU settings in the registry file have no effect on Windows 11. GPU acceleration comes from the **Use hardware graphics adapters** policy.
 
 ## Set up the Windows App on macOS
 
@@ -94,8 +98,8 @@ The Windows App can save credentials in the macOS Keychain. But it still needs a
 macOS 15 has stricter rules for local network access.
 
 1. Open **System Settings > Privacy & Security > Local Network**.
-2. Find **Microsoft Remote Desktop**. Turn it **Off**, wait a few seconds, then turn it **On**.
-3. Quit and start the Remote Desktop app again to refresh the permissions.
+2. Find **Windows App** (**Microsoft Remote Desktop** in older versions). Turn it **Off**, wait a few seconds, then turn it **On**.
+3. Quit and start Windows App again to refresh the permissions.
 
 ## Install Sunshine on the Windows host
 
@@ -115,6 +119,8 @@ macOS 15 has stricter rules for local network access.
    | Rate Control | CBR |
    | Encoder | Auto |
    | HEVC Support | Enabled (if the client supports it) |
+
+   > **NOTE:** Dated (checked November 2026): Current Sunshine versions use the NVENC presets P1 (fastest) to P7 (best quality) in place of `llhp`. Use P1 for the lowest latency.
 
 ## Optimize the host graphics settings
 
@@ -149,7 +155,7 @@ In the Moonlight settings, use these values:
 
 To stream from a remote location, do one of these steps:
 
-- Enable **UPnP** in your router, or forward the ports manually (default: 47990 TCP/UDP).
+- Enable **UPnP** in your router, or forward the Sunshine ports manually. The defaults are TCP 47984, 47989, and 48010, and UDP 47998, 47999, 48000, 48002, and 48010. Do not forward TCP 47990: it is the Sunshine web interface.
 - Use **ZeroTier** or **Tailscale** to make a virtual LAN between the devices.
 
 ## Troubleshooting

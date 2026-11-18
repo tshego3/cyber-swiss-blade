@@ -16,14 +16,14 @@ Add these references to the project:
 
 | Reference | Type | Use |
 | --- | --- | --- |
-| Microsoft Shell Controls (`Shell32`) | COM | `FolderItems`, `FolderItem`, `IShellFolderViewDual2` |
+| Microsoft Shell Controls And Automation (`Shell32`) | COM | `FolderItems`, `FolderItem`, `IShellFolderViewDual2` |
 | Microsoft Internet Controls (`SHDocVw`) | COM | `ShellWindows`, `InternetExplorer` |
-| System.Windows and PresentationCore | Assembly | `Clipboard` |
+| PresentationCore (namespace `System.Windows`) | Assembly | `Clipboard` (WPF) |
 
 ## Code
 
 ```csharp
-// Add reference Com -> `Microsoft Shell Controls` and `Microsoft Internet Controls`
+// Add reference Com -> `Microsoft Shell Controls And Automation` and `Microsoft Internet Controls`
 // and System.Windows & PresentationCore for Clipboard
 foreach (SHDocVw.InternetExplorer window in new SHDocVw.ShellWindows())
 {
@@ -55,4 +55,5 @@ foreach (SHDocVw.InternetExplorer window in new SHDocVw.ShellWindows())
 - The code reads the name of the process file from `window.FullName`. It continues only if the name is `explorer`.
 - `IShellFolderViewDual2.SelectedItems()` returns the selected items in that File Explorer window.
 - The `break` stops the inner loop after the first selected item. Thus the code copies only one path for each window.
+- `Clipboard.SetText` needs an STA thread. In a console app, mark `Main` with `[STAThread]`.
 - If more than one File Explorer window has a selection, each window overwrites the clipboard. The clipboard keeps the path from the last window.

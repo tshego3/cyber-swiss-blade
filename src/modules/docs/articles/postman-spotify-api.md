@@ -10,6 +10,8 @@ gist: d663545db6489c1b1119d07818ce3990
 
 This article shows how to authenticate a Spotify user in Postman with OAuth 2.0. Then it shows how to get the playlists of the user with the Spotify Web API.
 
+> **NOTE:** Dated (checked November 2026): Since February 11, 2026 (new apps) and March 9, 2026 (existing apps), Development Mode apps need an app owner with an active Spotify Premium subscription. New Development Mode apps are limited to 5 users.
+
 ## Before you start
 
 | Requirement | Link |
@@ -113,6 +115,8 @@ When you have a playlist `id`, get its tracks with this request:
 ```http
 GET https://api.spotify.com/v1/playlists/{playlist_id}/tracks?offset=0&limit=100
 ```
+
+> **NOTE:** Dated (checked November 2026): Spotify removed `GET /playlists/{id}/tracks` in February 2026. Use `GET https://api.spotify.com/v1/playlists/{playlist_id}/items` instead. The playlist object field `tracks` is now `items` (`tracks.tracks` is `items.items`, and `tracks.tracks.track` is `items.items.item`). Spotify returns playlist items only for playlists that the user owns or collaborates on.
 
 > **NOTE:** Access tokens expire, usually after 1 hour. When the token expires, refresh it manually in Postman or authorize again.
 

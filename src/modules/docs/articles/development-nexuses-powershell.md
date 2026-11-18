@@ -65,7 +65,7 @@ To convert a file to a Base64 string in one line, use this command:
 [convert]::ToBase64String((Get-Content -path "your_file_path" -Encoding byte))
 ```
 
-> **NOTE:** `Get-Content -Encoding byte` works in Windows PowerShell 5.1. PowerShell 7 uses `-AsByteStream`. The script below works in both.
+> **NOTE:** Dated (checked November 2026): PowerShell 6 and later removed `-Encoding Byte`. In PowerShell 7, use `Get-Content -Path "your_file_path" -AsByteStream`. The script below works in both versions.
 
 To convert a PDF file to a Base64 string, use this script:
 
@@ -133,7 +133,7 @@ $headers = @{
 try {
     $response = Invoke-RestMethod -Uri $url1 -Headers $headers -Method Get -ContentType "application/json"
     
-    # Check if the response contains the "Services" array
+    # Check if the response contains the "Operations" array
     if ($response.Operations -is [array]) {
         foreach ($operation in $response.Operations) {
             Write-Output "METHODNAME: " $operation.Name
@@ -150,15 +150,13 @@ try {
             }
         }
     } else {
-        Write-Output "Error: No 'Services' array found in the response."
+        Write-Output "Error: No 'Operations' array found in the response."
     }
 }
 catch {
     Write-Output "Error retrieving data from API: $_"
 }
 ```
-
-> **NOTE:** The comment and the error message say `Services`, but the script checks the `Operations` property.
 
 ## Update the Web.config file
 
@@ -212,6 +210,8 @@ Get-Service -ComputerName serverone.local.co.za -Name ServiceName | Stop-Service
 # Start service:
 Get-Service -ComputerName serverone.local.co.za -Name ServiceName | Start-Service
 ```
+
+> **NOTE:** Dated (checked November 2026): PowerShell 6 and later removed the `-ComputerName` parameter from `Get-Service`. These commands work in Windows PowerShell 5.1. In PowerShell 7, use `Invoke-Command -ComputerName serverone.local.co.za -ScriptBlock { Restart-Service -Name ServiceName -Force }`.
 
 ## Move user environment variables between Windows machines
 

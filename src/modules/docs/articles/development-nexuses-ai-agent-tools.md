@@ -35,6 +35,8 @@ For a stuck turn, the plugin first sends Claude a redirect. If the turn stays st
 
 The plugin sends only summaries to a model, through your Claude Code. It never sends file contents.
 
+> **NOTE:** Verify the repository address (`github.com/microsoft/TokenEconomizer`) and the supported Claude Code versions (2.1.300 to 2.1.310) before you install. This article could not confirm them.
+
 ### Install the plugin
 
 1. Clone the repository. Do not move the clone after the install.
@@ -317,6 +319,8 @@ ollama ps
 # Launch opencode
 ollama launch opencode --model qwen2.5-coder:7b-instruct-q4_K_M
 ```
+
+> **NOTE:** Verify `ollama stop all` with `ollama --help` for your version. `ollama stop` expects a model name. If `all` is not supported, run `ollama stop <model>` for each model that `ollama ps` shows.
 
 To write a Git commit message with the local model, use the Continue extension command `@Git Diff`. It sends the Git diff to the local model. Example prompt: `@Git Diff Write a simple commit message summarizing the modifications`.
 

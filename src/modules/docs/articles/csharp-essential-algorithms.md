@@ -184,7 +184,12 @@ class Program
         {
             while (arr[i] < pivot) i++;
             while (arr[j] > pivot) j--;
-            if (i <= j) (arr[i++], arr[j--]) = (arr[j], arr[i]);
+            if (i <= j)
+            {
+                (arr[i], arr[j]) = (arr[j], arr[i]);
+                i++;
+                j--;
+            }
         }
         QuickSort(arr, low, j);
         QuickSort(arr, i, high);
@@ -205,7 +210,7 @@ Sample output:
 1 5 7 8 9 10
 ```
 
-> **NOTE:** Verify the swap line before you use this code. In a C# deconstruction assignment, the left side (`arr[i++]`, `arr[j--]`) is evaluated before the right side, so `arr[j]` and `arr[i]` on the right can use the changed indexes. If the output is not sorted, replace the line with `if (i <= j) { (arr[i], arr[j]) = (arr[j], arr[i]); i++; j--; }`.
+> **NOTE:** Swap first, then move `i` and `j`. In a C# deconstruction assignment, the indexes on the left side are evaluated before the right side, so `(arr[i++], arr[j--]) = (arr[j], arr[i])` reads the wrong elements.
 
 ## Recursive patterns
 

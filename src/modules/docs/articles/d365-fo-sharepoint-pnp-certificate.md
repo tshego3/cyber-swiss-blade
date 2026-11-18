@@ -12,6 +12,8 @@ This procedure changes a PnP PowerShell script from a client ID and client secre
 
 PnP PowerShell scripts that use **Client ID + Client Secret** use an older authentication method, **Azure ACS (Azure Access Control Service)**. Microsoft retires ACS-based SharePoint authentication tenant by tenant. After the cutover, a script with `-ClientId` and `-ClientSecret` fails, although the credentials are still valid. The authentication path does not exist any more. The supported replacement is **certificate-based authentication** on an Entra ID (Azure AD) app registration.
 
+> **NOTE:** Dated (checked November 2026): Microsoft retired Azure ACS for SharePoint Online for all tenants on 2 April 2026. Client ID and client secret connections no longer work. Certificate-based authentication on an Entra ID app registration is the replacement.
+
 > **WARNING:** Do not paste client secrets, certificate private keys, or thumbprints into chat tools, tickets, or shared documents. If a secret was shared outside a secrets vault, it is compromised. Rotate or delete it.
 
 ## Before you start

@@ -169,8 +169,8 @@ namespace ContosoWebService.Areas.HelpPage.ModelDescriptions
                     {
                         System.Diagnostics.Debug.WriteLine(
                         String.Format(
-                            "A model description could not be created. Duplicate model name '{0}' was found for types '{1}' and '{2}'. " +                            CultureInfo.CurrentCulture,
-
+                            CultureInfo.CurrentCulture,
+                            "A model description could not be created. Duplicate model name '{0}' was found for types '{1}' and '{2}'. " +
                             "Use the [ModelName] attribute to change the model name for at least one of the types so that it has a unique name.",
                             modelName,
                             modelDescription.ModelType.FullName,
@@ -377,7 +377,7 @@ namespace ContosoWebService.Areas.HelpPage.ModelDescriptions
 
             if (GeneratedModels.ContainsKey(complexModelDescription.Name).Equals(true))
             {
-                GeneratedModels.Add(CombineClassAndProperyIntoModelTypeName(complexModelDescription.Name), complexModelDescription);
+                GeneratedModels.Add(CombineClassAndPropertyIntoModelTypeName(complexModelDescription.Name), complexModelDescription);
             }
             else
             {
@@ -471,7 +471,7 @@ namespace ContosoWebService.Areas.HelpPage.ModelDescriptions
 
             if (GeneratedModels.ContainsKey(enumDescription.Name).Equals(true))
             {
-                GeneratedModels.Add(CombineClassAndProperyIntoModelTypeName(enumDescription.Name), enumDescription);
+                GeneratedModels.Add(CombineClassAndPropertyIntoModelTypeName(enumDescription.Name), enumDescription);
             }
             else
             {
@@ -506,7 +506,7 @@ namespace ContosoWebService.Areas.HelpPage.ModelDescriptions
 
             if (GeneratedModels.ContainsKey(simpleModelDescription.Name).Equals(true))
             {
-                GeneratedModels.Add(CombineClassAndProperyIntoModelTypeName(simpleModelDescription.Name), simpleModelDescription);
+                GeneratedModels.Add(CombineClassAndPropertyIntoModelTypeName(simpleModelDescription.Name), simpleModelDescription);
             }
             else
             {
@@ -523,7 +523,7 @@ namespace ContosoWebService.Areas.HelpPage.ModelDescriptions
                 , Convert.ToString(incrementedNumber));
         }
 
-        private string CombineClassAndProperyIntoModelTypeName(string input, bool isReRun = false)
+        private string CombineClassAndPropertyIntoModelTypeName(string input, bool isReRun = false)
         {
             string[] parts = input.Split('.');
 
@@ -597,14 +597,12 @@ The standard Help Page generator stops with an error when two types have the sam
 
 1. If the model name already exists for a different type, the generator looks for a stored model with the same full type name. If it finds one, it returns that model.
 2. If it does not find one, it writes a message to the debug output and continues.
-3. Before it stores a complex, enum, or simple type description, it checks if the name already exists. If it exists, `CombineClassAndProperyIntoModelTypeName` makes a new name:
+3. Before it stores a complex, enum, or simple type description, it checks if the name already exists. If it exists, `CombineClassAndPropertyIntoModelTypeName` makes a new name:
    - A name with dots (`A.B`) becomes `A_B`.
    - A name that ends in a number gets the next number (`Address2` becomes `Address3`).
    - Other names get a number: the count of stored models with the same type name plus 1, or 1 if there are none.
 
-> **WARNING:** The arguments of `String.Format` in the debug message are in the wrong order. The format string gets the culture name at its end, and `{0}` shows the "Use the [ModelName] attribute" text. The message is not correct, but the generator continues.
-
-> **NOTE:** The generator does not check if the new name also exists. If it exists, `Dictionary.Add` throws an `ArgumentException`. The `isReRun` parameter of `CombineClassAndProperyIntoModelTypeName` is not used.
+> **NOTE:** The generator does not check if the new name also exists. If it exists, `Dictionary.Add` throws an `ArgumentException`. The `isReRun` parameter of `CombineClassAndPropertyIntoModelTypeName` is not used.
 
 ## Related links
 

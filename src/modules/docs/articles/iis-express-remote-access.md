@@ -22,8 +22,9 @@ You do not have to deploy the site to IIS. Visual Studio runs the site in IIS Ex
 ## Bind the site to your IP address
 
 1. Open the IIS Express configuration file:
-   - Visual Studio 2015 and later: `{project folder}/.vs/config/applicationhost.config`. Each project has its own file.
-   - Earlier versions: `D:\Users\[YourName]\Documents\IISExpress\config\applicationhost.config`.
+   - Visual Studio 2017 and later: `{solution folder}/.vs/{solution name}/config/applicationhost.config`.
+   - Visual Studio 2015: `{solution folder}/.vs/config/applicationhost.config`.
+   - Earlier versions: `%USERPROFILE%\Documents\IISExpress\config\applicationhost.config`.
 2. Find your site. It looks like this:
 
    ```xml
@@ -99,6 +100,8 @@ Windows (for example, Windows 7) blocks almost all incoming connections. You mus
    ```cmd
    netsh http delete urlacl url=http://192.168.1.42:58938/
    ```
+
+> **NOTE:** Dated (checked November 2026): Visual Studio 2022 has dev tunnels. A dev tunnel makes a local site available to other computers and devices without changes to `applicationhost.config`, `netsh`, or the firewall.
 
 ## Related links
 

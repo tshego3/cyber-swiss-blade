@@ -103,6 +103,7 @@ builder.Services.AddRequestTimeouts(options =>
     options.AddPolicy("customPolicy", TimeSpan.FromSeconds(900));
 });
 var app = builder.Build();
+app.UseRequestTimeouts();
 app.MapReverseProxy();
 app.Run();
 ```
@@ -110,7 +111,7 @@ app.Run();
 ## How to use it
 
 1. Replace the contents of `Program.cs` with the code.
-2. Add the routes and clusters to the `ReverseProxy` configuration section.
+2. Add the routes and clusters to the `ReverseProxy` configuration section. To use the 900 s timeout on a route, set `"TimeoutPolicy": "customPolicy"` on that route.
 3. Change the `body.Replace("Bravo", "Charlie")` line to the change that you need.
 4. Run the app and send a request through the proxy.
 
@@ -124,9 +125,9 @@ app.Run();
 4. If the body contains `<!DOCTYPE html>`, the transform removes all text before this marker.
 5. The transform compresses the changed body again with the original encoding. It then sets `Content-Length` and `Content-Type` and writes the body to the client response.
 6. The empty `catch` block hides all errors. The proxy does not log a failed transform.
-7. `AddRequestTimeouts` adds a request timeout policy named `customPolicy` with a timeout of 900 s (15 minutes).
+7. `AddRequestTimeouts` adds a request timeout policy named `customPolicy` with a timeout of 900 s (15 minutes). `app.UseRequestTimeouts()` adds the middleware that applies the policy. The policy applies only to routes that refer to it.
 
-> **NOTE:** The code does not call `app.UseRequestTimeouts()`, and no route refers to `customPolicy` in the code. Add the middleware and set the policy on a route if you need the timeout.
+> **NOTE:** Verify the route property name for your YARP version. YARP 2.1 and later use `TimeoutPolicy` (policy name) and `Timeout` (a time value) on a route.
 
 ## Related links
 

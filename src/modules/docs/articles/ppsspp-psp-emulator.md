@@ -41,6 +41,8 @@ The emulator does not include games. You need game files in `.iso` or `.cso` for
 | Homebrew store | Get free, community-made indie games in the **Homebrew & Demos** tab of the app. |
 | Online archives | For game backups, use trusted community repositories, for example the [Internet Archive (PSP ISO section)](https://web.archive.org/web/20260000000000*/PSP%20ISO) or [Romsfun](https://romsfun.com/). |
 
+> **NOTE:** Verify the Internet Archive link. It opens a Wayback Machine URL search, not an Internet Archive collection.
+
 > **WARNING:** Do not download files that end in `.exe` or `.apk`. Use only `.iso`, `.cso`, or `.pbp` files.
 
 ## Set up the graphics

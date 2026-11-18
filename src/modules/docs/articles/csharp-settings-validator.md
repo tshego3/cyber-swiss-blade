@@ -45,7 +45,7 @@ namespace SettingsValidator
             return false;
         }
         
-        // Validates the passed parameter's data type matches the expected data type.
+        // Returns the passed value. The return statement cannot throw, so this does not validate the data type.
         public static T ResultHandler<T>(T value)
         {
             try 

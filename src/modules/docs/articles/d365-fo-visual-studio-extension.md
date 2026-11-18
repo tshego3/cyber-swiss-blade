@@ -19,6 +19,8 @@ This procedure installs the Dynamics 365 Finance and Operations (D365 F&O) exten
   - **.NET Framework 4.6 targeting pack**
 - An account for Microsoft Dynamics Lifecycle Services (LCS).
 
+> **NOTE:** Dated (checked November 2026): .NET Framework 4.5.2, 4.6, and 4.6.1 reached end of support on 26 April 2022. Visual Studio 2017 and 2019 do not support current F&O tools: the `17.0` files in this procedure are for Visual Studio 2022, and from Platform Update 75 only Visual Studio 2026 is supported. For new environments, Microsoft moves X++ development to the Unified Developer Experience, which installs the extension from Visual Studio. Refer to [Set up the D365 F&O Unified Developer Experience](doc:d365-fo-unified-developer-experience).
+
 ## Download the service update
 
 1. Log in to **Microsoft Dynamics Lifecycle Services (LCS)**.

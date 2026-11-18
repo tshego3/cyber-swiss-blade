@@ -88,7 +88,7 @@ The environment variables connect the tools to each other and to your shell.
 
    ```bash
    # Java Home (Microsoft OpenJDK)
-   export JAVA_HOME=/Library/Java/JavaVirtualMachines/microsoft-21.jdk/Contents/Home
+   export JAVA_HOME=/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home
 
    # Android Home
    export ANDROID_HOME=/Library/Android/sdk
@@ -102,8 +102,6 @@ The environment variables connect the tools to each other and to your shell.
 
 3. Save the file (in nano, press Ctrl+O and then Enter, or press Ctrl+S). Exit with Ctrl+X.
 4. Run `source ~/.zshrc`.
-
-> **NOTE:** The macOS example uses the `microsoft-21.jdk` folder. Make sure that the path agrees with the JDK version that you installed.
 
 ## Verify the installation
 

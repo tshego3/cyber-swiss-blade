@@ -36,7 +36,7 @@ Swashbuckle adds Swagger to an ASP.NET Web API project. Swagger gives an interac
    Install-Package Swashbuckle
    ```
 
-3. Enable Swagger and the Swagger UI in `WebApiConfig.Register`:
+3. Enable Swagger and the Swagger UI in `WebApiConfig.Register`. `Application_Start` in `Global.asax.cs` calls this method.
 
    ```csharp
    using Swashbuckle.Application;
@@ -55,14 +55,13 @@ Swashbuckle adds Swagger to an ASP.NET Web API project. Swagger gives an interac
    }
    ```
 
-4. Run the project and open the Swagger UI at one of these URLs:
-
-   ```text
-   http://yourserver/swagger
-   http://yourserver/api/swagger
-   ```
+4. Run the project and open the Swagger UI at `http://yourserver/swagger`. This URL redirects to `http://yourserver/swagger/ui/index`.
 
 **Result:** The Swagger UI shows all routes. You can test the API from the browser.
+
+> **NOTE:** Verify if the package added `App_Start/SwaggerConfig.cs`. This file also calls `EnableSwagger` when the app starts. Configure Swagger in one place only (`SwaggerConfig.cs` or `WebApiConfig.cs`). If you call it in both, the Swagger routes are registered two times and the app fails with a duplicate route name error.
+
+> **NOTE:** Dated (checked November 2026): Swashbuckle for ASP.NET Web API 4.x (last version 5.6.0, 2017) is not maintained and makes Swagger 2.0 documents. For ASP.NET Core, use `Swashbuckle.AspNetCore` or the built-in `Microsoft.AspNetCore.OpenApi` package (.NET 9 and later).
 
 ## Show XML comments in Swagger
 
@@ -150,6 +149,8 @@ This task is optional. Use it if you test your API with Postman.
 4. In the sidebar, select **Documentation**, then click **Generate Documentation** for your collection.
 
 **Result:** You can share the documentation or export it to other tools.
+
+> **NOTE:** Dated (checked November 2026): Current Postman versions do not have the **View in Web** and **Generate Documentation** commands. Postman makes documentation for each collection automatically. Open the collection and select the documentation icon in the right sidebar. To share the documentation, publish it from the collection documentation page.
 
 ## Other tools
 

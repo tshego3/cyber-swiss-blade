@@ -23,8 +23,8 @@ Before you use ADB, put the Android device in developer mode. Refer to [Extract 
    ```bash
    adb devices
    List of devices attached
-   adb connect 255.255.0.0:0000 device
-   adb connect 255.255.0.0:0001 offline
+   255.255.0.0:0000 device
+   255.255.0.0:0001 offline
    adb -s 255.255.0.0:0000 [Command] --user 0
    ```
 
@@ -46,9 +46,11 @@ Before you use ADB, put the Android device in developer mode. Refer to [Extract 
 | Pull a full directory | `adb -s emulator-5554 pull /sdcard/Documents/ ~/Downloads/` |
 | Pull a file | `adb -s emulator-5554 pull /sdcard/Documents/file.json ~/Downloads/` |
 | Push a file | `adb -s emulator-5554 push ~/Downloads/file.json /sdcard/Documents/` |
-| List a full directory | `adb -s emulator-5554 shell ls -l /sdcard/Documents exit` |
+| List a full directory | `adb -s emulator-5554 shell ls -l /sdcard/Documents` |
 
 ### Force the screen orientation in Windows Subsystem for Android
+
+> **NOTE:** Dated (checked November 2026): Microsoft ended support for Windows Subsystem for Android on March 5, 2025, and removed it from the Microsoft Store. The `adb shell settings` commands also work on Android devices and emulators.
 
 1. Turn off auto-rotate:
 
@@ -82,7 +84,11 @@ Use ADB and scrcpy to show the watch screen on a Windows or Mac computer. Do the
 1. Go to **Settings** > **About Watch** > **Software** and tap **Software Version** 7 times.
 2. Go to **Developer Options** and turn on **ADB Debugging**.
 3. Scroll down and turn on **Debug over WiFi**.
-4. Write down the IP address that shows. Do not include the port number (the value after the colon). For example, if the value is `192.168.1.3:5555`, the IP address is `192.168.1.3`.
+4. Write down the IP address that shows.
+
+   > **NOTE:** Dated (checked November 2026): On newer Wear OS versions, the option is **Wireless debugging**. Select **Pair new device** and run `adb pair <IP>:<port>` with the pairing code before `adb connect`.
+
+5. Use only the IP address. Do not include the port number (the value after the colon). For example, if the value is `192.168.1.3:5555`, the IP address is `192.168.1.3`.
 
 ### Connect the watch to the PC
 
@@ -118,18 +124,26 @@ Use ADB and scrcpy to show the watch screen on a Windows or Mac computer. Do the
 | Limit the frame rate | `scrcpy --max-fps 15` |
 | Record the screen while it mirrors | `scrcpy --record file.mp4` |
 
+> **NOTE:** Dated (checked November 2026): scrcpy 2.0 and later renamed `--bit-rate` to `--video-bit-rate` (for example `scrcpy --video-bit-rate 8M`).
+
 ## Turn off the CORS policy in Microsoft Edge
 
-> **WARNING:** The CORS policy is a security feature that prevents cross-site scripting attacks. Turn it off only for development or tests. Do not use this setting in production.
+> **WARNING:** The same-origin policy and CORS are security features that stop a site from reading responses from other sites. Turn them off only for development or tests. Do not use these settings for normal browsing or in production.
+
+To start a separate Edge window without CORS checks, close Edge and run this command. The separate profile folder keeps your normal profile safe.
+
+```cmd
+msedge.exe --disable-web-security --user-data-dir="C:\temp\edge-dev"
+```
+
+The flag **Insecure origins treated as secure** does not turn off CORS. It makes Edge treat the HTTP origins that you list as secure contexts. To use it, do these steps:
 
 1. Open Microsoft Edge and type `edge://flags/#unsafely-treat-insecure-origin-as-secure` in the address bar.
 2. Press Enter.
 
    **Result:** The Experimental Features page opens.
-3. Find **Insecure origins treated as secure** and select **Enabled**.
+3. Find **Insecure origins treated as secure**. Type the origins (for example `http://192.168.1.10:8080`) and select **Enabled**.
 4. Restart Microsoft Edge.
-
-**Result:** Edge does not apply the CORS policy to requests to localhost.
 
 ## Use a Galaxy Watch 4 with an iPhone
 
@@ -226,6 +240,8 @@ VisualStudioSetup.exe --layout c:\localVSlayout --add Microsoft.VisualStudio.Wor
 
 ## Turn on the dark theme in SQL Server Management Studio
 
+> **NOTE:** Dated (checked November 2026): SSMS 21 and later include a dark theme in the theme settings, so this file edit is necessary only for SSMS 18 and earlier.
+
 1. Run Notepad++ as administrator.
 2. Open the `ssms.pkgundef` file for your SSMS version:
 
@@ -259,6 +275,8 @@ VisualStudioSetup.exe --layout c:\localVSlayout --add Microsoft.VisualStudio.Wor
 2. In **Path to mysqldump Tool**, select the `mysqldump.exe` file: `C:\Program Files\MySQL\MySQL Server 5.7\bin\mysqldump.exe`.
 3. Select **OK** and export the database.
 
+> **NOTE:** Dated (checked November 2026): MySQL 5.7 reached end of life in October 2023. Use the `mysqldump.exe` of your current MySQL Server version.
+
 ## Windows shortcuts and tricks
 
 | Task | Shortcut or command |
@@ -267,7 +285,7 @@ VisualStudioSetup.exe --layout c:\localVSlayout --add Microsoft.VisualStudio.Wor
 | Task Manager | `Ctrl + Shift + Esc` |
 | Snipping Tool | `Ctrl + Shift + S` or `Windows logo + Shift + S` |
 | Switch window | `Windows logo + Tab` |
-| Send a message to each computer on the same network (CMD) | `MSG * Hi. I'm having a braai on Saturday, and you're invited. Feel free to bring your family and friends; all costs will be covered.` |
+| Send a message to all user sessions on this computer (CMD). To send to a different computer, add `/server:<name>`. | `MSG * Hi. I'm having a braai on Saturday, and you're invited. Feel free to bring your family and friends; all costs will be covered.` |
 | Swap the mouse buttons (CMD) | `rundll32 user32, SwapMouseButton` |
 | Fake update screen (press F11) | [fakeupdate.net](https://fakeupdate.net/) |
 
@@ -336,6 +354,8 @@ The last 3 items come from the [Veraxity YouTube channel](https://www.youtube.co
 | QuillBot | [quillbot.com](https://quillbot.com/) | Paraphrase tool. |
 | Grammarly | [app.grammarly.com](https://app.grammarly.com/) | Grammar tool. |
 
+> **NOTE:** Dated (checked November 2026): US authorities seized the z-lib.org domains in November 2022, and the Z-Library and Library Genesis addresses change often. These links may not work.
+
 A title in the source is Base64 text: `QmV0dGluZyBPbiBaZXJv` ("Betting On Zero").
 
 ### Reference format
@@ -366,6 +386,8 @@ Examples:
 | MongoDB: filter an array in a subdocument | [tutorialspoint.com](https://www.tutorialspoint.com/how-to-filter-array-in-subdocument-with-mongodb) | |
 | Use the Office offline installer | [support.microsoft.com](https://support.microsoft.com/en-us/office/use-the-office-offline-installer-f0a85fe7-118f-41cb-a791-d59cef96ad1c#OfficePlans=signinorgid) | |
 | Install Office 2019, 2016, or 2013 | [support.microsoft.com](https://support.microsoft.com/en-us/office/download-and-install-or-reinstall-office-2019-office-2016-or-office-2013-7c695b06-6d1a-4917-809c-98ce43f86479) | |
+
+> **NOTE:** Dated (checked November 2026): Office 2013 support ended in April 2023, and Office 2016 and Office 2019 support ended on October 14, 2025. Use Microsoft 365 Apps or Office LTSC. The `docs.microsoft.com` links redirect to `learn.microsoft.com`.
 
 ## Nutrition plan for six-pack abs
 

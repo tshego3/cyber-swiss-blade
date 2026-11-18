@@ -53,6 +53,8 @@ The same gist also holds technical notes. They are in these articles:
 | Enterprise ERP development with Blazor SSR and Clean Architecture | [ErpPortal README](https://github.com/tshego3/ErpPortal/blob/main/README.md) | |
 | Enterprise ERP development with Vite and the full TanStack stack: a "Blazor-style" approach | [cyber-swiss-blade README](https://github.com/tshego3/cyber-swiss-blade/blob/main/README.md) | |
 
+> **NOTE:** Dated (checked November 2026): ChatGPT moved from `chat.openai.com` to [chatgpt.com](https://chatgpt.com/). The old address redirects.
+
 ## Energy Insight meter
 
 These links are for the TMM@Pay13 prepaid meter.
@@ -169,6 +171,8 @@ Meter display codes:
 | Vibrations Repository | [api/vibrations](https://repository-manager-server.netlify.app/api/vibrations/) | |
 | Repository Manager Client | [repositorymanagerclient.netlify.app](https://repositorymanagerclient.netlify.app) | |
 
+> **NOTE:** Dated (checked November 2026): 000webhost closed its free hosting in 2024, so the `eoirssreader.000webhostapp.com` RSS Reader address no longer works. Use the RSS Reader (WASM) address.
+
 ## Media links
 
 | Name | Link | Notes |
@@ -191,6 +195,8 @@ Meter display codes:
 | Install Stremio on Linux | [Flathub Stremio, manual install](https://flathub.org/en/apps/com.stremio.Stremio#:~:text=Source%20Code-,Manual%20Install,-Make%20sure%20you) | |
 | Stremio | [stremio.com](https://www.stremio.com/) | |
 | Torrentio | [torrentio.strem.fun/configure](https://torrentio.strem.fun/configure) | Stremio add-on configuration. |
+
+> **NOTE:** Dated (checked November 2026): Twitter is now X. The `twitter.com` and `publish.twitter.com` addresses redirect to `x.com`.
 
 ## Tools and UI links
 
@@ -222,6 +228,8 @@ Meter display codes:
 | Material Design Icons | [materialdesignicons.com](https://materialdesignicons.com/) | |
 | Material Design Icons font 6.9.96 | [pictogrammers.github.io](https://pictogrammers.github.io/@mdi/font/6.9.96/) | |
 
+> **NOTE:** Dated (checked November 2026): Angular moved its documentation from angular.io to [angular.dev](https://angular.dev/). Material Components for the web (MDC Web) is in maintenance mode, and the Material Design 2 pages moved to `m2.material.io`. Material Design 3 is at [m3.material.io](https://m3.material.io/). Material Design Icons moved from materialdesignicons.com to [pictogrammers.com](https://pictogrammers.com/library/mdi/), and font 6.9.96 is an old version.
+
 ## Quick links
 
 | Name | Link | Notes |
@@ -240,10 +248,8 @@ Meter display codes:
 To give a local IIS site a custom domain name, add an entry to the hosts file at `C:\Windows\System32\drivers\etc\hosts`. DNS itself handles the localhost name resolution.
 
 ```text
-27.0.0.1       www.localhost.com
+127.0.0.1       www.localhost.com
 ```
-
-> **NOTE:** The source gives the address `27.0.0.1`. The loopback address is `127.0.0.1`.
 
 ## Related links
 
