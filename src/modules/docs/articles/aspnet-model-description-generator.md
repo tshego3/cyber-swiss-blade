@@ -3,7 +3,6 @@ title: ModelDescriptionGenerator for ASP.NET Web API Help Pages
 summary: A changed ModelDescriptionGenerator for the Web API Help Page area that gives unique names to duplicate model names instead of failing.
 category: ASP.NET and Blazor
 order: 80
-gist: 856595bfbb4688ab077e3e142953af93
 ---
 
 # ModelDescriptionGenerator for ASP.NET Web API Help Pages

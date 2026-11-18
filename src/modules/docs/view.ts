@@ -8,8 +8,6 @@ import { CATEGORIES, searchEntries, type ArticleEntry } from './entry';
 import { parseMarkdown, type Heading } from './markdown';
 import { renderBlocks } from './render';
 
-const GIST_URL = 'https://gist.github.com/';
-
 export function mount(root: HTMLElement, context: ModuleContext): Unmount {
   const slug = context.path[0] ?? '';
   const anchor = context.path[1] ?? '';
@@ -79,15 +77,7 @@ function articleHeader(entry: ArticleEntry): HTMLElement {
       el('span', { text: entry.category }),
     ]),
     el('h1', { class: 'doc-title', text: entry.title }),
-    el('p', { class: 'doc-meta' }, [
-      el('span', { text: `${entry.minutes} min read` }),
-      entry.gist && el('span', { class: 'dot', attrs: { 'aria-hidden': 'true' } }),
-      entry.gist &&
-        el('a', { class: 'external', attrs: { href: `${GIST_URL}${entry.gist}`, target: '_blank', rel: 'noopener noreferrer' } }, [
-          el('span', { text: 'Source gist' }),
-          icon('external', 13),
-        ]),
-    ]),
+    el('p', { class: 'doc-meta' }, [el('span', { text: `${entry.minutes} min read` })]),
   ]);
 }
 
@@ -239,7 +229,7 @@ function homePage(): Child[] {
   return [
     el('header', { class: 'doc-header' }, [
       el('h1', { class: 'doc-title', text: 'Docs' }),
-      el('p', { class: 'doc-lead', text: `${ARTICLES.length} guides, cheat sheets, and code samples from GitHub gists. All articles work offline.` }),
+      el('p', { class: 'doc-lead', text: `${ARTICLES.length} guides, cheat sheets, and code samples. The text works offline.` }),
     ]),
     ARTICLES.length === 0
       ? emptyState({ icon: 'book', title: 'No articles yet', text: 'Add Markdown files to src/modules/docs/articles.' })

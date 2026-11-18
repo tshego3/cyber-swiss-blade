@@ -3,8 +3,6 @@ title: Angular Tour of Heroes, part 5: Add navigation with routing
 summary: Add an AppRoutingModule, a router outlet, a dashboard, default and parameterized routes, and a routable hero detail view with a back button.
 category: Angular
 order: 160
-gist: eabb3f133b8a7fb6fd139763edcae064
-source: toh-pt5.md
 ---
 
 # Angular Tour of Heroes, part 5: Add navigation with routing

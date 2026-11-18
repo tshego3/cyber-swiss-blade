@@ -3,7 +3,6 @@ title: TypeScript cheat sheet
 summary: TypeScript types, functions, classes, generics, enums, advanced types, modules, decorators, MVVM CRUD examples, and interview questions, with notes for C# developers.
 category: TypeScript and JavaScript
 order: 10
-gist: a941f9871887168431754ceb10882900
 ---
 
 # TypeScript cheat sheet

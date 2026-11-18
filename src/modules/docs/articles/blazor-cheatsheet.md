@@ -3,7 +3,6 @@ title: Blazor cheat sheet
 summary: Blazor basics in one page: project setup, Razor syntax, project structure, data from the backend, layouts, event handling, and a folder structure.
 category: ASP.NET and Blazor
 order: 10
-gist: f8c97d1d170ce8c6cd1f8ce4e62b7c64
 ---
 
 # Blazor cheat sheet

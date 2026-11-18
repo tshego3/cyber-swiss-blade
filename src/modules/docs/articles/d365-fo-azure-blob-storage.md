@@ -3,7 +3,6 @@ title: Use the Azure Blob Storage REST API from X++
 summary: List, copy, move, and delete Azure blobs with the REST API, Shared Key or OAuth 2.0 app registration authentication, and X++ helper classes.
 category: Dynamics 365
 order: 90
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # Use the Azure Blob Storage REST API from X++

@@ -3,7 +3,6 @@ title: Create a custom service in D365 F&O
 summary: Create the request, response, and service classes, the service and service group objects, and the security privilege, then call the custom service.
 category: Dynamics 365
 order: 100
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # Create a custom service in D365 F&O

@@ -3,7 +3,6 @@ title: Angular cheat sheet
 summary: Angular CLI commands, components, routing, services, pipes, directives, forms, tests, and interview answers in one reference.
 category: Angular
 order: 10
-gist: e70cb737d71168a2fb7930f989ab30f9
 ---
 
 # Angular cheat sheet

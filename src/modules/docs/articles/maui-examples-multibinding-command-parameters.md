@@ -3,7 +3,6 @@ title: .NET MAUI example: Send multiple parameters to a RelayCommand with MultiB
 summary: Send more than one value from a view to a RelayCommand in a ViewModel with a MultiBinding and a converter that returns an object array.
 category: .NET MAUI
 order: 150
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI example: Send multiple parameters to a RelayCommand with MultiBinding

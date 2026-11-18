@@ -3,7 +3,6 @@ title: .NET MAUI example: MVVM Todo app with REST API CRUD operations
 summary: Build a .NET MAUI MVVM Todo app with a login page, a list page, a detail page, Shell navigation, and HTTP CRUD calls to a REST API.
 category: .NET MAUI
 order: 110
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI example: MVVM Todo app with REST API CRUD operations

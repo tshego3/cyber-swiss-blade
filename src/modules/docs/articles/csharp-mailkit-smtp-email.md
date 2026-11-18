@@ -3,7 +3,6 @@ title: Send SMTP email with MailKit in C#
 summary: Send email with MailKit, read POP3 and IMAP mailboxes with OAuth 2.0 in C# and AX 2012 X++, and add NuGet packages manually.
 category: C# and .NET
 order: 90
-gist: aedbee139121a18cce6270ef292f6db8
 ---
 
 # Send SMTP email with MailKit in C#

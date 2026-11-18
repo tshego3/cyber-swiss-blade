@@ -3,7 +3,6 @@ title: Access an IIS Express site from a remote computer
 summary: Bind an IIS Express site to your IP address and open the firewall so other computers on your network can browse the site.
 category: ASP.NET and Blazor
 order: 40
-gist: 54de7a72a31b884d663e69946c8dcaf5
 ---
 
 # Access an IIS Express site from a remote computer

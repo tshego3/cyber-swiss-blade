@@ -3,7 +3,6 @@ title: Learning Angular, fourth edition
 summary: Quick-start notes for the Learning Angular book: create and run a new app, add Angular Material, and add or delete components.
 category: Angular
 order: 30
-gist: 17f65ffb70dcf56d3cdfab23af02e9fe
 ---
 
 # Learning Angular, fourth edition

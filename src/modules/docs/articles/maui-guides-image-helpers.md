@@ -3,7 +3,6 @@ title: .NET MAUI guide: Image file helpers and the drawing view
 summary: Helper classes to downsize images, convert PNG to JPEG, draw text on images, save images to the device gallery, and capture drawings.
 category: .NET MAUI
 order: 220
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI guide: Image file helpers and the drawing view

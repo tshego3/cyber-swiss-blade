@@ -3,8 +3,6 @@ title: Angular Tour of Heroes, part 4: Add services
 summary: Create an injectable HeroService that returns an Observable, inject it into components, and show app messages with a MessageService.
 category: Angular
 order: 150
-gist: eabb3f133b8a7fb6fd139763edcae064
-source: toh-pt4.md
 ---
 
 # Angular Tour of Heroes, part 4: Add services

@@ -3,7 +3,6 @@ title: Enable the D365 F&O extension in Visual Studio
 summary: Install the Dynamics 365 Finance and Operations development extension in Visual Studio from a service update package in LCS.
 category: Dynamics 365
 order: 140
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # Enable the D365 F&O extension in Visual Studio

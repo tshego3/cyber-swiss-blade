@@ -3,7 +3,6 @@ title: D365 F&O and AX SQL queries
 summary: T-SQL queries and templates for the D365 F&O and AX databases, including dictionary lookups, paging, functions, sync fixes, and SharingView.
 category: Dynamics 365
 order: 60
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # D365 F&O and AX SQL queries

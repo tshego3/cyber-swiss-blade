@@ -3,8 +3,6 @@ title: Angular Tour of Heroes, part 1: The hero editor
 summary: Create the HeroesComponent, show a Hero object, format it with UppercasePipe, and edit it with two-way binding and FormsModule.
 category: Angular
 order: 120
-gist: eabb3f133b8a7fb6fd139763edcae064
-source: toh-pt1.md
 ---
 
 # Angular Tour of Heroes, part 1: The hero editor

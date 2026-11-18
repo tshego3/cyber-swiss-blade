@@ -3,7 +3,6 @@ title: Create API documentation for ASP.NET Web API in .NET Framework 4.x
 summary: Document an ASP.NET Web API 4.x project with XML comments, Swagger through Swashbuckle, Postman, and other tools.
 category: ASP.NET and Blazor
 order: 60
-gist: 99d61e5cc8c771390e81f83bb821705b
 ---
 
 # Create API documentation for ASP.NET Web API in .NET Framework 4.x

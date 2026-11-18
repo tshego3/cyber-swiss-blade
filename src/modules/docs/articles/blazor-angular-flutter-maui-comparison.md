@@ -3,7 +3,6 @@ title: Comparison of Blazor and Angular, and Flutter and .NET MAUI
 summary: Compare Blazor with Angular for web apps and Flutter with .NET MAUI for cross-platform apps: features, advantages, limits, and when to use each.
 category: ASP.NET and Blazor
 order: 20
-gist: 1a4a42a4531bffb84e601edfb6228917
 ---
 
 # Comparison of Blazor and Angular, and Flutter and .NET MAUI

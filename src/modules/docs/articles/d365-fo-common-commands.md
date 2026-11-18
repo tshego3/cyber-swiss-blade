@@ -3,7 +3,6 @@ title: D365 F&O common commands and fixes
 summary: Commands, scripts, and fixes for D365 F&O development VMs, platform updates, UAT databases, environment admins, and Azure Functions.
 category: Dynamics 365
 order: 20
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # D365 F&O common commands and fixes

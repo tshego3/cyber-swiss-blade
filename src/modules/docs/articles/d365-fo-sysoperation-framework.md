@@ -3,7 +3,6 @@ title: Create a batch job with the SysOperation framework
 summary: Create the contract, service, controller, and action menu item that run an X++ process in the background with the D365 SysOperation framework.
 category: Dynamics 365
 order: 80
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # Create a batch job with the SysOperation framework

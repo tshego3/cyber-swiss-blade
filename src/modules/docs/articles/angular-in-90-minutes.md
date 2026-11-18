@@ -3,7 +3,6 @@ title: Angular in 90ish minutes: developer guide
 summary: Build a first standalone Angular 18 app with components, signals, inputs, outputs, routes, an HTTP service, a directive, and pipes.
 category: Angular
 order: 20
-gist: ba1a1b414c9a8b0e41c4db86ff2c365d
 ---
 
 # Angular in 90ish minutes: developer guide

@@ -3,7 +3,6 @@ title: D365 F&O and AX X++ code snippets
 summary: Reusable X++ samples for JSON, files, AOT resources, form refresh, display method caching, maps, companies, direct SQL, .NET interop, and TLS 1.2.
 category: Dynamics 365
 order: 70
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # D365 F&O and AX X++ code snippets

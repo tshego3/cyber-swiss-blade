@@ -3,7 +3,6 @@ title: Internet connection checks and dark or light themes in .NET MAUI
 summary: Check and monitor the internet connection with the Connectivity API, and apply, detect, and toggle dark and light themes in a .NET MAUI app.
 category: .NET MAUI
 order: 80
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # Internet connection checks and dark or light themes in .NET MAUI

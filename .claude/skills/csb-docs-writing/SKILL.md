@@ -17,8 +17,6 @@ title: Angular Tour of Heroes, part 1: The hero editor
 summary: One sentence, 25 words maximum, that tells what the reader gets from the article.
 category: Angular
 order: 20
-gist: eabb3f133b8a7fb6fd139763edcae064
-source: toh-pt1.md
 ---
 ```
 
@@ -28,8 +26,6 @@ source: toh-pt1.md
 | `summary` | One sentence. It shows in the article list and in search. |
 | `category` | One value from the category list below. Spell it exactly. |
 | `order` | Integer. It sorts articles in a category. Use steps of 10. |
-| `gist` | The source GitHub gist ID. Leave it out for articles without a gist. |
-| `source` | The file name in the gist. Use it only when a gist has more than one file. |
 
 Categories, in sidebar order: `C# and .NET`, `ASP.NET and Blazor`, `.NET MAUI`, `Angular`, `React`, `TypeScript and JavaScript`, `Flutter and Android`, `Identity and APIs`, `Dynamics 365`, `DevOps and tools`, `Systems and setup`, `AI and design`, `Reference`.
 
@@ -77,8 +73,8 @@ Headings: sentence case. No numbers in headings ("1.", "Step 2:") except in a tu
 3. Do not change what code does. You can fix typos in code comments, remove em dashes from comments, and fix indentation. Do not invent code, versions, or facts.
 4. Remove manual tables of contents. The page shows its own navigation.
 5. Convert raw HTML to Markdown: `<details>` becomes a section, `<a href>` becomes a Markdown link, `<br>` becomes a new line or a list, HTML tables become Markdown tables. Keep HTML that is part of a code sample inside a code block.
-6. A gist that holds a full HTML page or source file without text becomes a code sample article. Write the introduction, `## How to use it`, and `## How it works` from the code.
-7. Split one gist into more than one article only when it holds unrelated topics. Each part gets the same `gist` value, its own slug (`<main-slug>-<topic>`), and its own `order`.
+6. A source that holds a full HTML page or source file without text becomes a code sample article. Write the introduction, `## How to use it`, and `## How it works` from the code.
+7. Split one source into more than one article only when it holds unrelated topics. Each part gets its own slug (`<main-slug>-<topic>`) and its own `order`.
 
 ## Markdown Subset
 

@@ -3,7 +3,6 @@ title: .NET MAUI example: Native background service for Android and iOS
 summary: Build a background uploader in a .NET MAUI app with native platform APIs: WorkManager and a foreground service on Android, and BGTaskScheduler on iOS.
 category: .NET MAUI
 order: 170
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI example: Native background service for Android and iOS

@@ -3,7 +3,6 @@ title: .NET MAUI resources and libraries
 summary: Links to official .NET MAUI documentation, Community Toolkit pages, platform docs, samples, books, third-party libraries, and local database packages.
 category: .NET MAUI
 order: 20
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI resources and libraries

@@ -3,7 +3,6 @@ title: Agent global rules for .NET 10 Blazor SSR
 summary: Set up one shared rules and skills folder for GitHub Copilot and Google AntiGravity, with the global engineering rules for a .NET 10 Blazor SSR solution.
 category: Reference
 order: 50
-gist: 7d918ed092732c842802a302df4de443
 ---
 
 # Agent global rules for .NET 10 Blazor SSR

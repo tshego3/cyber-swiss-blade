@@ -3,7 +3,6 @@ title: App IP registration and FRDs
 summary: Steps to protect an application idea as intellectual property in South Africa and to prepare a Functional Requirements Document for development.
 category: Reference
 order: 90
-gist: a51db5a66e2c1be87df873da2150dd9a
 ---
 
 # App IP registration and FRDs

@@ -3,7 +3,6 @@ title: Agent design system: Midnight Emerald MudBlazor admin dashboard
 summary: The UI and UX standards skill file for AI agents: design tokens, colors, typography, spacing, components, and MudBlazor runtime theming rules.
 category: Reference
 order: 70
-gist: 7d918ed092732c842802a302df4de443
 ---
 
 # Agent design system: Midnight Emerald MudBlazor admin dashboard

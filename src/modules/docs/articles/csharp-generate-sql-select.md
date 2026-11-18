@@ -3,7 +3,6 @@ title: Generate a blank SQL SELECT from C# class properties
 summary: A C# method that uses reflection to make a SQL SELECT with a blank default value for each public property of a class.
 category: C# and .NET
 order: 50
-gist: 928a9def8b1b58931b5ea90dbd8f446d
 ---
 
 # Generate a blank SQL SELECT from C# class properties

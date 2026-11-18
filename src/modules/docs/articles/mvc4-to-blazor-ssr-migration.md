@@ -3,7 +3,6 @@ title: Migrate ASP.NET MVC 4 to SSR-only Blazor on .NET 10
 summary: Templates, prompts, and code patterns to move an ASP.NET MVC 4 app with Kendo UI to SSR-only Blazor, MudBlazor, and a separate Web API.
 category: ASP.NET and Blazor
 order: 30
-gist: 6df2bb072e716fab6714a7c5b6965324
 ---
 
 # Migrate ASP.NET MVC 4 to SSR-only Blazor on .NET 10

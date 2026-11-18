@@ -25,8 +25,6 @@ export interface ArticleEntry {
   readonly summary: string;
   readonly category: string;
   readonly order: number;
-  readonly gist: string;
-  readonly source: string;
   readonly minutes: number;
   readonly headings: readonly Heading[];
 }
@@ -63,8 +61,6 @@ export function buildEntry(slug: string, raw: string): ArticleEntry {
     summary: meta.summary ?? '',
     category: meta.category ?? 'Reference',
     order: Number.isFinite(order) ? order : 999,
-    gist: meta.gist ?? '',
-    source: meta.source ?? '',
     minutes: Math.max(1, Math.round(countWords(document.blocks) / WORDS_PER_MINUTE)),
     headings: document.headings.filter((heading) => heading.level === 2 || heading.level === 3),
   };
@@ -79,8 +75,6 @@ export function isArticleEntry(value: unknown): value is ArticleEntry {
     typeof entry.summary === 'string' &&
     typeof entry.category === 'string' &&
     typeof entry.order === 'number' &&
-    typeof entry.gist === 'string' &&
-    typeof entry.source === 'string' &&
     typeof entry.minutes === 'number' &&
     Array.isArray(entry.headings)
   );

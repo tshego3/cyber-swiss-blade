@@ -3,7 +3,6 @@ title: WSL, Tor Browser, and Firefox on Windows 11 for a standard user
 summary: Set up an isolated WSL 2 Ubuntu distribution with Tor Browser and Firefox as a standard Windows 11 user, with no UAC prompt.
 category: Systems and setup
 order: 10
-gist: 6058a43e847912953ff9ce2a88152acf
 ---
 
 # WSL, Tor Browser, and Firefox on Windows 11 for a standard user

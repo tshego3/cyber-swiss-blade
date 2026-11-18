@@ -3,7 +3,6 @@ title: Build dynamic modals with the Kendo UI Window
 summary: Open an Html.Kendo().Window() from JavaScript in ASP.NET MVC, load a Kendo UI Form into it, and show hidden partial views on demand.
 category: ASP.NET and Blazor
 order: 50
-gist: e62a265e848e3432c82e2f1fe3e21c32
 ---
 
 # Build dynamic modals with the Kendo UI Window

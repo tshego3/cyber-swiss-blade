@@ -3,7 +3,6 @@ title: Midnight Emerald design system
 summary: The token tiers, brand packs, theme resolver, colors, typography, spacing, component specs, and MudBlazor theme rules for the Stitch whitelabel workflow.
 category: AI and design
 order: 100
-gist: 3c82a714553181670347ddb59e0e3073
 ---
 
 # Midnight Emerald design system

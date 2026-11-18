@@ -3,8 +3,6 @@ title: Angular Tour of Heroes, part 6: Get data from a server
 summary: Use HttpClient and the In-memory Web API to get, add, update, delete, and search heroes, with error handling and RxJS operators.
 category: Angular
 order: 170
-gist: eabb3f133b8a7fb6fd139763edcae064
-source: toh-pt6.md
 ---
 
 # Angular Tour of Heroes, part 6: Get data from a server

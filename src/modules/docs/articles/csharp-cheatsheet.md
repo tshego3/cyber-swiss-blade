@@ -3,7 +3,6 @@ title: C# cheat sheet
 summary: C# examples for concurrent collections, LINQ, logging, async calls, partial classes, batch queues, parameter passing, reflection, controllers, and safe collection changes.
 category: C# and .NET
 order: 10
-gist: a31180a764bc5ebf7f3272eb63da601c
 ---
 
 # C# cheat sheet
@@ -76,7 +75,7 @@ class Program
 
 ## LINQ and lambda examples
 
-The examples in this section and in the next 2 sections are one file in the source. The `using` directives in the first block apply to all of them.
+The examples in this section and in the next 2 sections are one file. The `using` directives in the first block apply to all of them.
 
 | Example | What it shows |
 | --- | --- |

@@ -3,7 +3,6 @@ title: PHP RSS feed reader
 summary: A single PHP page that reads items from more than one RSS feed, sorts them by date, and shows them as a list.
 category: TypeScript and JavaScript
 order: 40
-gist: d103334f6f070783745de908478cbcd2
 ---
 
 # PHP RSS feed reader

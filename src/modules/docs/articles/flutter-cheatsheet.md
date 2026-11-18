@@ -3,7 +3,6 @@ title: Flutter cheat sheet
 summary: Flutter and Dart reference: CLI commands, widgets, common snippets, networking recipes, MVVM samples, and fixes for common setup errors.
 category: Flutter and Android
 order: 10
-gist: 9e2e833b7b151900d4c27567410fe159
 ---
 
 # Flutter cheat sheet

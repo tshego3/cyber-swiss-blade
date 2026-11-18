@@ -3,7 +3,6 @@ title: .NET console worker with Application Insights
 summary: A .NET console app that runs as a Windows service and starts one background worker for each task, with logging and an Application Insights TelemetryClient.
 category: C# and .NET
 order: 110
-gist: 811d3c645ea26d24ca520dd9b7bc5b89
 ---
 
 # .NET console worker with Application Insights

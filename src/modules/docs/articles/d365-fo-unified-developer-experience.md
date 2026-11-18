@@ -3,7 +3,6 @@ title: Set up the D365 F&O Unified Developer Experience
 summary: Provision a UDE environment, install and connect the Visual Studio tools, configure metadata, then build, deploy, debug, test, and automate X++ development.
 category: Dynamics 365
 order: 150
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # Set up the D365 F&O Unified Developer Experience

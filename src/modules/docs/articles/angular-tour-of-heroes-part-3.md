@@ -3,8 +3,6 @@ title: Angular Tour of Heroes, part 3: Create a feature component
 summary: Move the hero details into a reusable HeroDetailComponent with an @Input() hero property and bind it from the HeroesComponent.
 category: Angular
 order: 140
-gist: eabb3f133b8a7fb6fd139763edcae064
-source: toh-pt3.md
 ---
 
 # Angular Tour of Heroes, part 3: Create a feature component

@@ -3,7 +3,6 @@ title: .NET MAUI example: Bind to the page IsBusy property with x:Reference
 summary: Bind controls to the IsBusy property of a ContentPage with x:Reference, and show an activity indicator while a task runs.
 category: .NET MAUI
 order: 140
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI example: Bind to the page IsBusy property with x:Reference

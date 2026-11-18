@@ -3,7 +3,6 @@ title: AI agent setup and installation
 summary: Install Ollama, Node.js, Claude Code, GitHub Copilot CLI, VS Code, and LiteLLM without admin rights, and select local models for your hardware.
 category: AI and design
 order: 20
-gist: 930b58773dc848ae6611132f7a4a3362
 ---
 
 # AI agent setup and installation

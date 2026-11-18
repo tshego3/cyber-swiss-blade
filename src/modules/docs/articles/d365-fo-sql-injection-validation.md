@@ -3,7 +3,6 @@ title: Validate SQL statements against injection in X++
 summary: An X++ method that accepts only stored procedure calls without dangerous keywords, with a SQL test setup and 15 test cases.
 category: Dynamics 365
 order: 120
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # Validate SQL statements against injection in X++

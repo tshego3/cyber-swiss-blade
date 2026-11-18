@@ -3,8 +3,6 @@ title: Angular Tour of Heroes, part 0: Create a new project
 summary: Set up the environment, create the Tour of Heroes workspace with ng new, serve it, and change the title and global styles.
 category: Angular
 order: 110
-gist: eabb3f133b8a7fb6fd139763edcae064
-source: toh-pt0.md
 ---
 
 # Angular Tour of Heroes, part 0: Create a new project

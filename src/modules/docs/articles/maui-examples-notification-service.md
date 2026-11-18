@@ -3,7 +3,6 @@ title: .NET MAUI example: Notification service with dependency injection
 summary: Create a .NET MAUI notification service for toasts, alerts, confirmations, and push notifications, and inject it into ViewModels with dependency injection.
 category: .NET MAUI
 order: 130
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI example: Notification service with dependency injection

@@ -3,7 +3,6 @@ title: Agent project skill for .NET 10 Blazor SSR
 summary: The logic and architecture skill file for AI coding agents: layer rules, delivery skills, code patterns, 4-branch state management, and tests.
 category: Reference
 order: 60
-gist: 7d918ed092732c842802a302df4de443
 ---
 
 # Agent project skill for .NET 10 Blazor SSR
@@ -256,7 +255,7 @@ public class ProductsController : BaseApiController
 }
 ```
 
-> **NOTE:** `CreatedAtAction(nameof(GetById), ...)` needs a `GetById` action on the same controller. The source does not show it. Add a `GetById(Guid id)` action that returns `ProductDetailDto`, to match `ProductApiClient.GetByIdAsync`.
+> **NOTE:** `CreatedAtAction(nameof(GetById), ...)` needs a `GetById` action on the same controller. This article does not show it. Add a `GetById(Guid id)` action that returns `ProductDetailDto`, to match `ProductApiClient.GetByIdAsync`.
 
 ### Typed API client pattern
 
@@ -709,7 +708,7 @@ else
 }
 ```
 
-> **NOTE:** The template calls `GetStatusColor(context)` and `GetDetailUrl(context)`. The source does not define them. Add these 2 methods to the code-behind: one returns a MudBlazor `Color` for the status, and one returns the detail page route.
+> **NOTE:** The template calls `GetStatusColor(context)` and `GetDetailUrl(context)`. The sample does not define them. Add these 2 methods to the code-behind: one returns a MudBlazor `Color` for the status, and one returns the detail page route.
 
 ### Gold standard rules checklist
 

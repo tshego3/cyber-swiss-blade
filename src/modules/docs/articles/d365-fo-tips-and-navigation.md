@@ -3,7 +3,6 @@ title: D365 F&O and AX 2012 tips and navigation paths
 summary: Navigation paths, keyboard shortcuts, security concepts, batch job and AIF port tasks, and fixes for common D365 F&O and AX 2012 errors.
 category: Dynamics 365
 order: 40
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # D365 F&O and AX 2012 tips and navigation paths

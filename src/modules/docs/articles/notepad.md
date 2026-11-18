@@ -3,7 +3,6 @@ title: Notepad
 summary: Personal notes on ADB, Galaxy Watch mirroring, Edge CORS, VS Code compare, RustDesk, Office and Visual Studio installs, SSMS, MySQL, and useful links.
 category: Reference
 order: 80
-gist: 01e798cf3f28a1c0f3560ad5d0f9cf12
 ---
 
 # Notepad
@@ -356,7 +355,7 @@ The last 3 items come from the [Veraxity YouTube channel](https://www.youtube.co
 
 > **NOTE:** Dated (checked November 2026): US authorities seized the z-lib.org domains in November 2022, and the Z-Library and Library Genesis addresses change often. These links may not work.
 
-A title in the source is Base64 text: `QmV0dGluZyBPbiBaZXJv` ("Betting On Zero").
+One title is Base64 text: `QmV0dGluZyBPbiBaZXJv` ("Betting On Zero").
 
 ### Reference format
 

@@ -3,7 +3,6 @@ title: Azure AD B2C OAuth 2.0 with Postman
 summary: Get an Azure AD B2C access token in Postman with the OAuth 2.0 implicit flow, then call a protected web API with it.
 category: Identity and APIs
 order: 20
-gist: e44fa0ccda509c1bf755578165fb2ac5
 ---
 
 # Azure AD B2C OAuth 2.0 with Postman

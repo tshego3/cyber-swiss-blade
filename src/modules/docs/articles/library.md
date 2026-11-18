@@ -3,7 +3,6 @@ title: Library
 summary: A reading list for IT service management, IT studies, and programming, with library access links and notes on writing forms.
 category: Reference
 order: 100
-gist: 04022f6b9d60e71b27773795eb44488d
 ---
 
 # Library

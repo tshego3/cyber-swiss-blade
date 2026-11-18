@@ -3,7 +3,6 @@ title: Set up the D365 F&O MCP server
 summary: Host the d365fo-mcp-server on Azure App Service, offline on a local machine, or on a LAN server, and keep its metadata and code up to date.
 category: Dynamics 365
 order: 170
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # Set up the D365 F&O MCP server
@@ -834,7 +833,7 @@ The databases are local files, so there is no blob upload step. Thus, updates ar
 
 Microsoft has its own MCP server in Dynamics 365 Finance and Operations. It became generally available in February 2026. It does not replace this project. The two servers solve different problems.
 
-> **NOTE:** Verify the current version requirements and the Copilot Credits price of the official server on Microsoft Learn. The values in this table come from the source and can change.
+> **NOTE:** Verify the current version requirements and the Copilot Credits price of the official server on Microsoft Learn. The values in this table can change.
 
 | | Official Dynamics 365 ERP MCP | This project (d365fo-mcp-server) |
 | --- | --- | --- |

@@ -3,7 +3,6 @@ title: PPSSPP PSP emulator guide
 summary: Install PPSSPP, get PSP games, and set up graphics, controllers, and wireless multiplayer for the PlayStation Portable emulator.
 category: Systems and setup
 order: 50
-gist: 9d85b41fb9cc4d9c8969c8879113cc08
 ---
 
 # PPSSPP PSP emulator guide

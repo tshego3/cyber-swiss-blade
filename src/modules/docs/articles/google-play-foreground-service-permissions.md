@@ -3,7 +3,6 @@ title: Fix Google Play foreground service permission errors
 summary: Declare foreground service types in the manifest and in Google Play Console so that Play Store uploads and Azure DevOps pipelines do not fail.
 category: Flutter and Android
 order: 50
-gist: cd050f8fedee2258505f08d83e55bf50
 ---
 
 # Fix Google Play foreground service permission errors

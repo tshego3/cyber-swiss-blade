@@ -3,7 +3,6 @@ title: iOS code signing for .NET MAUI
 summary: Create, install, trust, repair, and replace Apple certificates, bundle IDs, and provisioning profiles that sign a .NET MAUI iOS app.
 category: .NET MAUI
 order: 30
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # iOS code signing for .NET MAUI

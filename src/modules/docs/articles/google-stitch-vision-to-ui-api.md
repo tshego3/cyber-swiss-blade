@@ -3,7 +3,6 @@ title: Stitch and Antigravity API reference
 summary: The HTTP contracts for the Stitch analyze endpoint and the Antigravity normalize and generate endpoints, with secrets setup, an end-to-end flow, and error handling.
 category: AI and design
 order: 130
-gist: 3c82a714553181670347ddb59e0e3073
 ---
 
 # Stitch and Antigravity API reference

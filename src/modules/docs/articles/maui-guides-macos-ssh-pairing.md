@@ -3,7 +3,6 @@ title: .NET MAUI guide: Fix SSH pairing with macOS from Visual Studio
 summary: Fix the Visual Studio pair-to-Mac SSH connection when newer macOS releases reject the legacy ssh-rsa algorithms.
 category: .NET MAUI
 order: 260
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI guide: Fix SSH pairing with macOS from Visual Studio

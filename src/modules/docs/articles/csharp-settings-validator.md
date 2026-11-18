@@ -3,7 +3,6 @@ title: C# settings validator
 summary: A C# class that uses reflection to check if any property of a settings object is null or empty.
 category: C# and .NET
 order: 60
-gist: f636fb7962d5e4af4127c6da9be08f43
 ---
 
 # C# settings validator

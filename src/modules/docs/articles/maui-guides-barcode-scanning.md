@@ -3,7 +3,6 @@ title: .NET MAUI guide: Scan South African license disc barcodes
 summary: Scan and decode the PDF-417 barcode on South African vehicle license discs in .NET MAUI with ZXing.Net.Maui or BarcodeScanning.Native.Maui.
 category: .NET MAUI
 order: 210
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI guide: Scan South African license disc barcodes
@@ -625,7 +624,7 @@ public partial class BarCodeScanPage : ContentPage
 }
 ```
 
-> **NOTE:** The control uses a `_scanLicenseDiscService` field with `GridHeight()` and `GridWidth()` methods, but the source does not declare it or give its type. Declare this service in the control (for example, inject it through the constructor), or set fixed values for `HeightRequest` and `WidthRequest`. Verify the values in your app.
+> **NOTE:** The control uses a `_scanLicenseDiscService` field with `GridHeight()` and `GridWidth()` methods, but the code does not declare it or give its type. Declare this service in the control (for example, inject it through the constructor), or set fixed values for `HeightRequest` and `WidthRequest`. Verify the values in your app.
 
 ## Configure the camera permission
 

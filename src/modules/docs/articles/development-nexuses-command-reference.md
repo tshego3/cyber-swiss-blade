@@ -3,7 +3,6 @@ title: Development nexuses: command reference
 summary: Commands and settings for Visual Studio Code, Windows, macOS, FFmpeg, Podman, cURL, Node.js, MySQL, Git, and Azure Application Insights.
 category: Reference
 order: 40
-gist: 7d918ed092732c842802a302df4de443
 ---
 
 # Development nexuses: command reference

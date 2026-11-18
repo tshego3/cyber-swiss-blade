@@ -3,7 +3,6 @@ title: Copy the selected File Explorer file path to the clipboard
 summary: A C# sample that finds the file selected in an open Windows File Explorer window and copies its path to the clipboard.
 category: Systems and setup
 order: 30
-gist: f8ddc4e5ccb801cd100fc79a7c302f0e
 ---
 
 # Copy the selected File Explorer file path to the clipboard

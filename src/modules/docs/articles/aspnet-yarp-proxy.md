@@ -3,7 +3,6 @@ title: YARP reverse proxy with a response body transform
 summary: A YARP reverse proxy that decompresses text responses, changes the body, and compresses it again before it goes to the client.
 category: ASP.NET and Blazor
 order: 70
-gist: f2b0f5f3d9f6caae9068860c315a7477
 ---
 
 # YARP reverse proxy with a response body transform

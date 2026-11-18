@@ -3,7 +3,6 @@ title: AI design-to-code workflows
 summary: Use Open Design, Claude Design, Penpot, and local vision models to turn briefs and screenshots into DESIGN.md tokens and working UI code.
 category: AI and design
 order: 70
-gist: 930b58773dc848ae6611132f7a4a3362
 ---
 
 # AI design-to-code workflows
@@ -81,7 +80,7 @@ Claude Design is a canvas-based design capability in Claude Code. Call the `desi
 - **Access:** Run `claude` in the project root and use `/design`, or use the Claude Code panel in VS Code.
 - **Output:** `.dc.html` artboards on one pan and zoom canvas. Refine the elements visually, then export PNG or PDF.
 
-> **NOTE:** Verify the `/design` command and the `.dc.html` output format in your Claude Code version. The source does not give a reference for them.
+> **NOTE:** Verify the `/design` command and the `.dc.html` output format in your Claude Code version. This article has no reference for them.
 
 Usage pattern:
 

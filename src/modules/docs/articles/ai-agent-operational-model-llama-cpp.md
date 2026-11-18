@@ -3,7 +3,6 @@ title: llama.cpp portable runtime
 summary: Download, configure, test, and connect the llama.cpp portable server as a local OpenAI-compatible endpoint, without an installer or admin rights.
 category: AI and design
 order: 30
-gist: 930b58773dc848ae6611132f7a4a3362
 ---
 
 # llama.cpp portable runtime

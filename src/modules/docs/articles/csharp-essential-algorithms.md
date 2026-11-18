@@ -3,7 +3,6 @@ title: Essential algorithms with C#
 summary: C# implementations and sample output for search, sort, recursion, graph traversal, and shortest-path algorithms that all developers must know.
 category: C# and .NET
 order: 20
-gist: 8110ed8e6b60cb31f05a4bd131be8734
 ---
 
 # Essential algorithms with C#

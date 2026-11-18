@@ -3,7 +3,6 @@ title: Antigravity motion and depth
 summary: The floating UI rules, depth tokens, motion tokens, required motion states, reduced-motion contract, and FloatingBadge and HeroCard behavior specs.
 category: AI and design
 order: 110
-gist: 3c82a714553181670347ddb59e0e3073
 ---
 
 # Antigravity motion and depth

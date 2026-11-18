@@ -3,7 +3,6 @@ title: .NET MAUI example: Handle property changes with Messenger and ObservableR
 summary: Use the MVVM Toolkit messenger, ObservableRecipient, and NotifyPropertyChangedRecipients to run code, such as a database save, when a ViewModel property changes.
 category: .NET MAUI
 order: 160
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI example: Handle property changes with Messenger and ObservableRecipient

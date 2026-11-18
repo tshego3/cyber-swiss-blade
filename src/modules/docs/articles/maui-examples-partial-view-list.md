@@ -3,7 +3,6 @@ title: .NET MAUI example: List rows as partial views with the MVVM Toolkit
 summary: Build a .NET MAUI list that shows each row in a partial view, with a row button that sends the row object to a ViewModel command.
 category: .NET MAUI
 order: 100
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI example: List rows as partial views with the MVVM Toolkit

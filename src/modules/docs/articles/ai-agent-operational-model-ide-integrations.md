@@ -3,7 +3,6 @@ title: AI agent IDE integrations
 summary: Use Claude Code, GitHub Copilot, and Continue in VS Code, Visual Studio, SSMS, and Azure Data Studio, with project configuration examples.
 category: AI and design
 order: 40
-gist: 930b58773dc848ae6611132f7a4a3362
 ---
 
 # AI agent IDE integrations

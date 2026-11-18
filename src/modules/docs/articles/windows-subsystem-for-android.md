@@ -3,7 +3,6 @@ title: Install Windows Subsystem for Android without Windows Insider
 summary: Install Windows Subsystem for Android on any edition of Windows 11 from the msixbundle file, without the Windows Insider Program.
 category: Flutter and Android
 order: 60
-gist: a853c85791b121e373e171420130323f
 ---
 
 # Install Windows Subsystem for Android without Windows Insider

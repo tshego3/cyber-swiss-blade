@@ -3,7 +3,6 @@ title: Development nexuses: PowerShell scripts
 summary: PowerShell commands and scripts for ports, Base64, REST loops, config files, services, user environment variables, and scheduled batch files.
 category: Reference
 order: 20
-gist: 7d918ed092732c842802a302df4de443
 ---
 
 # Development nexuses: PowerShell scripts

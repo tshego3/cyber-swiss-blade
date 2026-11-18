@@ -3,7 +3,6 @@ title: Local and hybrid AI agent operational model
 summary: Rules for local and cloud AI coding agents: the no-admin constraint, data governance, agent selection, cost tiers, risks, and links to the setup guides.
 category: AI and design
 order: 10
-gist: 930b58773dc848ae6611132f7a4a3362
 ---
 
 # Local and hybrid AI agent operational model

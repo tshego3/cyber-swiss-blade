@@ -3,7 +3,6 @@ title: .NET distance calculator
 summary: Find the nearest coordinates with the Haversine formula in C#, and set up the Google Maps Compute Route Matrix API for road distances.
 category: C# and .NET
 order: 40
-gist: 43b55106a1b47297da41ddf02f53569b
 ---
 
 # .NET distance calculator

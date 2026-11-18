@@ -3,7 +3,6 @@ title: React cheat sheet
 summary: React basics in one place: JSX, components, routing, state, forms, tests, hooks, TypeScript, and React Native todo apps with Expo.
 category: React
 order: 10
-gist: 159bd9cebe9dcb0ae2e48393e0f5fe74
 ---
 
 # React cheat sheet
@@ -22,7 +21,6 @@ This cheat sheet collects the basic React features in one place, from JSX to hoo
 | Capacitor | [capacitorjs.com](https://capacitorjs.com/docs/basics/workflow) | Workflow basics |
 | React and React Native, 5th Edition | [GitHub](https://github.com/PacktPublishing/React-and-React-Native-5E) | Book: build cross-platform JavaScript and TypeScript apps for the web, desktop, and mobile |
 | Full-stack React, Prisma, and PostgreSQL with Podman | [Article](doc:react-prisma-postgresql-podman) | Tutorial |
-| Enterprise ERP development with Vite and the full TanStack stack | [Gist](https://gist.github.com/tshego3/620e4330e992d027556ad259f7a7b7d2) | A "Blazor-style" approach |
 
 ### UI libraries
 

@@ -3,7 +3,6 @@ title: D365 F&O development processes
 summary: An index of D365 F&O development guides, X++ samples, SQL queries, and setup procedures, with browser shortcuts and useful links.
 category: Dynamics 365
 order: 10
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # D365 F&O development processes

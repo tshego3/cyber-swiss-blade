@@ -3,7 +3,6 @@ title: AI agent methodology and workflows
 summary: The plan and build method for AI coding agents: shared skill files, task decomposition, the Claude Code step sequence, prompt budgets, and verification gates.
 category: AI and design
 order: 60
-gist: 930b58773dc848ae6611132f7a4a3362
 ---
 
 # AI agent methodology and workflows

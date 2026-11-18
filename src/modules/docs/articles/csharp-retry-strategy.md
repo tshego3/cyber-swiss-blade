@@ -3,7 +3,6 @@ title: C# retry strategy
 summary: A static C# helper that runs a sync or async action again after a fixed interval, and throws an AggregateException when all attempts fail.
 category: C# and .NET
 order: 70
-gist: 5b86e04073fbf02714a56112f02a8f3a
 ---
 
 # C# retry strategy
@@ -12,7 +11,7 @@ gist: 5b86e04073fbf02714a56112f02a8f3a
 
 ## Before you start
 
-- Declare a `Constants.RetryAttemptsMax` constant (an `int`) in your project. The methods use it as the default number of attempts. The source does not include it.
+- Declare a `Constants.RetryAttemptsMax` constant (an `int`) in your project. The methods use it as the default number of attempts. This article does not include it.
 
 ## Code
 

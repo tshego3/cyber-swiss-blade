@@ -3,7 +3,6 @@ title: Recover a failed UDE asset download
 summary: Fix a failed, stalled, or incomplete download of the D365 F&O UDE assets, get PackagesLocalDirectory another way, and run the setup steps manually.
 category: Dynamics 365
 order: 160
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # Recover a failed UDE asset download

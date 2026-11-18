@@ -3,7 +3,6 @@ title: .NET MAUI guide: Application Insights logging
 summary: Send logs, events, and exceptions from a .NET MAUI app to Azure Application Insights, with session and device data on each telemetry item.
 category: .NET MAUI
 order: 250
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI guide: Application Insights logging

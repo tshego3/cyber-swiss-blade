@@ -3,7 +3,6 @@ title: Debug an Android app wirelessly
 summary: Connect an Android device over Wi-Fi to debug apps from Android Studio or from Visual Studio 2022 without a USB cable.
 category: Flutter and Android
 order: 30
-gist: 4dc446106f8c65f1f44dfac420bfbab0
 ---
 
 # Debug an Android app wirelessly
@@ -66,7 +65,7 @@ Android Studio Bumblebee 2021.1.1 and later have Wi-Fi debugging as a default fe
    adb connect 192.168.1.221:3725
    ```
 
-> **NOTE:** Verify the port. The source example uses `3725`, which can be a typo of the pairing port `37215`. The port for `adb connect` is usually different from the pairing port. Use the IP address and port that the **Wireless debugging** screen shows.
+> **NOTE:** Verify the port. The example uses `3725`, which can be a typo of the pairing port `37215`. The port for `adb connect` is usually different from the pairing port. Use the IP address and port that the **Wireless debugging** screen shows.
 
 ## Deploy the app
 

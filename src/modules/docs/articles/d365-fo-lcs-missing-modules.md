@@ -3,7 +3,6 @@ title: Fix the LCS deploy error for missing modules
 summary: Add compiled ISV and FormAdaptor modules to the repository and the build pipeline so that LCS accepts the deployable package.
 category: Dynamics 365
 order: 50
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # Fix the LCS deploy error for missing modules

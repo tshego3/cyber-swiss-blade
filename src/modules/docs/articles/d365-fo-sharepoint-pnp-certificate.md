@@ -3,7 +3,6 @@ title: Connect to SharePoint with a PnP PowerShell certificate
 summary: Replace a retired PnP PowerShell client secret connection to SharePoint Online with certificate-based authentication on an Entra ID app registration.
 category: Dynamics 365
 order: 30
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # Connect to SharePoint with a PnP PowerShell certificate

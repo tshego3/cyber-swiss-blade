@@ -3,7 +3,6 @@ title: Full-stack React, Prisma, and PostgreSQL with Podman
 summary: Build a user management app with React, Chakra UI, Express, Prisma, and PostgreSQL, and run it in Podman or Docker containers.
 category: React
 order: 20
-gist: 03752256140ec62ad819452a5e342dad
 ---
 
 # Full-stack React, Prisma, and PostgreSQL with Podman

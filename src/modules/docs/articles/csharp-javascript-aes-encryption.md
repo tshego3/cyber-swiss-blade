@@ -3,7 +3,6 @@ title: AES encryption in C# compatible with JavaScript
 summary: Encrypt and decrypt a string with AES in C#, with a key and IV derived from a passphrase, and decrypt a value that JavaScript encrypted.
 category: C# and .NET
 order: 100
-gist: 455f3a9fd6ee1d2cb77006ebae984af2
 ---
 
 # AES encryption in C# compatible with JavaScript

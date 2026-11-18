@@ -3,7 +3,6 @@ title: C# web request service
 summary: A static C# service that gets OAuth 2.0 client credentials tokens and posts JSON models with WebClient and HttpClient, in sync and async versions.
 category: C# and .NET
 order: 80
-gist: 1569b70e53100af0157d63fa18e368c7
 ---
 
 # C# web request service

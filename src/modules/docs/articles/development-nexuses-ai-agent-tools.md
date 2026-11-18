@@ -3,7 +3,6 @@ title: Development nexuses: AI agent tools and prompts
 summary: Set up the TokenEconomizer plugin, Claude Code notifications with Telegram, and local Ollama models, and reuse prompt templates for AI agents.
 category: Reference
 order: 30
-gist: 7d918ed092732c842802a302df4de443
 ---
 
 # Development nexuses: AI agent tools and prompts

@@ -3,7 +3,6 @@ title: White-labeling a web page with jQuery
 summary: A small HTML and jQuery page that sets an element color from a color map, as a start for white-label themes.
 category: TypeScript and JavaScript
 order: 50
-gist: 1b158712d35046173f1f050884ad1e46
 ---
 
 # White-labeling a web page with jQuery

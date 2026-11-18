@@ -3,7 +3,6 @@ title: .NET MAUI project structure and lifecycle
 summary: The .NET MAUI project layout, when to use MainPage or AppShell, the CreateWindow method, and page, app, and view lifecycle events.
 category: .NET MAUI
 order: 60
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI project structure and lifecycle

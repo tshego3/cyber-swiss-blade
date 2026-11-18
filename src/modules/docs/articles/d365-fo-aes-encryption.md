@@ -3,7 +3,6 @@ title: AES encryption in AX 2012, D365, and C#
 summary: Encrypt and decrypt a string with AES in AX 2012 X++, D365 X++, and C# with the same key padding and a zero initialization vector.
 category: Dynamics 365
 order: 110
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # AES encryption in AX 2012, D365, and C#

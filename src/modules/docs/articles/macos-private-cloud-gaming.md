@@ -3,7 +3,6 @@ title: Private cloud gaming on macOS 15
 summary: Connect from macOS 15 to a Windows 11 Pro PC with Remote Desktop, and stream games with Sunshine and Moonlight.
 category: Systems and setup
 order: 40
-gist: 1b642771bd2531f9265041b7b31579e0
 ---
 
 # Private cloud gaming on macOS 15

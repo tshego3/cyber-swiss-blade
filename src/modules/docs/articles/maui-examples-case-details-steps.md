@@ -3,7 +3,6 @@ title: .NET MAUI example: Case details framework with step views
 summary: Build a .NET MAUI 9 framework that lists case categories, shows the steps of a category, and opens the view of a step only when it is in progress.
 category: .NET MAUI
 order: 180
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI example: Case details framework with step views

@@ -3,7 +3,6 @@ title: Reusable components in .NET MAUI
 summary: Create a reusable ContentView control with bindable properties, show it in XAML, repeat it in a CollectionView or a loop, and follow good practices.
 category: .NET MAUI
 order: 70
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # Reusable components in .NET MAUI

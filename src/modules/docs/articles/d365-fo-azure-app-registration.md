@@ -3,7 +3,6 @@ title: Azure App Registration for D365 F&O API access
 summary: Register an Entra ID app, map it to a D365 F&O user, get an OAuth token, call the OData APIs, and fix the invalid user error.
 category: Dynamics 365
 order: 130
-gist: 4143abbf2ae6a49f115d90ace5f76ecb
 ---
 
 # Azure App Registration for D365 F&O API access
@@ -202,7 +201,7 @@ If the user is valid but cannot see the data, you can still get unclear "invalid
 
 Recent versions (v10.0.39+) of F&O have a tool to find user sync problems.
 
-> **NOTE:** Verify the page name, the action name, and the version in your environment. The **Invalid users** page and the **Repair telemetry IDs** action come from the source and are not confirmed against Microsoft Learn.
+> **NOTE:** Verify the page name, the action name, and the version in your environment. The **Invalid users** page and the **Repair telemetry IDs** action are not confirmed against Microsoft Learn.
 
 1. Go to `System Administration > Users > Invalid users`.
 2. If your service user is in the list, its **Object ID** in Entra ID does not agree with the **Telemetry ID** in F&O.

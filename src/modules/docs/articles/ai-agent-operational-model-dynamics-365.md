@@ -3,7 +3,6 @@ title: Dynamics 365 development with Claude Code
 summary: Use Claude Code for D365 Finance and Operations (X++), Business Central (AL), and Dataverse work, with data governance rules, settings, and prompts.
 category: AI and design
 order: 50
-gist: 930b58773dc848ae6611132f7a4a3362
 ---
 
 # Dynamics 365 development with Claude Code

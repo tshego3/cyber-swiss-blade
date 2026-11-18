@@ -3,7 +3,6 @@ title: External identity for ASP.NET web apps with Microsoft Entra External ID
 summary: Move ASP.NET portals and APIs from custom JWT or Azure AD B2C sign-in to Microsoft Entra External ID, with admin-created accounts.
 category: Identity and APIs
 order: 10
-gist: cf7520f8befee6f466484c703a9d1954
 ---
 
 # External identity for ASP.NET web apps with Microsoft Entra External ID

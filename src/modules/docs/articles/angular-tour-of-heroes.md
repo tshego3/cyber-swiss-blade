@@ -3,8 +3,6 @@ title: Angular Tour of Heroes
 summary: Overview of the Angular Tour of Heroes tutorial series: what the finished app does, what you learn, and links to parts 0 to 6.
 category: Angular
 order: 100
-gist: eabb3f133b8a7fb6fd139763edcae064
-source: index.md
 ---
 
 # Angular Tour of Heroes
@@ -17,9 +15,9 @@ In the *Tour of Heroes* tutorial, you build your own Angular application from th
 - The [Angular CLI](https://angular.io/cli).
 - If you are new to Angular, do the [Try it now](https://angular.io/start) quick-start application first. It is based on a ready-made, partially completed project. You edit the application in StackBlitz and see the results in real time. It covers the same main subjects (components, template syntax, routing, services, and data access with HTTP) in a short format and follows best practices.
 
-> **NOTE:** The source tutorial comes from the Angular documentation (reviewed between 2022 and 2023). It includes its code samples from the Angular documentation example project. Each part of this series gives the example file and region for each code step, for example `toh-pt1/src/app/hero.ts`. Find these files in the `toh-pt0` to `toh-pt6` folders of the [Angular documentation examples](https://github.com/angular/angular/tree/17.3.x/aio/content/examples).
+> **NOTE:** This tutorial comes from the Angular documentation (reviewed between 2022 and 2023). It includes its code samples from the Angular documentation example project. Each part of this series gives the example file and region for each code step, for example `toh-pt1/src/app/hero.ts`. Find these files in the `toh-pt0` to `toh-pt6` folders of the [Angular documentation examples](https://github.com/angular/angular/tree/17.3.x/aio/content/examples).
 
-> **NOTE:** Verify the Angular documentation examples link. It is not in the source tutorial. It points to the `17.3.x` branch, the last branch with the angular.io documentation sources.
+> **NOTE:** Verify the Angular documentation examples link. It is not in the original tutorial. It points to the `17.3.x` branch, the last branch with the angular.io documentation sources.
 
 > **NOTE:** Dated (checked November 2026): the current Angular documentation is on [angular.dev](https://angular.dev). The angular.io links and images in this series are for Angular 17 and earlier and can redirect or stop working. The angular.dev tutorials replace the Tour of Heroes tutorial.
 

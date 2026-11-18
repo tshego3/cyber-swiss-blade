@@ -3,7 +3,6 @@ title: Fix a corrupted USB drive or SD card
 summary: Repair a corrupted USB drive or SD card with Diskpart on Windows or with mkfs on Linux, and remove write protection with hdparm.
 category: Systems and setup
 order: 20
-gist: 3c89476e1d80e89a72b951fcba1d3615
 ---
 
 # Fix a corrupted USB drive or SD card

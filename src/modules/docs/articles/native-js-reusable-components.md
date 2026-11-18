@@ -3,7 +3,6 @@ title: Native JS reusable components cheat sheet
 summary: Patterns for reusable plain JavaScript components that load API data and render Bootstrap 5.3 cards, modals, and web components.
 category: TypeScript and JavaScript
 order: 20
-gist: 1203e6f179cec9f324fbe786e84fa19e
 ---
 
 # Native JS reusable components cheat sheet

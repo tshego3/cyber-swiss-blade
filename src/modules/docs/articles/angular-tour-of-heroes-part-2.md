@@ -3,8 +3,6 @@ title: Angular Tour of Heroes, part 2: Display a selection list
 summary: Show a list of mock heroes with ngFor, style the list, select a hero with a click event, and show its details with ngIf.
 category: Angular
 order: 130
-gist: eabb3f133b8a7fb6fd139763edcae064
-source: toh-pt2.md
 ---
 
 # Angular Tour of Heroes, part 2: Display a selection list

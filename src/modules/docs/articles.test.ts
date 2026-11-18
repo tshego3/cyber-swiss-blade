@@ -47,7 +47,6 @@ describe('docs articles', () => {
         expect(meta.summary, 'summary').toBeTruthy();
         expect(isCategory(meta.category ?? ''), `category "${meta.category}"`).toBe(true);
         expect(meta.order ?? '', 'order').toMatch(/^\d+$/);
-        if (meta.gist) expect(meta.gist).toMatch(/^[0-9a-f]{32}$/);
       });
 
       it('has one level 1 heading equal to the title', () => {

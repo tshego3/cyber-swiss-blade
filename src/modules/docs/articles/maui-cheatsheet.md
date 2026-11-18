@@ -3,7 +3,6 @@ title: .NET MAUI cheat sheet
 summary: Commands, project setup, VS Code debugging, and short XAML and C# samples for UI, navigation, binding, DI, platform code, and more in .NET MAUI.
 category: .NET MAUI
 order: 10
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI cheat sheet

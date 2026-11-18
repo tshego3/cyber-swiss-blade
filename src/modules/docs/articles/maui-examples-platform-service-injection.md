@@ -3,7 +3,6 @@ title: .NET MAUI example: Platform service injection in Xamarin and .NET MAUI
 summary: Implement a file helper service for Android and iOS, and inject it with DependencyService in Xamarin or with dependency injection in .NET MAUI.
 category: .NET MAUI
 order: 120
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI example: Platform service injection in Xamarin and .NET MAUI

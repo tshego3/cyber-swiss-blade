@@ -3,7 +3,6 @@ title: C# standard deviation
 summary: A C# class that calculates the sample and the population standard deviation of a list of double values.
 category: C# and .NET
 order: 30
-gist: f1b338ec5df3006c662e8694cb6c14db
 ---
 
 # C# standard deviation

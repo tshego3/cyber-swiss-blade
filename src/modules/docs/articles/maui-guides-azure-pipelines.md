@@ -3,7 +3,6 @@ title: .NET MAUI guide: Build and sign APK and IPA files in Azure Pipelines
 summary: Set the Android package format to APK and build, sign, and publish Xamarin.Android and .NET MAUI apps with Azure Pipelines YAML.
 category: .NET MAUI
 order: 270
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI guide: Build and sign APK and IPA files in Azure Pipelines
@@ -284,7 +283,7 @@ To pick the build agent, use one of the two options in the `demands` comments:
 | Signing | `AndroidSigning@3` writes the APK to the staging directory | `AndroidSigning@3`, then a script renames `weathertwentyone.droid-Signed.apk` to `weathertwentyone.apk` |
 | Artifact | `PublishPipelineArtifact@1` | `CopyFiles@2` and `PublishBuildArtifacts@1` |
 
-> **NOTE:** `DotNetVersion` (10.0.100) must match the `net10.0` target frameworks. Azure Pipelines variable names are not case-sensitive, so the pipeline defines `buildConfiguration` only once. The stage name `BuildiOS` is from the source, but the job builds iOS and Android. Verify the name of the signed APK in the rename step: it depends on the `ApplicationId` of your project and on the output of `AndroidSigning@3`.
+> **NOTE:** `DotNetVersion` (10.0.100) must match the `net10.0` target frameworks. Azure Pipelines variable names are not case-sensitive, so the pipeline defines `buildConfiguration` only once. The stage is named `BuildiOS`, but the job builds iOS and Android. Verify the name of the signed APK in the rename step: it depends on the `ApplicationId` of your project and on the output of `AndroidSigning@3`.
 
 ## Related links
 

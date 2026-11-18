@@ -3,7 +3,6 @@ title: Playwright web testing with a coding agent
 summary: Set up Playwright without admin rights, write and record tests, and let Claude Code or Copilot run, debug, and fix them in a loop.
 category: AI and design
 order: 80
-gist: 930b58773dc848ae6611132f7a4a3362
 ---
 
 # Playwright web testing with a coding agent

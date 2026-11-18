@@ -3,7 +3,6 @@ title: Build a JavaScript server-side proxy API for RSS feeds
 summary: Build a Node.js and Express proxy that gets RSS feeds as XML or JSON, then deploy it as a Netlify function with CORS headers.
 category: TypeScript and JavaScript
 order: 30
-gist: 55de8ba88b028c6bd24164e2809a76b6
 ---
 
 # Build a JavaScript server-side proxy API for RSS feeds

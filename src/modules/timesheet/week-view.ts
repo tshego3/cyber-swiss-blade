@@ -215,7 +215,7 @@ export function mountWeek(root: HTMLElement, context: ModuleContext, initialDate
     };
     const comment = el('textarea', { class: 'input ts-comment-input', text: log.comment, attrs: { rows: 2, placeholder: log.kind === 'work' ? 'What did you do?' : 'Comment (optional)', 'aria-label': 'Comment', disabled } });
     comment.addEventListener('input', () => update({ comment: comment.value }));
-    const summary = el('textarea', { class: 'input ts-comment-input', text: log.summary, attrs: { rows: 2, placeholder: 'Summary (optional). Printed in [ ] after the text.', 'aria-label': 'Summary', disabled } });
+    const summary = el('textarea', { class: 'input ts-comment-input', text: log.summary, attrs: { rows: 2, placeholder: 'Summary (optional).', 'aria-label': 'Summary', disabled } });
     summary.addEventListener('input', () => update({ summary: summary.value }));
     const fields: Child[] =
       log.kind === 'work'

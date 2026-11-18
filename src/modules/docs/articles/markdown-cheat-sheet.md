@@ -3,7 +3,6 @@ title: Markdown cheat sheet
 summary: Markdown syntax for headings, emphasis, links, lists, code, task lists, tables, and other elements, with rendered examples where the Docs page supports them.
 category: DevOps and tools
 order: 30
-gist: eb47a799965186b3b4fe201e19288afc
 ---
 
 # Markdown cheat sheet

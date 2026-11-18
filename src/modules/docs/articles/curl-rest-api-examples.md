@@ -3,7 +3,6 @@ title: cURL commands for REST API calls
 summary: Send HEAD, GET, POST, PUT, and DELETE requests to a REST API with curl, with a Keycloak bearer token and jq output.
 category: Identity and APIs
 order: 40
-gist: 44eae4bbe5cd4c45e1e0bd51e5f72cae
 ---
 
 # cURL commands for REST API calls

@@ -3,7 +3,6 @@ title: ObservableObject and INotifyPropertyChanged in .NET MAUI
 summary: Compare ObservableObject and INotifyPropertyChanged in .NET 9 MAUI, with nullable-safe view models, a login and notes example, and command parameters.
 category: .NET MAUI
 order: 90
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # ObservableObject and INotifyPropertyChanged in .NET MAUI

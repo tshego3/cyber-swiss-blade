@@ -3,7 +3,6 @@ title: MSAL authentication in .NET MAUI
 summary: Links for MSAL.NET and Microsoft Entra ID sign-in in .NET MAUI, and a fix for the missing username in Azure AD B2C token responses.
 category: .NET MAUI
 order: 50
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # MSAL authentication in .NET MAUI

@@ -3,7 +3,6 @@ title: Vision to UI with Google Stitch
 summary: A stack-agnostic workflow that turns a reference image into tokenized, whitelabel UI components with Google Stitch and Antigravity, from extraction to quality gates.
 category: AI and design
 order: 90
-gist: 3c82a714553181670347ddb59e0e3073
 ---
 
 # Vision to UI with Google Stitch

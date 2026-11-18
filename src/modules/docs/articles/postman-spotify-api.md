@@ -3,7 +3,6 @@ title: Get Spotify user playlists with Postman and OAuth 2.0
 summary: Authenticate a Spotify user in Postman with the OAuth 2.0 authorization code flow and get the playlists and tracks of the user.
 category: Identity and APIs
 order: 30
-gist: d663545db6489c1b1119d07818ce3990
 ---
 
 # Get Spotify user playlists with Postman and OAuth 2.0

@@ -8,7 +8,7 @@ Cyber Swiss Blade is a set of developer tools in one app. You can install it on 
 | Quotations | Quotes, deposit invoices, final invoices, payments, clients, and a service catalogue. You can print each document to PDF. | On the device. It syncs to MongoDB. Shared by the people who have access. |
 | AES Encryption | Encrypts and decrypts files and text with a password. | On the device only. |
 | Base64 | Changes text and files to Base64, and back. | On the device only. |
-| Docs | Guides, cheat sheets, and code samples from GitHub gists, with search, page navigation, and code highlighting. | In the app files. The text works offline. Images in some articles load from the web. |
+| Docs | Guides, cheat sheets, and code samples, with search, page navigation, and code highlighting. | In the app files. The text works offline. Images in some articles load from the web. |
 
 ## Start here
 

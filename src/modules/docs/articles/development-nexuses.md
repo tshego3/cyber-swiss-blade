@@ -3,14 +3,13 @@ title: Development nexuses
 summary: A link directory of daily web apps, cheat sheets, developer tools, personal projects, media, news, and service portals.
 category: Reference
 order: 10
-gist: 7d918ed092732c842802a302df4de443
 ---
 
 # Development nexuses
 
 This article is a link directory for daily development work. Use it to find web apps, cheat sheets, tools, personal projects, and service portals. Some links are local network addresses and work only on the home network.
 
-The same gist also holds technical notes. They are in these articles:
+Technical notes are in these articles:
 
 - [Development nexuses: PowerShell scripts](doc:development-nexuses-powershell)
 - [Development nexuses: AI agent tools and prompts](doc:development-nexuses-ai-agent-tools)
@@ -156,7 +155,7 @@ Meter display codes:
 | JavaScript AES encryption equivalent of C# | [JavaScriptAesEncryption](https://tshego3.github.io/JavaScriptAesEncryption/) | |
 | JS AES File Encryption Tool | [JSAesFileEncryption](https://tshego3.github.io/JSAesFileEncryption/) | |
 | JavaScript Base64 Converter | [JavaScriptBase64](https://tshego3.github.io/JavaScriptBase64/) | |
-| JavaScript Base64 Converter (gist) | [Notepad](doc:notepad) | The source link points to the notepad gist. |
+| JavaScript Base64 Converter | [Notepad](doc:notepad) | |
 | JS Newline Remover Tool | [NewlineRemoverTool](https://tshego3.github.io/NewlineRemoverTool/) | |
 | Apple Music Playlist Importer | [apple_music_playlist_importer](https://tshego3.github.io/apple_music_playlist_importer/) | |
 | EOI Workouts | [eoi-fitness-wasm.netlify.app](https://eoi-fitness-wasm.netlify.app/) | |
@@ -209,7 +208,6 @@ Meter display codes:
 | Bulk Crap Uninstaller | [Releases](https://github.com/BCUninstaller/Bulk-Crap-Uninstaller/releases) | Uninstaller for Windows. |
 | Convert JSON to C# class | [wtools.io](https://wtools.io/convert-json-to-csharp-class) | |
 | tshego3 on GitHub | [github.com/tshego3](https://github.com/tshego3) | |
-| tshego3 gists | [gist.github.com/tshego3](https://gist.github.com/tshego3) | |
 | Kendo UI demos | [demos.telerik.com/kendo-ui](https://demos.telerik.com/kendo-ui/) | |
 | Telerik ASP.NET MVC demos | [demos.telerik.com/aspnet-mvc](https://demos.telerik.com/aspnet-mvc/) | |
 | Telerik ASP.NET Core demos | [demos.telerik.com/aspnet-core](https://demos.telerik.com/aspnet-core/) | |

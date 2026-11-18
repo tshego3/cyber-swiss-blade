@@ -3,7 +3,6 @@ title: .NET MAUI guide: Show enum display names with a value converter
 summary: Create a value converter that shows the Display(Name) attribute of an enum value in .NET MAUI XAML bindings.
 category: .NET MAUI
 order: 230
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI guide: Show enum display names with a value converter

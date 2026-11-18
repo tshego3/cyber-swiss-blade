@@ -3,7 +3,6 @@ title: Vision to UI AI rules and prompt templates
 summary: Agent rules and copy-ready prompts for the Stitch workflow: persona, hard blockers, output contract, and templates for extraction, generation, and review.
 category: AI and design
 order: 120
-gist: 3c82a714553181670347ddb59e0e3073
 ---
 
 # Vision to UI AI rules and prompt templates

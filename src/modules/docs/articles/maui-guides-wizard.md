@@ -3,7 +3,6 @@ title: .NET MAUI guide: Wizard control for multistep forms
 summary: Build a multistep wizard in .NET MAUI with a Grid-based step control, slide animations, step lifecycle methods, and Shell navigation.
 category: .NET MAUI
 order: 200
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI guide: Wizard control for multistep forms

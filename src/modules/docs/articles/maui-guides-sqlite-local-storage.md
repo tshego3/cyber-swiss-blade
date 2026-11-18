@@ -3,7 +3,6 @@ title: .NET MAUI guide: Encrypted SQLite local storage with relationships
 summary: Store a to-do list model in an encrypted SQLite database with SQLCipher, SQLiteNetExtensions relationships, generic services, and a console test program.
 category: .NET MAUI
 order: 240
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI guide: Encrypted SQLite local storage with relationships

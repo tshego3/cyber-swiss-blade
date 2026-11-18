@@ -3,7 +3,6 @@ title: T-SQL debugger in SSMS and Visual Studio
 summary: Set breakpoints, step through T-SQL code, and inspect variables with the Transact-SQL debugger in SSMS and in SSDT for Visual Studio.
 category: DevOps and tools
 order: 20
-gist: e0552c661739e7ab8206e8e0fe9a2fec
 ---
 
 # T-SQL debugger in SSMS and Visual Studio

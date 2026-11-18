@@ -3,7 +3,6 @@ title: macOS Azure DevOps self-hosted agent
 summary: Install, configure, and run an Azure DevOps self-hosted agent on an Intel or Apple Silicon Mac, and fix MSBuild and JDK demands.
 category: DevOps and tools
 order: 10
-gist: a51f248824141b1c11de79c73e05ae0f
 ---
 
 # macOS Azure DevOps self-hosted agent

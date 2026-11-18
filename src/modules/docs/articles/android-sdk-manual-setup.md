@@ -3,7 +3,6 @@ title: Android SDK manual setup
 summary: Install the Android SDK, Microsoft OpenJDK, and an Android emulator by hand on Windows or macOS, without Android Studio.
 category: Flutter and Android
 order: 20
-gist: 4ce3a18448911b4169b5cb799100b52c
 ---
 
 # Android SDK manual setup

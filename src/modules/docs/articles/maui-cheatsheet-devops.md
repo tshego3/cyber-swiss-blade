@@ -3,7 +3,6 @@ title: .NET MAUI DevOps, CI/CD, and environment setup
 summary: Links, macOS paths, environment variables, and commands to build, sign, and deploy .NET MAUI apps with Azure DevOps and other CI/CD tools.
 category: .NET MAUI
 order: 40
-gist: ed7bac37c1c65d38aedce86ba4becb5f
 ---
 
 # .NET MAUI DevOps, CI/CD, and environment setup

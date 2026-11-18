@@ -3,7 +3,6 @@ title: Extract an APK from an Android device with ADB
 summary: Use ADB to find an installed app package on an Android device, pull its APK file, and install split APK files.
 category: Flutter and Android
 order: 40
-gist: 6404f91e953b993eea3ded7e886da924
 ---
 
 # Extract an APK from an Android device with ADB
