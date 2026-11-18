@@ -1,6 +1,7 @@
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/shell.css';
+import { openRepository } from './core/about';
 import { mountAdmin } from './core/admin-view';
 import { mountNoAccess, mountSignIn } from './core/auth-view';
 import { el, replaceChildren } from './core/dom';
@@ -40,6 +41,7 @@ function buildCommands(sync: SyncEngine): Command[] {
       : ({ id: 'sign-in', label: 'Sign in', hint: 'Account', icon: 'lock', run: () => navigate('sign-in') } satisfies Command),
     { id: 'sync', label: 'Sync now', hint: 'Push and pull changes', icon: 'refresh', run: () => void sync.syncNow() },
     { id: 'theme', label: 'Switch theme', hint: 'System, light, dark', icon: 'sun', run: () => setThemePreference(nextThemePreference(getThemePreference())) },
+    { id: 'source', label: 'Source code on GitHub', hint: 'Repository', icon: 'external', run: openRepository },
   ];
 }
 

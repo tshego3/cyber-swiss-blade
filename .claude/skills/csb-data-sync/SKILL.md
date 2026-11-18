@@ -60,7 +60,7 @@ description: Data layer, sync protocol, accounts and permissions, Cloudflare Wor
 1. `src/sw.ts` is a native classic-script service worker with no imports. The Vite `csb-precache` plugin prepends `CSB_MANIFEST` (version hash plus every emitted and public file).
 2. Install precaches everything. Navigation serves cached `index.html`. Other same-origin GETs are cache-first, matched by URL with `ignoreVary`. Cross-origin requests (the API) are not intercepted.
 3. Updates wait. `pwa.ts` shows a banner, and Reload posts `SKIP_WAITING` to `registration.waiting`, then reloads on `controllerchange`.
-4. The manifest uses `public/manifest.webmanifest`, standalone, with `id`/`scope`/`start_url` set to `/cyber-swiss-blade/` and SVG + PNG + maskable icons.
+4. The manifest uses `public/manifest.webmanifest`, standalone, with `id`/`scope`/`start_url` set to `./` (relative, so the app installs at any path) and SVG + PNG + maskable icons.
 5. Test offline with `npm run build && npm run preview`, then stop the server and reload.
 
 ## Security

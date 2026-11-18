@@ -117,7 +117,7 @@ This is a summary:
 | --- | --- | --- |
 | 1 | MongoDB Atlas | A free database, a database user, and a connection string. |
 | 2 | Cloudflare | The Worker at `cyber-swiss-blade-api.<your-name>.workers.dev`, with two secrets. |
-| 3 | GitHub Pages | The website at `https://<your-name>.github.io/cyber-swiss-blade/`. GitHub Actions deploys it after each push to `main`. |
+| 3 | GitHub Pages | The website at `https://<your-name>.github.io/cyber-swiss-blade/`, and optionally at your own domain (for example `https://blade.eoifilms.co.za/`). GitHub Actions deploys it after each push to `main`. |
 | 4 | The app | You sign in with the Worker URL and create the administrator with the setup key. Then you add your team. |
 
 > **WARNING:** Keep the database password and the setup key only in Cloudflare and your password manager. Do not put them in the code.

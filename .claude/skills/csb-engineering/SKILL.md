@@ -11,7 +11,7 @@ These rules are mandatory for all feature work, bug fixes, and refactors.
 
 1. Stack: TypeScript, HTML, CSS, native browser APIs, built by Vite. No UI framework, no router library, no CSS framework, no runtime npm dependencies.
 2. Cyber Swiss Blade is a personal, offline-first toolkit. Each tool is a module (see `csb-modules`). It is derived from feeds-pwa's conventions with React/Mantine/Workbox/idb removed.
-3. Hosting: static PWA on GitHub Pages (`base: '/cyber-swiss-blade/'`). API: one Cloudflare Worker in `worker/`. Database: MongoDB Atlas M0. All free tier.
+3. Hosting: static PWA on GitHub Pages at `https://tshego3.github.io/cyber-swiss-blade/` and at the custom domain `https://blade.eoifilms.co.za/`. The build uses `base: './'` (relative URLs), so it works at any path; `npm run dev` keeps `/cyber-swiss-blade/`. Never hard-code the path. API: one Cloudflare Worker in `worker/`. Database: MongoDB Atlas M0. All free tier.
 
 ## Non-Negotiable Architecture Rules
 
@@ -79,5 +79,5 @@ Worker: index.ts (HTTP, CORS, routing) -> auth.ts / admin.ts (sessions, users, r
 ## Deployment
 
 1. GitHub Actions (`.github/workflows/deploy.yml`) builds and deploys `dist/` to Pages on push to `main`.
-2. Deploy the Worker with `npm run worker:deploy`. Keep `ALLOWED_ORIGINS` in `worker/wrangler.toml` limited to the Pages origin and localhost.
+2. Deploy the Worker with `npm run worker:deploy`. Keep `ALLOWED_ORIGINS` in `worker/wrangler.toml` limited to the Pages origin, the custom domain, and localhost.
 3. No source maps in production.

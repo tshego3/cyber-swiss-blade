@@ -1,8 +1,10 @@
 import { ADMINISTRATORS } from '../../shared/access';
+import { REPOSITORY_URL } from './about';
 import { MIN_PASSWORD_LENGTH } from '../../shared/auth';
 import { errorMessage, fetchStatus, loadApiConfig, normalizeBaseUrl, saveApiConfig } from './api';
 import { eraseAllData } from './db';
 import { el, replaceChildren } from './dom';
+import { icon } from './icons';
 import { changePassword, getSession, onSessionChange, updateProfile, type Session } from './session';
 import { confirmSignOut } from './sign-out';
 import { describeSyncState } from './sync-status';
@@ -134,6 +136,9 @@ export function mountSettings(root: HTMLElement, sync: SyncEngine, navigate: (pa
       section('Server', 'Timesheet and Quotations data is stored on this device first and synced to MongoDB through your Cloudflare Worker.', [serverBody]),
       section('Appearance', 'Follow the system or pick a theme.', [segmented('Theme', THEME_OPTIONS, getThemePreference(), setThemePreference)]),
       section('Local data', 'Clear this device. Use it before handing over a shared machine.', [button({ label: 'Erase local data', icon: 'trash', variant: 'danger', onClick: () => void erase() })]),
+      section('About', 'The source code, guides, and licence are on GitHub.', [
+        el('a', { class: 'button button-secondary', attrs: { href: REPOSITORY_URL, target: '_blank', rel: 'noopener noreferrer' } }, [icon('external'), el('span', { text: 'View on GitHub' })]),
+      ]),
     ]),
   ]);
   return () => {

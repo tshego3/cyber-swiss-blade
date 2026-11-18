@@ -3,12 +3,15 @@ import { button } from './ui';
 
 export function registerServiceWorker(): void {
   if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return;
-  window.addEventListener('load', () => {
+  const register = (): void => {
     navigator.serviceWorker
       .register(`${import.meta.env.BASE_URL}sw.js`)
       .then(watchForUpdates)
       .catch((error: unknown) => console.warn('Service worker registration failed; the app still works online.', error));
-  });
+  };
+  // start() calls this after async work, so the load event has often fired already.
+  if (document.readyState === 'complete') register();
+  else window.addEventListener('load', register, { once: true });
 }
 
 function watchForUpdates(registration: ServiceWorkerRegistration): void {

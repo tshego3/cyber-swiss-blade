@@ -310,12 +310,13 @@ The Worker accepts requests only from your website. You must tell it your websit
 5. Change `tshego3` to your GitHub username. Use lowercase letters. Do not change other text.
    - Before:
      ```toml
-     ALLOWED_ORIGINS = "https://tshego3.github.io,http://localhost:5173,http://localhost:4173"
+     ALLOWED_ORIGINS = "https://tshego3.github.io,https://blade.eoifilms.co.za,http://localhost:5173,http://localhost:4173"
      ```
-   - After (example for `jsmith`):
+   - After (example for `jsmith`, without a custom domain):
      ```toml
      ALLOWED_ORIGINS = "https://jsmith.github.io,http://localhost:5173,http://localhost:4173"
      ```
+   - If you use your own domain (see [4.7](#47-use-your-own-domain-optional)), keep it in the list, for example `https://blade.example.com`. Write each address without a path and without a slash at the end.
 6. Press **Ctrl + S** to save.
 7. Close the text editor.
 
@@ -501,6 +502,22 @@ If you do not see a run, do these steps:
 2. Click **Run workflow**.
 3. Select the branch `main`.
 4. Click the green **Run workflow** button.
+
+### 4.7 Use your own domain (optional)
+
+The app uses relative addresses, so the same build works at `https://<your-name>.github.io/cyber-swiss-blade/` and at the root of your own domain, for example `https://blade.eoifilms.co.za/`. You do not change the code.
+
+1. At your DNS provider, make a **CNAME** record:
+   - **Name**: the subdomain, for example `blade`.
+   - **Target**: `<your-name>.github.io` (for example `tshego3.github.io`). Do not add the repository name.
+2. On the repository page, click **Settings**. In the left list, click **Pages**.
+3. Under **Custom domain**, type the domain (for example `blade.eoifilms.co.za`), then click **Save**.
+   **Result:** GitHub checks the DNS record. This can take some minutes.
+4. When the check passes, select **Enforce HTTPS**. It can take up to 24 hours before this option is available.
+5. Add the domain to `ALLOWED_ORIGINS` (see [3.3](#33-write-your-website-address-in-the-worker-settings)), then deploy the Worker again with `npm run worker:deploy`.
+6. Open the domain in your browser. Sign in again: each address keeps its own data on the device until the first sync.
+
+> **NOTE:** You do not need a `CNAME` file in the project. GitHub ignores it when GitHub Actions deploys the site. GitHub recommends that you verify the domain in your account settings first, to prevent domain takeover.
 
 ---
 

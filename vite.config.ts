@@ -4,7 +4,10 @@ import { basename, join, relative } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import { buildEntry } from './src/modules/docs/entry';
 
-const BASE = '/cyber-swiss-blade/';
+// The build uses relative URLs, so the same files work at any path:
+// https://<user>.github.io/cyber-swiss-blade/ and https://blade.eoifilms.co.za/.
+const BUILD_BASE = './';
+const DEV_BASE = '/cyber-swiss-blade/';
 const SERVICE_WORKER = 'sw.js';
 
 const DOCS_ARTICLES = 'src/modules/docs/articles';
@@ -85,8 +88,8 @@ function docsIndexPlugin(): Plugin {
   };
 }
 
-export default defineConfig({
-  base: BASE,
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? BUILD_BASE : DEV_BASE,
   plugins: [docsIndexPlugin(), precachePlugin()],
   build: {
     outDir: 'dist',
@@ -99,4 +102,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
