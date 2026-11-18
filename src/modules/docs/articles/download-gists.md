@@ -67,8 +67,6 @@ echo "Finished. Public: $(ls public | grep -c '\.md$')  Private: $(ls private | 
 
 Each file name has the format `<gist-id>_<file-name>.md`. The script keeps a bare Git copy of each gist in `gists/.git-data`. If you run the script again, it updates the files that you already have.
 
-> **NOTE:** If you used an older version of this script, delete the `.md` files directly in the `gists` folder. Copies of them are now in `public` and `private`.
-
 ## Delete all public gists on GitHub (optional)
 
 > **WARNING:** This permanently deletes your public gists from GitHub. You cannot undo it. Private gists are not deleted.
@@ -141,3 +139,4 @@ To download new gists later, make a new token and run the download script again.
 
 - [GitHub REST API: gists](https://docs.github.com/en/rest/gists/gists)
 - [Markdown cheat sheet](doc:markdown-cheat-sheet)
+- [Delete selected GitHub repositories](doc:delete-repos)
