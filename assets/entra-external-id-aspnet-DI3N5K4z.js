@@ -64,6 +64,12 @@ This design uses 2 tenants. Do not merge them.
 - For production, link the external tenant to an Azure subscription. The 30-day trial tenant needs no subscription.
 - After you link the subscription, set a budget alert in **Cost Management** at a low amount (for example, $1). The alert sends an email if an add-on or extra MAU causes a charge.
 
+### Tools
+
+- A browser and an admin account for each tenant.
+- The Postman desktop app, for the steps that use Microsoft Graph. It runs on Windows, macOS, and Linux. See [Run Microsoft Graph requests with Postman](#run-microsoft-graph-requests-with-postman).
+- The .NET SDK and your portal source code, for the code steps.
+
 ### Roles
 
 | Task | Tenant | Minimum role |
@@ -108,6 +114,126 @@ The portals, APIs, and other Azure resources stay in the Azure subscription of t
 - A managed identity can replace a client secret (federated identity credential) only in the App Service **Workforce configuration**. For the external tenant, keep the client secret in Key Vault and rotate it.
 - To send external tenant sign-in logs to Azure Monitor, sign in to the workforce tenant that owns the subscription. See [Azure Monitor in external tenants](https://learn.microsoft.com/en-us/entra/external-id/customers/how-to-azure-monitor).
 
+## Run Microsoft Graph requests with Postman
+
+Some settings in this article have no button in the admin center, for example **Disable sign-up**. You change them with Microsoft Graph, the REST API of Microsoft Entra. This article runs every Graph request in Postman. Postman works the same way on Windows, macOS, and Linux, and it lets you choose the tenant that you sign in to. Do the setup 1 time for each tenant that you call. See [Use Postman with the Microsoft Graph API](https://learn.microsoft.com/en-us/graph/use-postman).
+
+### Install Postman
+
+1. Download the Postman desktop app for your system from [postman.com/downloads](https://www.postman.com/downloads/), install it, and sign in to your Postman account.
+2. Use a **private** workspace (for example **My Workspace**). Do not put tenant IDs, secrets, or tokens in a public workspace.
+
+> **NOTE:** If you use Postman in the browser instead, also install the **Postman Desktop Agent** from the same page. Without the agent, the browser blocks the requests (CORS).
+
+### Register a Postman app in the tenant
+
+Postman signs you in through an app registration in the tenant that you call. Make 1 app in the **external tenant**. If you migrate from Azure AD B2C, make a second app in the **B2C tenant** with the B2C permissions.
+
+1. In the [Microsoft Entra admin center](https://entra.microsoft.com), switch to the tenant. Select **Entra ID > App registrations > New registration**.
+2. Enter these values, then select **Register**:
+   - **Name**: \`Postman Graph admin\`
+   - **Supported account types**: **Single tenant only - <tenant name>**. (In a B2C tenant, the B2C page shows the older label: select **Accounts in this organizational directory only**.)
+3. Under **Manage**, select **Authentication**. On the **Redirect URI configuration** tab, select **Add Redirect URI**, select the **Web** tile, enter \`https://oauth.pstmn.io/v1/browser-callback\`, then select **Configure**.
+4. Select **Certificates & secrets > Client secrets > New client secret**. Enter a description, select a short expiration, then select **Add**. Copy the **Value**.
+5. Select **API permissions > Add a permission > Microsoft Graph > Delegated permissions**. Select the permissions for the requests that you run in this tenant (see [Permissions for each request](#permissions-for-each-request)), then select **Add permissions**.
+6. Select **Grant admin consent for <tenant name>**, then select **Yes**.
+
+   **Result:** Each permission shows **Granted for <tenant name>** in the **Status** column.
+7. On the **Overview** page, copy the **Application (client) ID** and the **Directory (tenant) ID**.
+
+> **IMPORTANT:** Delegated permissions work only together with the admin role of the person who signs in. The app gives Postman the permission. Your account must also have the admin role from the table.
+
+### Make an environment for the tenant
+
+1. In the Postman sidebar, select the add icon, then select **Environments**. Name the environment after the tenant, for example \`External tenant\`.
+2. Add these 3 variables. Postman keeps a variable value on your computer and does not sync it to the Postman cloud, unless you share it. Do not share these values. (Older Postman versions show 2 columns: put the values in **Current value**, not **Initial value**.)
+
+| Variable | Value |
+| --- | --- |
+| \`tenantId\` | The **Directory (tenant) ID** |
+| \`clientId\` | The **Application (client) ID** |
+| \`clientSecret\` | The client secret **Value**. Select **Secure** next to the variable name to hide the value. |
+
+3. Postman 12 saves environment changes automatically. If your version shows **Save**, select it.
+4. In the environment selector in the top-right corner of Postman, select the environment.
+
+For a B2C tenant, make a second environment (for example \`B2C tenant\`) with the values of the B2C app. Select the environment of the tenant before you send a request. Microsoft documents this interactive mode (an admin of the B2C tenant signs in) for run-once tasks such as a migration. See [Register a Microsoft Graph application](https://learn.microsoft.com/en-us/azure/active-directory-b2c/microsoft-graph-get-started).
+
+### Make a collection that signs you in
+
+1. In the Postman sidebar, select the add icon, then select **Collection**. Name it \`Entra Graph\`.
+2. Open the collection and select the **Authorization** tab. Enter these values:
+
+| Setting | Value |
+| --- | --- |
+| Auth Type | **OAuth 2.0** |
+| Add auth data to | The headers option (not the URL option) |
+| Token Name | \`Graph\` |
+| Grant type | **Authorization Code** |
+| Callback URL | Select **Authorize using browser** (desktop app). Postman then uses its browser callback URL. Make sure that the value is \`https://oauth.pstmn.io/v1/browser-callback\`, the redirect URI on the app. |
+| Auth URL | \`https://login.microsoftonline.com/{{tenantId}}/oauth2/v2.0/authorize\` |
+| Access Token URL | \`https://login.microsoftonline.com/{{tenantId}}/oauth2/v2.0/token\` |
+| Client ID | \`{{clientId}}\` |
+| Client Secret | \`{{clientSecret}}\` |
+| Scope | \`https://graph.microsoft.com/.default\` |
+| Client Authentication | The option that sends the client credentials in the request body (not the Basic Auth header option) |
+
+3. Select **Save**.
+4. Select **Get New Access Token**. Your browser opens the Microsoft sign-in page. Sign in with an account of this tenant that has the admin role for the request (see [Permissions for each request](#permissions-for-each-request)).
+5. Back in Postman, select **Proceed**, then select **Use Token**.
+
+Microsoft gives each access token a random lifetime of 60 to 90 minutes (75 minutes on average). Postman refreshes a token automatically only if it has a refresh token, and this setup does not request one. When a request returns \`401\`, open the collection **Authorization** tab and select **Get New Access Token** again. The \`/.default\` scope gives the token all the permissions that you consented to on the app. If you add a permission later, grant admin consent again and get a new token.
+
+### Send a request
+
+1. In the sidebar, select **Add request** next to the \`Entra Graph\` collection. Name the request after the step, for example \`Disable sign-up\`.
+2. Do not change the **Authorization** tab of the request. A new request uses the auth of its collection by default (the **Inherited** section of the auth type list).
+3. Select the method (for example **GET** or **PATCH**) in the list next to the URL, and paste the URL. Postman selects **GET** by default.
+4. For **POST** and **PATCH**, select the **Body** tab, select **raw**, select **JSON** in the format list, then paste the JSON.
+5. Replace each \`<placeholder>\`, including the \`<\` and \`>\` characters.
+6. Select **Send**.
+
+**Result:** The status shows on the right of the response, for example \`200 OK\`, \`201 Created\`, or \`204 No Content\`. A \`PATCH\` that succeeds returns \`204 No Content\` with an empty body.
+
+To make sure that the token is for the correct tenant, send this request first:
+
+\`\`\`http
+GET https://graph.microsoft.com/v1.0/organization?$select=id,displayName
+\`\`\`
+
+**Result:** The response shows the ID and the name of the tenant. This request needs only the \`User.Read\` permission, which a new app registration has by default. With \`User.Read\`, Graph returns only \`id\`, \`displayName\`, and \`verifiedDomains\`.
+
+| Status | Cause | Fix |
+| --- | --- | --- |
+| \`401 Unauthorized\` | The token expired, or it is for another tenant. | Select the correct environment, then **Get New Access Token**. |
+| \`403 Forbidden\` | The app does not have the permission, or your account does not have the admin role. | Add the permission to the app, grant admin consent, and get a new token. Check the role of your account. |
+| \`400 Bad Request\` | The JSON is not valid, or a \`<placeholder>\` is still in the request. | Check the body and the URL. |
+| \`404 Not Found\` | The ID is wrong, or the object is in another tenant. | Check the ID and the selected environment. |
+| Sign-in shows \`AADSTS50011\` (redirect URI mismatch) | The redirect URI on the app is not \`https://oauth.pstmn.io/v1/browser-callback\`. | Fix the redirect URI on the app (Web platform). |
+| Sign-in shows \`AADSTS700016\` | The app is not in the tenant of the sign-in URL. | Select the environment of the tenant where you registered the Postman app. |
+| Token request shows \`AADSTS7000215\` | The client secret is wrong. | Copy the secret **Value** (not the **Secret ID**) into \`clientSecret\`. |
+| Sign-in shows \`AADSTS65001\` | Nobody granted consent for the app. | Select **Grant admin consent** on the **API permissions** page of the app. |
+
+### Permissions for each request
+
+Add these delegated Microsoft Graph permissions to the Postman app of the tenant, and use an account that has the admin role.
+
+| Step | Request | Tenant | Delegated permission | Minimum admin role |
+| --- | --- | --- | --- | --- |
+| [Disable sign-up](#disable-sign-up) | \`GET\` and \`PATCH /v1.0/identity/authenticationEventsFlows\` | External | \`EventListener.ReadWrite.All\` | External ID User Flow Administrator |
+| [Create many users](#create-many-users) | \`POST /v1.0/users\` | External | \`User.Create\` | User Administrator |
+| [Invite a staff member](#invite-a-staff-member) | \`POST /v1.0/invitations\` | External | \`User.Invite.All\` | Guest Inviter or User Administrator |
+| [Create staff accounts with Microsoft Graph](#create-staff-accounts-with-microsoft-graph) | \`POST /v1.0/users\` | External | \`User.Create\` | User Administrator |
+| [Read the B2C users](#migrate-the-user-accounts) | \`GET /v1.0/users\` | B2C | \`User.Read.All\` | A member account of the B2C tenant. A guest account (for example, an admin invited from the workforce tenant) also needs a role that can read users, for example Directory Readers. |
+| [Add the public key](#set-up-just-in-time-password-migration) | \`PATCH /v1.0/applications/{id}\` | External | \`Application.ReadWrite.All\` | Application Administrator or Cloud Application Administrator |
+| [Create the custom authentication extension](#set-up-just-in-time-password-migration) | \`POST /beta/identity/customAuthenticationExtensions\` | External | \`CustomAuthenticationExtension.ReadWrite.All\` | Authentication Extensibility Administrator or Application Administrator |
+| [Connect the extension to each portal](#set-up-just-in-time-password-migration) | \`POST /beta/identity/authenticationEventListeners\` | External | \`EventListener.ReadWrite.All\` | Authentication Extensibility Administrator or Application Administrator |
+| [Fix a B2C policy key](#notes-on-the-fix) | \`POST /beta/trustFramework/keySets/{id}/uploadSecret\` | B2C | \`TrustFrameworkKeySet.ReadWrite.All\` | B2C IEF Keyset Administrator |
+
+> **NOTE:** Microsoft recommends the \`v1.0\` endpoint. The \`beta\` requests in this table are the ones that the Microsoft Learn procedures use. Beta APIs can change.
+
+> **CAUTION:** The Postman app has strong permissions. When you finish, delete its client secret, or delete the whole app registration. Make a new secret when you need Postman again.
+
 ## Register each portal
 
 Register 1 app for each custom web portal. Register the pilot portal first. Register the other portals when you connect them. All portals and APIs use this tenant for authentication, so an external user signs in to all portals with 1 identity.
@@ -149,19 +275,23 @@ Use 1 user flow for all portals. One user flow can serve many applications. An a
 
 ### Disable sign-up
 
-The admin center has no option to disable sign-up on the user flow, and it does not show the user flow ID. Use Microsoft Graph. See [Disable sign-up in a user flow](https://learn.microsoft.com/en-us/entra/external-id/customers/how-to-disable-sign-up-user-flow).
+The admin center has no setting to disable sign-up, and it does not show the user flow ID. You send 3 Microsoft Graph requests in Postman. Do the 1-time setup in [Run Microsoft Graph requests with Postman](#run-microsoft-graph-requests-with-postman) first. The Postman app in the external tenant needs the \`EventListener.ReadWrite.All\` permission, and your account needs at least the **External ID User Flow Administrator** role. See also [Disable sign-up in a user flow](https://learn.microsoft.com/en-us/entra/external-id/customers/how-to-disable-sign-up-user-flow).
 
-1. Select **Entra ID > External Identities > User flows**, then select the user flow. Under **Use**, select **Applications**. Copy the **Application (client) ID** of the pilot portal.
-2. Get the user flow ID with this request:
+1. In Postman, select the \`External tenant\` environment. On the \`Entra Graph\` collection **Authorization** tab, select **Get New Access Token**, sign in, then select **Use Token**.
+2. Add a request named \`List user flows\` and send it:
 
    \`\`\`http
-   GET https://graph.microsoft.com/beta/identity/authenticationEventsFlows?$filter=microsoft.graph.externalUsersSelfServiceSignUpEventsFlow/conditions/applications/includeApplications/any(appId:appId/appId eq '<portal-client-id>')
+   GET https://graph.microsoft.com/v1.0/identity/authenticationEventsFlows
    \`\`\`
 
-3. Disable sign-up with this request:
+   **Result:** \`200 OK\`. In the response, find the item with \`"displayName": "PortalSignIn"\` and copy its \`"id"\`, for example \`0313cc37-d421-421d-857b-87804d61e33e\`. To search the response, select it and push **Ctrl + F** (Windows, Linux) or **Cmd + F** (macOS).
+3. Add a request named \`Disable sign-up\`. Replace \`<user-flow-id>\` with the ID from step 2. On the **Body** tab, select **raw** and **JSON**, paste the body, then send it:
 
    \`\`\`http
-   PATCH https://graph.microsoft.com/beta/identity/authenticationEventsFlows/<user-flow-id>
+   PATCH https://graph.microsoft.com/v1.0/identity/authenticationEventsFlows/<user-flow-id>
+   \`\`\`
+
+   \`\`\`json
    {
      "@odata.type": "#microsoft.graph.externalUsersSelfServiceSignUpEventsFlow",
      "onInteractiveAuthFlowStart": {
@@ -171,7 +301,27 @@ The admin center has no option to disable sign-up on the user flow, and it does 
    }
    \`\`\`
 
-The GET request needs the \`EventListener.Read.All\` permission. The PATCH request needs \`EventListener.ReadWrite.All\`. The least-privileged admin role is **External ID User Flow Administrator**. Existing users can still sign in. To enable sign-up again, send the same PATCH with \`"isSignUpAllowed": true\`.
+   **Result:** \`204 No Content\`. That means success.
+4. Add a request named \`Check sign-up\` and send it:
+
+   \`\`\`http
+   GET https://graph.microsoft.com/v1.0/identity/authenticationEventsFlows/<user-flow-id>
+   \`\`\`
+
+   **Result:** In the response, \`onInteractiveAuthFlowStart\` contains \`"isSignUpAllowed": false\`.
+5. Open the pilot portal in a private browser window and start sign-in.
+
+   **Result:** The sign-in page has no option to create an account. Existing users can still sign in.
+
+- The setting applies to the user flow, so every portal that you add to \`PortalSignIn\` later also has sign-up disabled.
+- To enable sign-up again, send the request of step 3 with \`"isSignUpAllowed": true\`.
+- If you have many user flows, you can find the flow of 1 app by its client ID instead of step 2. Replace \`<portal-client-id>\`:
+
+  \`\`\`http
+  GET https://graph.microsoft.com/v1.0/identity/authenticationEventsFlows?$filter=microsoft.graph.externalUsersSelfServiceSignUpEventsFlow/conditions/applications/includeApplications/any(appId:appId/appId eq '<portal-client-id>')
+  \`\`\`
+
+> **NOTE:** The Microsoft Learn procedure page shows the \`beta\` endpoint. The Microsoft Graph \`v1.0\` reference supports the same list and update requests, and Microsoft recommends \`v1.0\`.
 
 ### Enable self-service password reset
 
@@ -204,28 +354,67 @@ To reset a password, select the user, then select **Reset password**. The tempor
 
 ### Create many users
 
-To create many users (for example, for migration), use Microsoft Graph:
+To create many users (for example, for migration), run 1 Graph request for each row of a CSV file with the Postman **Collection Runner**. Do the 1-time setup in [Run Microsoft Graph requests with Postman](#run-microsoft-graph-requests-with-postman) first. The Postman app in the external tenant needs the \`User.Create\` permission, and your account needs at least the **User Administrator** role.
 
-\`\`\`http
-POST https://graph.microsoft.com/v1.0/users
-{
-  "displayName": "Jane Smith",
-  "mail": "jane@example.com",
-  "identities": [
-    {
-      "signInType": "emailAddress",
-      "issuer": "<tenant-subdomain>.onmicrosoft.com",
-      "issuerAssignedId": "jane@example.com"
-    }
-  ],
-  "passwordProfile": { "password": "<temporary-password>", "forceChangePasswordNextSignIn": false },
-  "passwordPolicies": "DisablePasswordExpiration"
-}
-\`\`\`
+1. Make a CSV file \`users.csv\` with a \`DisplayName\` column and an \`Email\` column:
 
-- This request needs the \`User.ReadWrite.All\` permission in the external tenant.
-- The response contains the user \`id\`. This value is the object ID that the portals store.
-- Give the password to the user for the first sign-in. Or tell the user to select **Forgot password?** and set a new password.
+   \`\`\`text
+   DisplayName,Email
+   Jane Smith,jane@example.com
+   Sam Lee,sam@example.com
+   \`\`\`
+
+2. In the \`Entra Graph\` collection, add a request named \`Create user\`. Replace \`<tenant-subdomain>\`. On the **Body** tab, select **raw** and **JSON**, and paste the body. \`{{DisplayName}}\` and \`{{Email}}\` come from the CSV columns:
+
+   \`\`\`http
+   POST https://graph.microsoft.com/v1.0/users
+   \`\`\`
+
+   \`\`\`json
+   {
+     "accountEnabled": true,
+     "displayName": "{{DisplayName}}",
+     "mail": "{{Email}}",
+     "identities": [
+       {
+         "signInType": "emailAddress",
+         "issuer": "<tenant-subdomain>.onmicrosoft.com",
+         "issuerAssignedId": "{{Email}}"
+       }
+     ],
+     "passwordProfile": { "password": "{{tempPassword}}", "forceChangePasswordNextSignIn": false },
+     "passwordPolicies": "DisablePasswordExpiration"
+   }
+   \`\`\`
+
+3. On the **Scripts** tab of the request, select **Pre-request** and paste this script. It makes a new random temporary password for each user. Postman's \`$randomPassword\` has 15 letters and digits, and the script adds characters so that the password meets the complexity rules:
+
+   \`\`\`js
+   pm.variables.set('tempPassword', pm.variables.replaceIn('{{$randomPassword}}') + 'Aa1!');
+   \`\`\`
+
+4. Select **Post-response** and paste this script. It writes the email address and the new object ID of each user to the Postman **Console**:
+
+   \`\`\`js
+   const email = pm.iterationData.get('Email');
+   if (pm.response.code === 201) {
+     console.log(email + ',' + pm.response.json().id);
+   } else {
+     console.log('FAILED,' + email + ',' + pm.response.code + ',' + pm.response.text());
+   }
+   \`\`\`
+
+5. Select **Save**. If the token is more than 60 minutes old, get a new access token.
+6. Select the \`Entra Graph\` collection in the sidebar, then select **Run**. In the run order, clear the check box of each request except \`Create user\`. Open **Iteration data**, select the **Datafiles** tab, select **Select from computer**, and choose \`users.csv\`. Then select **Start run**.
+7. Select **Console** in the Postman footer (or push **Cmd + Option + C** on macOS, **Ctrl + Alt + C** on Windows). Copy the lines into a text editor and save them as \`created-users.csv\`.
+
+   **Result:** Each line has an email address and the new object ID. The portals store this ID (see [Link Entra identities to SQL users](#link-entra-identities-to-sql-users)). A line that starts with \`FAILED\` shows the error for that user. The run continues with the next row.
+8. Tell each user to open the portal, enter the email address, select **Forgot password?**, and set a password. The temporary password is never shown to anyone.
+
+- To create 1 user, send the same request with real values instead of \`{{DisplayName}}\` and \`{{Email}}\`, or use the admin center (see [Create one user](#create-one-user)).
+- If the request returns \`403\` although you have the **User Administrator** role, add the \`User.ReadWrite.All\` permission to the Postman app, grant admin consent, and get a new token.
+- Postman's documentation says that Collection Runner runs are unlimited on the 2026 pricing plans. Older plans have a monthly limit, and each iteration (each CSV row) counts as 1 run. Check the resource usage of your Postman account.
+- The CSV file must have the column names in the first row, the same number of columns in each row, and Unix line endings (LF). Column names are case-sensitive: \`{{Email}}\` does not match a column \`email\`.
 
 ## Allow internal staff to sign in with workforce accounts
 
@@ -302,12 +491,14 @@ Sign-up is disabled on \`PortalSignIn\`, so a staff member cannot create an acco
 
 See [Route invited users to an external identity provider](https://learn.microsoft.com/en-us/entra/external-id/customers/how-to-invite-external-identity-provider-users-customers).
 
-1. Create the invitation without the Microsoft email:
+1. In Postman, select the \`External tenant\` environment and get a token (see [Run Microsoft Graph requests with Postman](#run-microsoft-graph-requests-with-postman)). The Postman app needs the \`User.Invite.All\` permission, and your account needs at least the **Guest Inviter** or **User Administrator** role.
+2. Add a request named \`Invite staff member\`, paste this body (**Body > raw > JSON**), and send it:
 
    \`\`\`http
    POST https://graph.microsoft.com/v1.0/invitations
-   Content-Type: application/json
+   \`\`\`
 
+   \`\`\`json
    {
      "invitedUserEmailAddress": "jane.smith@contoso.com",
      "inviteRedirectUrl": "https://<portal-url>",
@@ -315,10 +506,10 @@ See [Route invited users to an external identity provider](https://learn.microso
    }
    \`\`\`
 
-   **Result:** External ID creates a user object with \`externalUserState\` set to \`PendingAcceptance\`. The response contains the user \`id\`.
-2. Write the user \`id\` to \`EntraObjectId\` in the SQL record of the staff member (see [Link Entra identities to SQL users](#link-entra-identities-to-sql-users)).
-3. Send your own email with a link to a portal route that starts sign-in with \`domain_hint\`, for example \`https://<portal-url>/account/signin?domain_hint=<workforce>.onmicrosoft.com\`. Use the tenant domain, not the tenant ID.
-4. In the portal, pass the value to the authorization request:
+   **Result:** \`201 Created\`. Copy \`invitedUser.id\` from the response. External ID creates the user object with \`externalUserState\` set to \`PendingAcceptance\`.
+3. Write the user \`id\` to \`EntraObjectId\` in the SQL record of the staff member (see [Link Entra identities to SQL users](#link-entra-identities-to-sql-users)).
+4. Send your own email with a link to a portal route that starts sign-in with \`domain_hint\`, for example \`https://<portal-url>/account/signin?domain_hint=<workforce>.onmicrosoft.com\`. Use the tenant domain, not the tenant ID.
+5. In the portal, pass the value to the authorization request:
 
    \`\`\`csharp
    builder.Services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
@@ -343,31 +534,38 @@ See [Route invited users to an external identity provider](https://learn.microso
 
 ### Create staff accounts with Microsoft Graph
 
-For many staff members, create the users before their first sign-in. Microsoft Learn shows this request body:
+For many staff members, create the users before their first sign-in.
 
-\`\`\`http
-POST https://graph.microsoft.com/v1.0/users
-Content-type: application/json
+1. Get the object ID of the staff member in the **workforce tenant**: select **Entra ID > Users**, select the user, then copy the **Object ID**.
+2. In Postman, select the \`External tenant\` environment and get a token (see [Run Microsoft Graph requests with Postman](#run-microsoft-graph-requests-with-postman)). The Postman app needs the \`User.Create\` permission.
+3. Add a request named \`Create staff user\`, paste this body (**Body > raw > JSON**), and send it. Microsoft Learn shows this request body:
 
-{
-  "accountEnabled": true,
-  "displayName": "Jane Smith",
-  "givenName": "Jane",
-  "surname": "Smith",
-  "mail": "jane.smith@contoso.com",
-  "identities": [
-    {
-      "signInType": "federated",
-      "issuer": "https://login.microsoftonline.com/<workforce-primary-domain>/v2.0<external-tenant-ID>",
-      "issuerAssignedId": "<workforce-user-object-ID>"
-    }
-  ]
-}
-\`\`\`
+   \`\`\`http
+   POST https://graph.microsoft.com/v1.0/users
+   \`\`\`
 
-- \`<workforce-primary-domain>\` is the primary domain of the workforce tenant, for example \`contoso.onmicrosoft.com\`.
-- \`<external-tenant-ID>\` is the directory ID of the external tenant.
-- \`<workforce-user-object-ID>\` is the object ID of the user in the workforce tenant.
+   \`\`\`json
+   {
+     "accountEnabled": true,
+     "displayName": "Jane Smith",
+     "givenName": "Jane",
+     "surname": "Smith",
+     "mail": "jane.smith@contoso.com",
+     "identities": [
+       {
+         "signInType": "federated",
+         "issuer": "https://login.microsoftonline.com/<workforce-primary-domain>/v2.0<external-tenant-ID>",
+         "issuerAssignedId": "<workforce-user-object-ID>"
+       }
+     ]
+   }
+   \`\`\`
+
+   - \`<workforce-primary-domain>\` is the primary domain of the workforce tenant, for example \`contoso.onmicrosoft.com\`.
+   - \`<external-tenant-ID>\` is the directory ID of the external tenant.
+   - \`<workforce-user-object-ID>\` is the object ID from step 1.
+
+   **Result:** \`201 Created\`. Copy the \`id\` from the response and store it in \`EntraObjectId\` (see [Link Entra identities to SQL users](#link-entra-identities-to-sql-users)). For many staff members, use the Collection Runner with a CSV file, as in [Create many users](#create-many-users).
 
 > **NOTE:** The \`issuer\` value is copied exactly from Microsoft Learn. Before a bulk run, create 1 test user, sign in with it, and make sure that sign-in matches the existing user and does not fail or create a second account.
 
@@ -618,28 +816,70 @@ Bulk user migration is always necessary, also when you migrate passwords. See [M
    - In the external tenant, select **Entra ID > External Identities > Custom user attributes > Add**.
    - Name: \`toBeMigrated\`. Data Type: **Boolean**. Select **Create**.
 3. Get the attribute ID. In **App registrations > All applications**, copy the **Application (client) ID** of \`b2c-extensions-app\`. Remove the hyphens. The attribute ID is \`extension_<client-id-without-hyphens>_toBeMigrated\`.
-4. Read the users from the B2C tenant with Microsoft Graph.
-5. Create each user in the external tenant. Use a unique, strong, random temporary password for each user. The request combines the email identity from [Create many users](#create-many-users) with the migration flag:
+4. Read the users from the **B2C tenant** in Postman. Make a Postman app and environment for the B2C tenant with the \`User.Read.All\` permission (see [Run Microsoft Graph requests with Postman](#run-microsoft-graph-requests-with-postman)), select the \`B2C tenant\` environment, and get a token.
+   1. Add a request named \`List B2C users\` with the URL \`{{nextUrl}}\` and the method **GET**.
+   2. On the **Scripts** tab, select **Pre-request** and paste this script. It starts at the first page:
 
-   \`\`\`http
-   POST https://graph.microsoft.com/v1.0/users
+      \`\`\`js
+      if (!pm.collectionVariables.get('nextUrl')) {
+        pm.collectionVariables.set('nextUrl', 'https://graph.microsoft.com/v1.0/users?$select=id,displayName,mail,identities&$top=999');
+        console.log('B2CId,DisplayName,Email');
+      }
+      \`\`\`
+
+   3. Select **Post-response** and paste this script. It writes 1 CSV line for each local account, then loads the next page until there are no more pages:
+
+      \`\`\`js
+      const page = pm.response.json();
+      const quote = (value) => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+      for (const user of page.value) {
+        const login = (user.identities || []).find((identity) => identity.signInType === 'emailAddress');
+        if (login) console.log([user.id, user.displayName, login.issuerAssignedId].map(quote).join(','));
+      }
+      if (page['@odata.nextLink']) {
+        pm.collectionVariables.set('nextUrl', page['@odata.nextLink']);
+        pm.execution.setNextRequest(pm.info.requestName);
+      } else {
+        pm.collectionVariables.set('nextUrl', '');
+      }
+      \`\`\`
+
+   4. Select **Save**. Run only this request with the **Collection Runner**: select the collection, select **Run**, clear the check box of each other request, then select **Start run**. The loop works only in a collection run.
+   5. Select **Console** in the Postman footer, copy the lines into a text editor, and save them as \`b2c-users.csv\`.
+
+   **Result:** \`b2c-users.csv\` has a header line and 1 line for each local account, with its B2C object ID, name, and email address.
+5. Create each user in the **external tenant** with the migration flag. Select the \`External tenant\` environment and get a token. Copy the \`Create user\` request from [Create many users](#create-many-users), name the copy \`Create migrated user\`, and change its body to this. Replace \`<tenant-subdomain>\` and \`<client-id-without-hyphens>\`:
+
+   \`\`\`json
    {
      "accountEnabled": true,
-     "displayName": "Jane Smith",
-     "mail": "jane@example.com",
+     "displayName": "{{DisplayName}}",
+     "mail": "{{Email}}",
      "identities": [
        {
          "signInType": "emailAddress",
          "issuer": "<tenant-subdomain>.onmicrosoft.com",
-         "issuerAssignedId": "jane@example.com"
+         "issuerAssignedId": "{{Email}}"
        }
      ],
-     "passwordProfile": { "password": "<unique-random-password>", "forceChangePasswordNextSignIn": false },
+     "passwordProfile": { "password": "{{tempPassword}}", "forceChangePasswordNextSignIn": false },
      "extension_<client-id-without-hyphens>_toBeMigrated": true
    }
    \`\`\`
 
-6. Store the new user \`id\` in the \`EntraObjectId\` column of each portal (see [Link Entra identities to SQL users](#link-entra-identities-to-sql-users)). The external tenant gives each user a new object ID, so the \`oid\` from B2C does not match.
+   Change its **Post-response** script to also write the B2C object ID:
+
+   \`\`\`js
+   const email = pm.iterationData.get('Email');
+   if (pm.response.code === 201) {
+     console.log([email, pm.iterationData.get('B2CId'), pm.response.json().id].join(','));
+   } else {
+     console.log('FAILED,' + email + ',' + pm.response.code + ',' + pm.response.text());
+   }
+   \`\`\`
+
+   Run only \`Create migrated user\` with the **Collection Runner**. Under **Iteration data > Datafiles**, select **Select from computer** and choose \`b2c-users.csv\`. Copy the Console lines into \`created-users.csv\` (email, B2C object ID, new object ID). If you do not migrate passwords, remove the \`toBeMigrated\` line from the body.
+6. Store the new user \`id\` from \`created-users.csv\` in the \`EntraObjectId\` column of each portal (see [Link Entra identities to SQL users](#link-entra-identities-to-sql-users)). The external tenant gives each user a new object ID, so the \`oid\` from B2C does not match.
 
 > **NOTE:** Microsoft Graph throttles large imports. Send the requests in batches and retry after a throttling response. See [Microsoft Graph throttling guidance](https://learn.microsoft.com/en-us/graph/throttling).
 
@@ -697,37 +937,53 @@ This procedure is the same for B2C and for the portal databases. Only the passwo
    | \`microsoft.graph.passwordSubmit.Block\` | Sign-in must stop, for example the legacy account is locked. | The user sees a block screen. |
 
 5. **Register the extension app.** In the external tenant, register an app with **Supported account types**: **Single tenant only - <external tenant name>**. Under **Manage**, select **Manifest** and set \`"identifierUris": ["api://<function-host>/<extension-app-client-ID>"]\`. Select **API permissions > Add a permission > Microsoft Graph > Application permissions**, select \`CustomAuthenticationExtension.Receive.Payload\`, select **Add permissions**, then select **Grant admin consent for <tenant name>**.
-6. **Add the public key.** Download the certificate in CER format, then get its Base64 value in PowerShell:
+6. **Add the public key.** In Key Vault, open the certificate, select the current version, then select **Download in CER format**. Note the start date and the expiration date of the certificate. On the **Overview** page of the extension app, copy the **Object ID** (not the client ID).
 
-   \`\`\`powershell
-   $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2("<path>\\jitmigrationencryptioncert.cer")
-   [Convert]::ToBase64String($cert.RawData)
+   Get the Base64 value of the CER file with 1 command for your system:
+
+   \`\`\`text
+   macOS:    base64 -i jitmigrationencryptioncert.cer
+   Linux:    base64 -w 0 jitmigrationencryptioncert.cer
+   Windows:  powershell -Command "[Convert]::ToBase64String([IO.File]::ReadAllBytes('jitmigrationencryptioncert.cer'))"
    \`\`\`
 
-   Add it to the extension app. Use the same new GUID for \`keyId\` and \`tokenEncryptionKeyId\`:
+   In Postman, select the \`External tenant\` environment and get a token (see [Run Microsoft Graph requests with Postman](#run-microsoft-graph-requests-with-postman)). The Postman app needs \`Application.ReadWrite.All\`, \`CustomAuthenticationExtension.ReadWrite.All\`, and \`EventListener.ReadWrite.All\`. Add a request named \`Add encryption key\`. On **Scripts > Pre-request**, paste this script. It makes 1 new GUID that the body uses 2 times:
+
+   \`\`\`js
+   pm.variables.set('keyId', pm.variables.replaceIn('{{$guid}}'));
+   \`\`\`
+
+   Paste this body (**Body > raw > JSON**). Replace the dates (UTC, for example \`2026-11-25T17:44:47Z\`), the Base64 value, and the object ID, then send it:
 
    \`\`\`http
    PATCH https://graph.microsoft.com/v1.0/applications/<extension-app-object-ID>
+   \`\`\`
+
+   \`\`\`json
    {
      "keyCredentials": [
        {
-         "endDateTime": "<certificate-end-date>",
-         "keyId": "<new-guid>",
          "startDateTime": "<certificate-start-date>",
+         "endDateTime": "<certificate-end-date>",
+         "keyId": "{{keyId}}",
          "type": "AsymmetricX509Cert",
          "usage": "Encrypt",
          "key": "<base64-public-key>",
          "displayName": "CN=JitMigration"
        }
      ],
-     "tokenEncryptionKeyId": "<new-guid>"
+     "tokenEncryptionKeyId": "{{keyId}}"
    }
    \`\`\`
 
-7. **Create the custom authentication extension:**
+   **Result:** \`204 No Content\`. This request replaces all key credentials of the extension app.
+7. **Create the custom authentication extension.** Add a request named \`Create custom extension\`, paste this body, and send it:
 
    \`\`\`http
    POST https://graph.microsoft.com/beta/identity/customAuthenticationExtensions
+   \`\`\`
+
+   \`\`\`json
    {
      "@odata.type": "#microsoft.graph.onPasswordSubmitCustomExtension",
      "displayName": "OnPasswordSubmitCustomExtension",
@@ -747,10 +1003,14 @@ This procedure is the same for B2C and for the portal databases. Only the passwo
    }
    \`\`\`
 
-8. **Connect the extension to each portal.** Create 1 listener with the client IDs of the portals:
+   **Result:** \`201 Created\`. Copy the \`id\` from the response. Use it in step 8.
+8. **Connect the extension to each portal.** Add a request named \`Create listener\`, paste this body, and send it. For more portals, add more \`{ "appId": "..." }\` items:
 
    \`\`\`http
    POST https://graph.microsoft.com/beta/identity/authenticationEventListeners
+   \`\`\`
+
+   \`\`\`json
    {
      "@odata.type": "#microsoft.graph.onPasswordSubmitListener",
      "conditions": {
@@ -768,6 +1028,7 @@ This procedure is the same for B2C and for the portal databases. Only the passwo
    }
    \`\`\`
 
+   **Result:** \`201 Created\`.
 9. **Test with a few users.** Make sure that the flag changes to \`false\` after a successful sign-in, that each action works, and that no password shows in logs.
 
 > **WARNING:** For B2C, the official sample ([b2c-to-meeid-migration-tool](https://github.com/microsoft/b2c-to-meeid-migration-tool), marked preview and sample) checks the password with the B2C resource owner password credentials (ROPC) flow. The [B2C ROPC page](https://learn.microsoft.com/en-us/azure/active-directory-b2c/add-ropc-policy) says that server-to-server ROPC calls are not supported: B2C identity protection sees only the server IP address and can block it after repeated failures. ROPC also fails when B2C needs user interaction, for example MFA or an expired password. Test with production-like volumes, and return \`Retry\` or \`Block\` when the check fails.
@@ -969,7 +1230,7 @@ Example mapping for an app with 2 federated corporate sign-in options:
 | Error | Meaning | First check |
 | --- | --- | --- |
 | \`AADB2C90289\` | A federated IdP rejected B2C as a client. | Expired or mismatched secret between the federation app registration and its B2C policy key. |
-| "No email address was obtained from the external OIDC identity provider" (\`AADSTS901011\`) | The workforce tenant did not send the \`email\` claim. | Add the \`email\` optional claim in **Token configuration** of the federation app in the workforce tenant. |
+| "No email address was obtained from the external OIDC identity provider" (\`AADSTS901011\`) | The workforce tenant did not send the \`email\` claim. | Add the \`email\` optional claim in **Token configuration** of the federation app in the workforce tenant. If a staff account has no email address, the claim stays empty. For those accounts, make the email attribute optional in the user flow (see [Add OIDC for customer sign-in](https://learn.microsoft.com/en-us/entra/external-id/customers/how-to-custom-oidc-federation-customers)). |
 | \`40015\` | The workforce tenant authenticated the user, but External ID could not validate the response. | The issuer URI must match the \`issuer\` in the discovery document exactly. Check the endpoints and that the subject and email claims are returned. |
 | \`AADSTS500208\` | The account type cannot use this sign-in URL or tenant. | Make sure that the app uses the correct sign-in endpoint and that the account has access to the target tenant. |
 | The company sign-in button does not show, or \`domain_hint\` does not redirect | The provider, issuer, or user flow configuration is wrong or stale. | Use the tenant ID or \`onmicrosoft.com\` issuer. Use the tenant domain, not the GUID, in \`domain_hint\`. If you changed the issuer, remove the provider from the user flow, save, add it again, and save. |
@@ -1021,15 +1282,17 @@ Your MSAL client code shows the error (for example, an \`AcquireTokenInteractive
 - The JSON view of the policy key is **read-only**. It never shows the secret value (\`k\` is always omitted). You cannot fix the key in the JSON view.
 - If the key container has no upload button, use 1 of these alternatives:
   - Delete the key and create it again with the same name.
-  - Use the Graph API:
+  - Use Microsoft Graph in Postman (see [Run Microsoft Graph requests with Postman](#run-microsoft-graph-requests-with-postman)). Make a Postman app and environment for the **B2C tenant** with the \`TrustFrameworkKeySet.ReadWrite.All\` permission, select that environment, get a token, then send:
 
     \`\`\`http
     POST https://graph.microsoft.com/beta/trustFramework/keySets/<PolicyKeyName>/uploadSecret
+    \`\`\`
+
+    \`\`\`json
     { "use": "sig", "k": "<new secret value>" }
     \`\`\`
 
-- The Graph request needs the \`TrustFrameworkKeySet.ReadWrite.All\` permission in the B2C tenant.
-- In Graph Explorer, add \`?tenant=<your-b2c-tenant>.onmicrosoft.com\` to select the correct tenant. If you do not, the trustFramework endpoint returns 404.
+- The request needs the \`TrustFrameworkKeySet.ReadWrite.All\` permission in the B2C tenant. If the token is for another tenant, the trustFramework endpoint returns 404. In Postman, the environment of the B2C tenant selects the correct tenant.
 
 #### Prevention
 
