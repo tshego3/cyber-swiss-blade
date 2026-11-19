@@ -45,7 +45,7 @@ Use 2 tenants. Do not merge them.
 - The MAU of all tenants linked to the same subscription add together. B2B guests in a linked workforce tenant also count. Check the guest sign-ins on the subscription before you link it.
 - Add-ons have no free tier: M2M authentication (client credentials), SMS, and Go-Local data residency. This article uses no add-ons: password reset uses email one-time passcode, and the portals call the APIs as the signed-in user. The optional [app-only token](#use-an-app-only-token-client-credentials) for Graph requests uses the M2M add-on.
 - Other costs: Key Vault, an Azure Function for just-in-time password migration, Redis or SQL Server for a distributed token cache, and the B2C tenant until you delete it.
-- For production, link the tenant to a subscription (the 30-day trial needs none). Then set a low budget alert (for example, $1) in **Cost Management**.
+- For production, link the tenant to a subscription (the 30-day trial needs none). Then set a low budget alert (for example, $1) in **Cost Management**. To count the MAU of the month, see [Check the monthly active users](#check-the-monthly-active-users).
 
 ### Roles
 
@@ -926,6 +926,199 @@ After all apps use External ID and the cutover date has passed:
 2. Reset or migrate the remaining users, then delete the JIT listener and extension.
 3. Remove the B2C federation secrets and policy keys. The workforce federation replaces them.
 4. When no app calls B2C, delete the tenant (see "How do I delete my Azure AD B2C tenant?" in the [B2C FAQ](https://learn.microsoft.com/en-us/azure/active-directory-b2c/faq)). B2C charges for its MAU until then.
+
+## Check the monthly active users
+
+This PowerShell script lists the users of each tenant and counts the MAU of the current month against the shared free tier. It runs in PowerShell 7 on Windows, macOS, and Linux.
+
+- **External tenant:** every user counts, admins too.
+- **Workforce tenant:** only guest (B2B) users count. Members are excluded.
+- **Azure AD B2C tenant:** B2C bills its MAU separately. Run the script for the B2C tenant alone (with `-ExternalTenantId`), and do not add its total to the External ID total.
+
+To find each tenant ID, open **Entra ID > Overview** and copy the **Tenant ID**. To see the users without the script, open **Entra ID > Users**.
+
+1. Install the module: `Install-Module Microsoft.Graph -Scope CurrentUser`.
+2. Get the role **Global Reader** (or **Reports Reader** and **Directory Readers**) in each tenant.
+3. Save the script as `Get-MauReport.ps1` and run it. Sign in to each tenant when the browser opens:
+
+   ```powershell
+   .\Get-MauReport.ps1 `
+     -WorkforceTenantId <workforce-id-1>,<workforce-id-2> `
+     -ExternalTenantId <external-id> `
+     -Grid
+   ```
+
+**Result:** The script shows the created users and the MAU of each tenant, the total MAU, the free MAU left, and the billable MAU. It saves the user list to `mau-report-<yyyy-MM>.csv`.
+
+- The script counts a user as active if the last **successful** sign-in is in the current month (UTC). Failed attempts do not count.
+- `signInActivity` needs a Microsoft Entra ID P1 or P2 license. Without it, the script reads this month's sign-in logs, which keep only a limited number of days.
+- The result is an estimate. Users deleted during the month are not in the list. The bill in **Cost Management** is the authority.
+
+```powershell
+<#
+.SYNOPSIS
+  Lists all created users in each tenant and counts this month's MAU against the shared free tier.
+
+.DESCRIPTION
+  External tenant  : every user counts toward MAU (admins too).
+  Workforce tenant : only guest (B2B) users count. Members (employees) are excluded.
+  Billing adds the MAU of all tenants linked to the same subscription.
+
+.EXAMPLE
+  .\Get-MauReport.ps1 -ExternalTenantId <external-id> -WorkforceTenantId <workforce-id> -Grid
+
+.NOTES
+  Modules : Install-Module Microsoft.Graph -Scope CurrentUser
+  Role    : Global Reader (or Reports Reader + Directory Readers) in each tenant
+  Scopes  : User.Read.All, AuditLog.Read.All
+  License : signInActivity needs Microsoft Entra ID P1 or P2. Without it, the script uses the sign-in logs.
+  -Grid   : Out-GridView works on Windows only.
+#>
+param(
+    [string[]] $ExternalTenantId  = @(),
+    [string[]] $WorkforceTenantId = @(),
+    [int]      $FreeTier = 50000,
+    [string]   $OutFile  = ".\mau-report-$(Get-Date -Format yyyy-MM).csv",
+    [switch]   $Grid
+)
+
+$ErrorActionPreference = 'Stop'
+
+if (($ExternalTenantId.Count + $WorkforceTenantId.Count) -eq 0) {
+    throw 'Give at least one tenant: -ExternalTenantId and/or -WorkforceTenantId.'
+}
+
+foreach ($m in 'Microsoft.Graph.Authentication', 'Microsoft.Graph.Users', 'Microsoft.Graph.Reports', 'Microsoft.Graph.Identity.DirectoryManagement') {
+    if (-not (Get-Module -ListAvailable -Name $m)) {
+        throw "Module $m is missing. Run: Install-Module Microsoft.Graph -Scope CurrentUser"
+    }
+}
+
+$now        = [datetime]::UtcNow
+$monthStart = New-Object DateTime ($now.Year, $now.Month, 1, 0, 0, 0, [DateTimeKind]::Utc)
+
+function ConvertTo-Utc($d) {
+    if ($null -eq $d) { return $null }
+    $d = [datetime]$d
+    if ($d.Kind -eq [DateTimeKind]::Unspecified) { return [datetime]::SpecifyKind($d, [DateTimeKind]::Utc) }
+    return $d.ToUniversalTime()
+}
+
+function Get-TenantRows([string] $TenantId, [bool] $GuestsOnly) {
+    Connect-MgGraph -TenantId $TenantId -Scopes 'User.Read.All', 'AuditLog.Read.All' -NoWelcome
+    try {
+        $tenantName = $TenantId
+        try { $tenantName = (Get-MgOrganization -ErrorAction Stop | Select-Object -First 1).DisplayName } catch { }
+        Write-Host "Reading tenant: $tenantName ($TenantId)"
+
+        # All created users. signInActivity gives the last successful sign-in of each user.
+        $props = 'id', 'displayName', 'mail', 'userPrincipalName', 'userType', 'createdDateTime', 'identities', 'signInActivity'
+        # -ErrorAction Stop is required: Graph cmdlets ignore the script's $ErrorActionPreference.
+        $query = @{ All = $true; ErrorAction = 'Stop' }
+        if ($GuestsOnly) { $query.Filter = "userType eq 'Guest'" }
+
+        $source = 'signInActivity'
+        try {
+            $users = Get-MgUser @query -Property $props
+        }
+        catch {
+            Write-Warning "[$tenantName] signInActivity is not available ($($_.Exception.Message)). Using the sign-in logs instead."
+            $source = 'sign-in logs'
+            $users  = Get-MgUser @query -Property ($props | Where-Object { $_ -ne 'signInActivity' })
+        }
+
+        # Fallback: last successful sign-in per user from this month's sign-in logs.
+        $lastFromLogs = @{}
+        if ($source -eq 'sign-in logs') {
+            $logFilter = "createdDateTime ge $($monthStart.ToString('yyyy-MM-ddTHH:mm:ssZ')) and status/errorCode eq 0"
+            Get-MgAuditLogSignIn -All -Filter $logFilter -ErrorAction Stop | ForEach-Object {
+                $t = ConvertTo-Utc $_.CreatedDateTime
+                if (-not $lastFromLogs.ContainsKey($_.UserId) -or $t -gt $lastFromLogs[$_.UserId]) {
+                    $lastFromLogs[$_.UserId] = $t
+                }
+            }
+        }
+
+        foreach ($u in $users) {
+            if ($source -eq 'signInActivity') {
+                # Successful sign-ins only. LastSignInDateTime also counts failed attempts.
+                $last = $null
+                if ($u.SignInActivity) { $last = ConvertTo-Utc $u.SignInActivity.LastSuccessfulSignInDateTime }
+            }
+            else {
+                $last = $lastFromLogs[$u.Id]
+            }
+
+            $email = $u.Mail
+            if (-not $email) {
+                $id = $u.Identities | Where-Object { $_.SignInType -eq 'emailAddress' } | Select-Object -First 1
+                if ($id) { $email = $id.IssuerAssignedId } else { $email = $u.UserPrincipalName }
+            }
+
+            [pscustomobject]@{
+                Tenant          = $tenantName
+                Source          = $source
+                DisplayName     = $u.DisplayName
+                Email           = $email
+                UserType        = $u.UserType
+                CreatedUtc      = ConvertTo-Utc $u.CreatedDateTime
+                LastSignInUtc   = $last
+                ActiveThisMonth = [bool]($last -and $last -ge $monthStart)
+                ObjectId        = $u.Id
+            }
+        }
+    }
+    finally {
+        Disconnect-MgGraph | Out-Null
+    }
+}
+
+$rows   = @()
+$failed = @()
+$jobs   = @($ExternalTenantId | ForEach-Object { @{ Id = $_; GuestsOnly = $false } }) +
+          @($WorkforceTenantId | ForEach-Object { @{ Id = $_; GuestsOnly = $true } })
+foreach ($j in $jobs) {
+    try {
+        $rows += @(Get-TenantRows -TenantId $j.Id -GuestsOnly $j.GuestsOnly)
+    }
+    catch {
+        Write-Warning "Tenant $($j.Id) FAILED: $($_.Exception.Message)"
+        $failed += $j.Id
+    }
+}
+
+# Summary per tenant, then the shared total.
+Write-Host ''
+Write-Host "Period: $($monthStart.ToString('yyyy-MM-dd')) to $($now.ToString('yyyy-MM-dd HH:mm')) UTC"
+$rows | Group-Object Tenant | ForEach-Object {
+    [pscustomobject]@{
+        Tenant          = $_.Name
+        Source          = ($_.Group | Select-Object -First 1).Source
+        'Created users' = $_.Count
+        'MAU'           = @($_.Group | Where-Object { $_.ActiveThisMonth }).Count
+    }
+} | Format-Table -AutoSize | Out-String | Write-Host
+
+$total = $rows.Count
+$mau   = @($rows | Where-Object { $_.ActiveThisMonth }).Count
+$pct   = [math]::Round(100 * $mau / $FreeTier, 2)
+
+Write-Host "All tenants - created users : $total"
+Write-Host "All tenants - MAU           : $mau of $FreeTier free ($pct %)"
+Write-Host "Free MAU left               : $([math]::Max(0, $FreeTier - $mau))"
+Write-Host "Billable MAU                : $([math]::Max(0, $mau - $FreeTier))"
+Write-Host ''
+if ($failed.Count -gt 0) {
+    Write-Host "INCOMPLETE: these tenants failed and are NOT in the totals: $($failed -join ', ')" -ForegroundColor Red
+    Write-Host ''
+}
+
+$rows | Sort-Object Tenant, ActiveThisMonth, LastSignInUtc -Descending |
+    Export-Csv -Path $OutFile -NoTypeInformation -Encoding UTF8
+Write-Host "User list saved to $OutFile"
+
+if ($Grid) { $rows | Out-GridView -Title "Users - MAU $mau / $FreeTier" }
+```
 
 ## Legacy reference: Azure AD B2C
 
