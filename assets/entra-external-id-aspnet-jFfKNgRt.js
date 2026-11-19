@@ -124,12 +124,16 @@ A token expires after 60 to 90 minutes. If a request returns \`401\`, get a new 
 3. For a body, select **Body > raw > JSON** and paste it.
 4. Select **Send**.
 
-To test the setup, send \`GET https://graph.microsoft.com/v1.0/organization?$select=id,displayName\`. The response shows the tenant name. This request needs only \`User.Read\`, which a new app has by default.
+To test the setup:
+
+1. Send \`GET https://graph.microsoft.com/v1.0/organization?$select=id,displayName\`. The response shows the tenant name. This request needs only \`User.Read\`, which a new app has by default.
+2. Check the token. Postman shows the new token before you select **Use Token**. Copy it and paste it in [jwt.ms](https://jwt.ms). The \`scp\` (scopes) claim lists the delegated permissions of the token, separated by spaces, for example \`"scp": "EventListener.ReadWrite.All User.Read"\`. It has only the permissions that had admin consent when Entra issued the token. The \`scp\` claim must list each permission from [Permissions for each request](#permissions-for-each-request) that you need. If a permission is missing, Graph returns "The application does not have any of the required delegated permissions".
 
 | Problem | Fix |
 | --- | --- |
 | \`401\` | Select the correct environment and get a new token. |
 | \`403\` | Add the permission to the app, grant admin consent, get a new token, and check your role. |
+| "The application does not have any of the required delegated permissions" | The token has no listed permission. Make sure that the permission is under **Delegated**, not **Application**, and shows **Granted**. Then select **Get New Access Token**: a token from before the consent does not change. To check, paste the token in [jwt.ms](https://jwt.ms): \`scp\` must list the permission, and \`tid\` must be the tenant ID. |
 | \`400\` | Fix the JSON, or replace the remaining \`<placeholder>\`. |
 | \`404\` | Check the ID and the selected environment. |
 | \`AADSTS50011\` | Set the Web redirect URI to \`https://oauth.pstmn.io/v1/browser-callback\`. |
@@ -179,7 +183,7 @@ All portals use **Email with password**. Entra fixes the sign-in method of a use
 
 ### Disable sign-up
 
-The admin center has no setting for this. Use Postman (\`External tenant\` environment). See [Disable sign-up in a user flow](https://learn.microsoft.com/en-us/entra/external-id/customers/how-to-disable-sign-up-user-flow).
+The admin center has no setting for this. Use Postman (\`External tenant\` environment). The token must have \`EventListener.ReadWrite.All\` in \`scp\` (see [Send a request](#send-a-request)). See [Disable sign-up in a user flow](https://learn.microsoft.com/en-us/entra/external-id/customers/how-to-disable-sign-up-user-flow).
 
 1. Send this request. In the response, copy the \`id\` of the item with \`"displayName": "PortalSignIn"\`.
 
