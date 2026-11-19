@@ -344,8 +344,8 @@ Do these steps in the **workforce tenant**.
    \`\`\`
 
 3. Add a client secret and copy the **Value**. Set a reminder before it expires.
-4. Select **Token configuration > Add optional claim > ID** and add \`email\`. Without it, sign-in fails with \`AADSTS901011\`.
-5. Select **API permissions** and add the delegated permissions \`email\`, \`openid\`, \`profile\`, and \`User.Read\`. Grant admin consent.
+4. Select **Token configuration > Add optional claim > ID**, select \`email\`, then select **Add**. In the dialog, select **Turn on the Microsoft Graph email permission (required for claims to appear in token)**, then select **Add**. Without the claim, sign-in fails with \`AADSTS901011\`.
+5. Select **API permissions** and make sure that the delegated permissions \`email\`, \`openid\`, \`profile\`, and \`User.Read\` are in the list. Add the missing ones. Grant admin consent.
 6. Record the **Application (client) ID** and the **Directory (tenant) ID**.
 
 ### Add the workforce tenant as an identity provider
