@@ -194,7 +194,8 @@ Register 1 app for each portal. Start with the pilot portal. All portals use the
 1. Select **Entra ID > App registrations > New registration**. Enter the portal name and select **Single tenant only - <external tenant name>**. Select **Register** and record the **Application (client) ID**.
 2. Select **Authentication > Add Redirect URI > Web**. Enter the redirect URI \`https://localhost:5001/signin-oidc\` and the front-channel logout URL \`https://localhost:5001/signout-oidc\`. Add the URL of each environment later.
 3. Select **Certificates & secrets > New client secret** (Microsoft recommends less than 12 months, maximum 24). Store the **Value** in Key Vault immediately. Set a reminder before it expires.
-4. Select **API permissions > Grant admin consent for <tenant name> > Yes**. External users cannot consent themselves.
+4. Select **Token configuration > Add optional claim > ID**, select \`email\`, then select **Add**. In the dialog, select **Turn on the Microsoft Graph email permission**, then select **Add**. The portal finds the SQL user by this claim.
+5. Select **API permissions > Grant admin consent for <tenant name> > Yes**. External users cannot consent themselves.
 
 > **NOTE:** For production, Microsoft recommends a certificate instead of a secret: **Certificates & secrets > Certificates > Upload certificate**.
 
@@ -396,7 +397,7 @@ See [Route invited users to an external identity provider](https://learn.microso
    }
    \`\`\`
 
-2. Write the ID to \`EntraObjectId\` in the SQL record of the staff member (see [Link Entra identities to SQL users](#link-entra-identities-to-sql-users)).
+2. Make sure that the SQL record of the staff member has the invited email address (see [Link Entra identities to SQL users](#link-entra-identities-to-sql-users)).
 3. Send your own email with a link such as \`https://<portal-url>/account/signin?domain_hint=<workforce>.onmicrosoft.com\`. Use the domain, not the tenant ID.
 4. In the portal, pass only the domains that you federate to the authorization request:
 
@@ -444,20 +445,29 @@ See [Route invited users to an external identity provider](https://learn.microso
    \`\`\`
 
    \`<workforce-primary-domain>\` is, for example, \`contoso.onmicrosoft.com\`. \`<external-tenant-ID>\` is the directory ID of the external tenant.
-3. Store the \`id\` from the response in \`EntraObjectId\`.
+3. Make sure that the SQL record of the staff member has the same email address as \`mail\`.
 
 > **NOTE:** The \`issuer\` format is copied from Microsoft Learn. Before a bulk run, create 1 test user and make sure that sign-in finds it and does not create a second account.
 
 ## Link Entra identities to SQL users
 
-Each portal keeps its own SQL user table. Add this column to each portal before the migration:
+Each portal keeps its existing SQL user table.
+
+| Phase | Match by | Schema change |
+| --- | --- | --- |
+| Pilot | The \`email\` claim, case-insensitive | None |
+| Production | The \`oid\` claim, filled in automatically at sign-in | 1 new column |
+
+**Pilot.** Find the user by the \`email\` claim in the existing email column. Compare without case, for example \`WHERE UPPER(Email) = UPPER(@email)\`. If no record or more than 1 record matches, deny access. Email matching is safe here only because sign-up is disabled: only admins create accounts, so nobody can register an email address that belongs to another person.
+
+**Production.** An email address can change, but the \`oid\` cannot. The \`oid\` is the same in all apps of the tenant. Add this column to each portal:
 
 \`\`\`sql
 ALTER TABLE dbo.Users ADD EntraObjectId UNIQUEIDENTIFIER NULL;
 CREATE UNIQUE INDEX UX_Users_EntraObjectId ON dbo.Users (EntraObjectId) WHERE EntraObjectId IS NOT NULL;
 \`\`\`
 
-Store the \`oid\` claim in this column. Match users on \`oid\`, not on email: an email can change, but the \`oid\` cannot. The \`oid\` is the same in all apps of the tenant.
+At sign-in, find the user by \`oid\` first. If no record has the \`oid\`, find the user by email (only records where \`EntraObjectId\` is empty), then store the \`oid\` in that record. After the first sign-in, the email no longer matters.
 
 ## Configure the pilot .NET portal
 
@@ -497,9 +507,12 @@ This article covers the .NET portals (phase 1). It does not cover the JavaScript
        {
            if (existing is not null) await existing(context);
 
-           var objectId = context.Principal!.GetObjectId();
+           // .NET can map "email" to ClaimTypes.Email, so check both names.
+           var email = context.Principal!.FindFirst("email")?.Value
+               ?? context.Principal.FindFirst(ClaimTypes.Email)?.Value;
            var userStore = context.HttpContext.RequestServices.GetRequiredService<IPortalUserStore>();
-           var portalUser = await userStore.FindByEntraObjectIdAsync(objectId);
+           // Pilot: case-insensitive email match. Returns null if 0 or more than 1 record matches.
+           var portalUser = string.IsNullOrEmpty(email) ? null : await userStore.FindByEmailAsync(email);
 
            // No SQL record means no access to this portal. Do not create one automatically.
            if (portalUser is null)
@@ -520,14 +533,28 @@ This article covers the .NET portals (phase 1). It does not cover the JavaScript
 
 4. Implement \`IPortalUserStore\` (a placeholder name) with the user table and roles of the portal.
 
+For production, replace the lookup with the \`oid\` lookup from [Link Entra identities to SQL users](#link-entra-identities-to-sql-users):
+
+\`\`\`csharp
+var objectId = context.Principal!.GetObjectId();
+var portalUser = await userStore.FindByEntraObjectIdAsync(objectId);
+if (portalUser is null && !string.IsNullOrEmpty(email))
+{
+    // First sign-in: match an unlinked record by email, then store the oid.
+    portalUser = await userStore.FindUnlinkedByEmailAsync(email);
+    if (portalUser is not null) await userStore.SetEntraObjectIdAsync(portalUser.Id, objectId!);
+}
+\`\`\`
+
 ## Protect the portal APIs
 
 1. Register the API: **New registration**, **Single tenant only - <external tenant name>**, no redirect URI.
 2. Select **Owners > Add owners**. Add an owner to the API and to each portal. Without an owner, the API does not show under **My APIs**.
 3. Select **Expose an API**. Add the **Application ID URI** (keep \`api://<api-client-id>\`).
 4. Select **Add a scope**: name \`access_as_user\`, **Admins only**, a display name and description, **Enabled**.
-5. In each portal registration, select **API permissions > Add a permission > My APIs**, select the API and \`access_as_user\`, then grant admin consent.
-6. In the API project, add the settings and the code:
+5. In the **API** registration (not the portal registration), select **Token configuration > Add optional claim > Access**, select \`email\`, then select **Add**. Tick the Microsoft Graph email permission box if it shows. **Result:** The list has an \`email\` row with **Token type** **Access**. An access token gets its optional claims from the API registration, so an \`ID\` row or a row on the portal registration does not add \`email\` to the API token.
+6. In each portal registration, select **API permissions > Add a permission**, then **APIs my organization uses** (or **My APIs**). Select the API and \`access_as_user\`, then grant admin consent.
+7. In the API project, add the settings and the code:
 
    \`\`\`json
    "AzureAd": {
@@ -542,7 +569,7 @@ This article covers the .NET portals (phase 1). It does not cover the JavaScript
        .AddMicrosoftIdentityWebApi(builder.Configuration);
    \`\`\`
 
-The API validates the token, then authorizes the caller from its SQL record by \`oid\`, the same as the portal.
+The API validates the token, then finds the caller in its SQL user table with the same rule as the portal: by \`email\` in the pilot, by \`oid\` in production. Read the claim as \`email\` or \`ClaimTypes.Email\`. Check it in [jwt.ms](https://jwt.ms): the access token must have an \`email\` claim.
 
 ## Call the API from the portal
 
@@ -627,7 +654,7 @@ For users in the portal SQL tables (custom JWT authentication). Entra cannot imp
 1. Export the users from each portal database.
 2. Merge duplicates across portals by email. Each person gets 1 identity.
 3. Create the users with [Create many users](#create-many-users).
-4. Write each object ID to \`EntraObjectId\` in every portal record of that person.
+4. Make sure that every portal record of that person has the email address of the new account.
 5. Tell the users how to sign in.
 
 ## Migrate users from Azure AD B2C
@@ -720,7 +747,7 @@ Bulk migration is always necessary, also with password migration. See [Migrate u
    \`\`\`
 
    Run it with the data file \`b2c-users.csv\`. Save the Console lines as \`created-users.csv\`.
-5. Store each new \`id\` in \`EntraObjectId\`. The B2C \`oid\` does not match the new one.
+5. Make sure that each portal record has the email address of the new account. If a portal stores the B2C \`oid\`, do not use it: the external tenant gives each user a new object ID.
 
 Graph throttles large imports. Run in batches and retry after a throttling response. See [Microsoft Graph throttling](https://learn.microsoft.com/en-us/graph/throttling).
 
