@@ -43,7 +43,7 @@ Use 2 tenants. Do not merge them.
 - External ID charges per monthly active user (MAU): a unique user who signs in during a calendar month. The first 50,000 MAU are free. See [External ID pricing](https://aka.ms/ExternalIDPricing).
 - All users who sign in count: external users, federated staff, and admins.
 - The MAU of all tenants linked to the same subscription add together. B2B guests in a linked workforce tenant also count. Check the guest sign-ins on the subscription before you link it.
-- Add-ons have no free tier: M2M authentication (client credentials), SMS, and Go-Local data residency. This article uses no add-ons: password reset uses email one-time passcode, and the portals call the APIs as the signed-in user.
+- Add-ons have no free tier: M2M authentication (client credentials), SMS, and Go-Local data residency. This article uses no add-ons: password reset uses email one-time passcode, and the portals call the APIs as the signed-in user. The optional [app-only token](#use-an-app-only-token-client-credentials) for Graph requests uses the M2M add-on.
 - Other costs: Key Vault, an Azure Function for just-in-time password migration, Redis or SQL Server for a distributed token cache, and the B2C tenant until you delete it.
 - For production, link the tenant to a subscription (the 30-day trial needs none). Then set a low budget alert (for example, $1) in **Cost Management**.
 
@@ -97,6 +97,22 @@ Some settings have no button in the admin center, for example **Disable sign-up*
    - **Certificates & secrets > New client secret**: select a short expiration, then copy the **Value**.
    - **API permissions > Add a permission > Microsoft Graph > Delegated permissions**: add the permissions from [Permissions for each request](#permissions-for-each-request). Select **Grant admin consent for <tenant name> > Yes**.
    - On **Overview**, copy the **Application (client) ID** and the **Directory (tenant) ID**.
+
+   **Result:** **API permissions > Configured permissions** shows the permissions for the steps that you do. For all steps in this article:
+
+   | Tenant | Permission name | Type | Used for |
+   | --- | --- | --- | --- |
+   | External | \`User.Read\` | Delegated | Sign-in (added by default) |
+   | External | \`EventListener.ReadWrite.All\` | Delegated | Disable sign-up, JIT listener |
+   | External | \`User.Create\` (or \`User.ReadWrite.All\`) | Delegated | Create users |
+   | External | \`User.Invite.All\` | Delegated | Invite staff |
+   | External | \`Application.ReadWrite.All\` | Delegated | JIT public key |
+   | External | \`CustomAuthenticationExtension.ReadWrite.All\` | Delegated | JIT custom extension |
+   | B2C | \`User.Read\` | Delegated | Sign-in (added by default) |
+   | B2C | \`User.Read.All\` | Delegated | Export B2C users |
+   | B2C | \`TrustFrameworkKeySet.ReadWrite.All\` | Delegated | Fix a B2C policy key |
+
+   Each row must show **Granted for <tenant name>** in the **Status** column. Every permission must have the type **Delegated**. A permission of type **Application** is not in a sign-in token (see [Use an app-only token](#use-an-app-only-token-client-credentials)).
 3. In Postman, add an environment (sidebar add icon > **Environments**) named after the tenant, for example \`External tenant\`. Add the variables \`tenantId\`, \`clientId\`, and \`clientSecret\`. Select **Secure** next to \`clientSecret\`. Postman keeps these values on your computer unless you share them.
 4. Add a collection (sidebar add icon > **Collection**) named \`Entra Graph\`. On its **Authorization** tab, set these values, then select **Save**:
 
@@ -116,6 +132,19 @@ Some settings have no button in the admin center, for example **Disable sign-up*
 A token expires after 60 to 90 minutes. If a request returns \`401\`, get a new token. If you add a permission, grant admin consent again, then get a new token.
 
 > **IMPORTANT:** A delegated permission works only if your account also has the admin role. The app permission alone is not sufficient.
+
+### Use an app-only token (client credentials)
+
+As an alternative to admin sign-in, the Postman app can get a token as itself, with its client secret. Nobody signs in, and no admin role applies. See [OAuth 2.0 client credentials flow](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow).
+
+> **IMPORTANT:** In an external tenant, client credentials use the M2M authentication add-on. Microsoft charges for each token request and documents no exception for Microsoft Graph tokens. Use the sign-in token above if you want no add-on cost. See [External ID pricing](https://learn.microsoft.com/en-us/entra/external-id/external-identities-pricing).
+
+1. On the Postman app, add each permission as an **Application** permission, not **Delegated**: the same names as in the **Configured permissions** table of [Set up Postman](#set-up-postman), without \`User.Read\`. A token gets only the permissions of its own type. Each request in [Permissions for each request](#permissions-for-each-request) supports the same permission name as an Application permission. For \`PATCH /applications/{id}\`, use \`Application.ReadWrite.All\`.
+2. Grant admin consent. For Microsoft Graph Application permissions, this needs the **Privileged Role Administrator** role. Application Administrator and Cloud Application Administrator cannot grant them.
+3. Get the token. On the collection **Authorization** tab, change **Grant type** to **Client Credentials**. Keep the other values: **Access Token URL** \`https://login.microsoftonline.com/{{tenantId}}/oauth2/v2.0/token\`, \`{{clientId}}\`, \`{{clientSecret}}\`, and **Scope** \`https://graph.microsoft.com/.default\`. Select **Get New Access Token**, then **Use Token**. No browser opens.
+4. Check the token in [jwt.ms](https://jwt.ms). An app-only token has a \`roles\` claim, not \`scp\`. \`roles\` must list the permissions that you need.
+
+Reuse the token until it expires (\`expires_in\`, in seconds): each token request is 1 billable transaction. Anybody with the client secret has these permissions without sign-in or MFA. Delete the secret when you finish.
 
 ### Send a request
 
@@ -217,8 +246,8 @@ The setting applies to every portal in \`PortalSignIn\`. To enable sign-up again
 Users set their own password with self-service password reset. Sign in as at least **Security Administrator**. See [Enable self-service password reset](https://learn.microsoft.com/en-us/entra/external-id/customers/how-to-enable-password-reset-customers).
 
 1. In the \`PortalSignIn\` user flow, make sure that **Email with password** is selected.
-2. Select **Entra ID > Authentication methods > Email OTP**. Turn it on for **All users**, then select **Save**.
-3. Select **Company Branding > Default sign-in > Edit**. On the **Sign-in form** tab, select **Show self-service password reset**, then **Review + save > Save**.
+2. Select **Entra ID > Security > Authentication methods > Email OTP**. Turn it on for **All users**, then select **Save**.
+3. Select **Entra ID > Company Branding > Default sign-in > Edit**. On the **Sign-in form** tab, select **Show self-service password reset**, then **Review + save > Save**.
 
 **Result:** The sign-in page shows **Forgot password?**. Do not use SMS: each SMS has a charge.
 
